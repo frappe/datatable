@@ -5,15 +5,15 @@ const UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 const path = require('path');
 const env = require('yargs').argv.env; // use --env with webpack 2
 
-let libraryName = 'ReGrid';
+let libraryName = 'ReGrid', outputFile = 'regrid';
 
-let plugins = [], outputFile;
+let plugins = [];
 
 if (env === 'build') {
   plugins.push(new UglifyJsPlugin({ minimize: true }));
-  outputFile = libraryName + '.min.js';
+  outputFile += '.min.js';
 } else {
-  outputFile = libraryName + '.js';
+  outputFile += '.js';
 }
 
 const config = {
@@ -54,7 +54,10 @@ const config = {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],
     extensions: ['.json', '.js']
   },
-  plugins: plugins
+  plugins: plugins,
+  externals: {
+    jquery: 'jQuery'
+  }
 };
 
 module.exports = config;

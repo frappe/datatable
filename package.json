@@ -1,7 +1,7 @@
 {
   "name": "regrid",
   "version": "0.0.1",
-  "description": "A modern grid for the web",
+  "description": "A modern datatable library for the web",
   "main": "lib/regrid.js",
   "scripts": {
     "build": "webpack --env build",
@@ -48,7 +48,6 @@
   "homepage": "https://github.com/netchampfaris/regrid",
   "dependencies": {
     "bootstrap": "^4.0.0-beta",
-    "jquery": "^3.2.1",
     "popper.js": "^1.12.5"
   }
 }
