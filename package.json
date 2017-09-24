@@ -17,10 +17,14 @@
     "babel-plugin-add-module-exports": "0.2.1",
     "babel-preset-es2015": "6.24.1",
     "chai": "3.5.0",
+    "css-loader": "^0.28.7",
     "eslint": "3.19.0",
     "eslint-loader": "1.7.1",
     "mocha": "3.3.0",
-    "webpack": "3.1.0",
+    "node-sass": "^4.5.3",
+    "sass-loader": "^6.0.6",
+    "style-loader": "^0.18.2",
+    "webpack": "^3.1.0",
     "yargs": "7.1.0"
   },
   "repository": {
@@ -41,5 +45,10 @@
   "bugs": {
     "url": "https://github.com/netchampfaris/regrid/issues"
   },
-  "homepage": "https://github.com/netchampfaris/regrid"
+  "homepage": "https://github.com/netchampfaris/regrid",
+  "dependencies": {
+    "bootstrap": "^4.0.0-beta",
+    "jquery": "^3.2.1",
+    "popper.js": "^1.12.5"
+  }
 }
