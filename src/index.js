@@ -1,2 +1,2 @@
 import ReGrid from './regrid.js';
-export { ReGrid };
+export default ReGrid;

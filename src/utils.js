@@ -1,63 +1,117 @@
-import $ from 'jQuery';
-
-function getCell(cell) {
-  const customAttr = [
-    !isNaN(cell.colIndex) ? `data-col-index="${cell.colIndex}"` : '',
-    !isNaN(cell.rowIndex) ? `data-row-index="${cell.rowIndex}"` : '',
-    cell.isHeader ? 'data-sort-by="none"' : ''
-  ].join(' ');
-
-  return `
-      <td class="data-table-col noselect" ${customAttr}>
-        <div class="content ellipsis">
-          ${cell.format ? cell.format(cell.data) : cell.data}
-        </div>
-      </td>
-    `;
+function camelCaseToDash(str) {
+  return str.replace(/([A-Z])/g, (g) => `-${g[0].toLowerCase()}`);
 }
 
-function getRow(row) {
-  const header = row.isHeader ? 'data-header' : '';
-  const cells = row.cells;
-  const dataRowIndex = !isNaN(cells[0].rowIndex) ?
-    `data-row-index="${cells[0].rowIndex}"` : '';
+function makeDataAttributeString(props) {
+  const keys = Object.keys(props);
 
-  return `
-      <tr class="data-table-row" ${dataRowIndex} ${header}>
-        ${cells.map(getCell).join('')}
-      </tr>
-    `;
+  return keys
+    .map((key) => {
+      const _key = camelCaseToDash(key);
+      const val = props[key];
+
+      if (val === undefined) return '';
+      return `data-${_key}="${val}" `;
+    })
+    .join('')
+    .trim();
 }
 
-function getHeader(columns) {
-  const $header = $(`<thead>
-      ${getRow({ cells: columns, isHeader: 1 })}
-    </thead>
-    `);
-
-  columns.map(col => {
-    if (!col.width) return;
-    const $cellContent = $header.find(
-      `.data-table-col[data-col-index="${col.colIndex}"] .content`
-    );
-
-    $cellContent.width(col.width);
-    // $cell_content.css('max-width', col.width + 'px');
+function getColumnHTML(column) {
+  const { rowIndex, colIndex, isHeader } = column;
+  const dataAttr = makeDataAttributeString({
+    rowIndex,
+    colIndex,
+    isHeader
   });
+
+  return `
+    <td class="data-table-col noselect" ${dataAttr}>
+      <div class="content ellipsis">
+        ${column.format ? column.format(column.content) : column.content}
+      </div>
+    </td>
+  `;
+}
+
+function getRowHTML(columns, props) {
+  const dataAttr = makeDataAttributeString(props);
+
+  return `
+    <tr class="data-table-row" ${dataAttr}>
+      ${columns.map(getColumnHTML).join('')}
+    </tr>
+  `;
+}
+
+function getHeaderHTML(columns) {
+  const $header = `
+    <thead>
+      ${getRowHTML(columns, { isHeader: 1, rowIndex: -1 })}
+    </thead>
+  `;
+
+  // columns.map(col => {
+  //   if (!col.width) return;
+  //   const $cellContent = $header.find(
+  //     `.data-table-col[data-col-index="${col.colIndex}"] .content`
+  //   );
+
+  //   $cellContent.width(col.width);
+  // });
 
   return $header;
 }
 
-function getBody(rows) {
-  return `<tbody>
-      ${rows.map(row => getRow({ cells: row })).join('')}
+function getBodyHTML(rows) {
+  return `
+    <tbody>
+      ${rows.map(row => getRowHTML(row, { rowIndex: row[0].rowIndex })).join('')}
     </tbody>
-    `;
+  `;
+}
+
+function prepareColumn(col, i) {
+  if (typeof col === 'string') {
+    col = {
+      content: col
+    };
+  }
+  return Object.assign(col, {
+    colIndex: i
+  });
+}
+
+function prepareColumns(columns, props = {}) {
+  const _columns = columns.map(prepareColumn);
+
+  return _columns.map(col => Object.assign(col, props));
+}
+
+function prepareRowHeader(columns) {
+  return prepareColumns(columns, {
+    rowIndex: -1,
+    isHeader: 1,
+    format: (content) => `<span>${content}</span>`
+  });
+}
+
+function prepareRow(row, i) {
+  return prepareColumns(row, {
+    rowIndex: i
+  });
+}
+
+function prepareRows(rows) {
+  return rows.map(prepareRow);
 }
 
 export default {
-  getHeader,
-  getBody,
-  getRow,
-  getCell
+  getHeaderHTML,
+  getBodyHTML,
+  getRowHTML,
+  getColumnHTML,
+  prepareRowHeader,
+  prepareRows,
+  makeDataAttributeString
 };

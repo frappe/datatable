@@ -1,12 +1,18 @@
-import { getHeader, getBody, getCell } from './utils.js';
+import { getHeaderHTML, getBodyHTML, getColumnHTML, prepareRowHeader, prepareRows } from './utils.js';
 import $ from 'jQuery';
 
+import './style.scss';
+
 export default class ReGrid {
-  constructor({ wrapper, events }) {
-    this.wrapper = wrapper;
+  constructor({ wrapper, events, data }) {
+    this.wrapper = $(wrapper);
     this.events = events || {};
     this.makeDom();
     this.bindEvents();
+    if (data) {
+      this.data = this.prepareData(data);
+      this.render();
+    }
   }
 
   makeDom() {
@@ -15,8 +21,6 @@ export default class ReGrid {
         <table class="data-table-header table table-bordered">
         </table>
         <div class="body-scrollable">
-          <table class="data-table-body table table-bordered">
-          </table>
         </div>
         <div class="data-table-footer">
         </div>
@@ -28,23 +32,33 @@ export default class ReGrid {
 
     this.header = this.wrapper.find('.data-table-header');
     this.bodyScrollable = this.wrapper.find('.body-scrollable');
-    this.body = this.wrapper.find('.data-table-body');
+    // this.body = this.wrapper.find('.data-table-body');
     this.footer = this.wrapper.find('.data-table-footer');
   }
 
-  render({ columns, rows }) {
+  render() {
     if (this.wrapper.find('.data-table').length === 0) {
       this.makeDom();
       this.bindEvents();
     }
 
-    this.columns = this.prepareColumns(columns);
-    this.rows = this.prepareRows(rows);
-
-    this.header.html(getHeader(this.columns));
-    this.body.html(getBody(this.rows));
-
+    this.renderHeader();
+    this.renderBody();
     this.setDimensions();
+  }
+
+  renderHeader() {
+    // fixed header
+    this.header.html(getHeaderHTML(this.data.columns));
+  }
+
+  renderBody() {
+    // scrollable body
+    this.bodyScrollable.html(`
+      <table class="data-table-body table table-bordered">
+        ${getBodyHTML(this.data.rows)}
+      </table>
+    `);
   }
 
   updateCell(rowIndex, colIndex, value) {
@@ -55,20 +69,28 @@ export default class ReGrid {
     this.refreshCell(cell);
   }
 
-  refreshRows(rows) {
-    if (rows) {
-      this.rows = this.prepareRows(rows);
-    }
-    this.body.html(getBody(this.rows));
+  refreshRows() {
+    this.renderBody();
     this.setDimensions();
   }
 
   refreshCell(cell) {
     const selector = `.data-table-col[data-row-index="${cell.row_index}"][data-col-index="${cell.col_index}"]`;
     const $cell = this.body.find(selector);
-    const $newCell = $(getCell(cell));
+    const $newCell = $(getColumnHTML(cell));
 
     $cell.replaceWith($newCell);
+  }
+
+  prepareData(data) {
+    const { columns, rows } = data;
+    const _columns = prepareRowHeader(columns);
+    const _rows = prepareRows(rows);
+
+    return {
+      columns: _columns,
+      rows: _rows
+    };
   }
 
   prepareColumns(columns) {
@@ -80,23 +102,13 @@ export default class ReGrid {
     });
   }
 
-  prepareRows(rows) {
-    return rows.map((cells, i) => {
-      return cells.map((cell, j) => {
-        cell.colIndex = j;
-        cell.rowIndex = i;
-        return cell;
-      });
-    });
-  }
-
   bindEvents() {
-    const me = this;
+    const self = this;
 
     this.bodyScrollable.on('click', '.data-table-col', function () {
       const $col = $(this);
 
-      me.bodyScrollable.find('.data-table-col').removeClass('selected');
+      self.bodyScrollable.find('.data-table-col').removeClass('selected');
       $col.addClass('selected');
     });
 
@@ -106,20 +118,7 @@ export default class ReGrid {
   }
 
   setDimensions() {
-    const me = this;
-
-    // set the width for each cell
-    this.header.find('.data-table-col').each(function () {
-      const col = $(this);
-      const height = col.find('.content').height();
-      const width = col.find('.content').width();
-      const colIndex = col.attr('data-col-index');
-      const selector = `.data-table-col[data-col-index="${colIndex}"] .content`;
-      const $cell = me.bodyScrollable.find(selector);
-
-      $cell.width(width);
-      $cell.height(height);
-    });
+    const self = this;
 
     // setting width as 0 will ensure that the
     // header doesn't take the available space
@@ -128,8 +127,22 @@ export default class ReGrid {
       margin: 0
     });
 
+    // set the width for each cell
+    this.header.find('.data-table-col').each(function () {
+      const col = $(this);
+      const height = col.find('.content').height();
+      const width = col.find('.content').width();
+      const colIndex = col.attr('data-col-index');
+      const selector = `.data-table-col[data-col-index="${colIndex}"] .content`;
+      const $cell = self.bodyScrollable.find(selector);
+
+      $cell.width(width);
+      $cell.height(height);
+    });
+
+    this.setBodyWidth();
+
     this.bodyScrollable.css({
-      width: this.header.css('width'),
       marginTop: this.header.height() + 1
     });
 
@@ -138,10 +151,10 @@ export default class ReGrid {
 
   bindCellDoubleClick() {
     const { events } = this;
-
     const $editPopup = this.wrapper.find('.edit-popup');
 
     $editPopup.hide();
+    if (!events.on_cell_doubleclick) return;
 
     this.bodyScrollable.on('dblclick', '.data-table-col', function () {
       const $cell = $(this);
@@ -172,13 +185,13 @@ export default class ReGrid {
   }
 
   bindResizeColumn() {
-    const me = this;
+    const self = this;
     let isDragging = false;
     let $currCell, startWidth, startX;
 
     this.header.on('mousedown', '.data-table-col', function (e) {
       $currCell = $(this);
-      const col = me.getColumn($currCell.attr('data-col-index'));
+      const col = self.getColumn($currCell.attr('data-col-index'));
 
       if (col && col.resizable === false) {
         return;
@@ -197,13 +210,13 @@ export default class ReGrid {
       if ($currCell) {
         const width = $currCell.find('.content').css('width');
 
-        me.setColumnWidth(colIndex, width);
-        me.bodyScrollable.css('width', me.header.css('width'));
+        self.setColumnWidth(colIndex, width);
+        self.setBodyWidth();
         $currCell = null;
       }
     });
 
-    this.header.on('mousemove', '.data-table-col', function (e) {
+    $('body').on('mousemove', function (e) {
       if (!isDragging) return;
       const fwidth = startWidth + (e.pageX - startX);
 
@@ -212,7 +225,7 @@ export default class ReGrid {
   }
 
   bindSortColumn() {
-    const me = this;
+    const self = this;
 
     this.header.on('click', '.data-table-col .content span', function () {
       const $cell = $(this).closest('.data-table-col');
@@ -237,21 +250,21 @@ export default class ReGrid {
 
       const sortByAction = $cell.attr('data-sort-by');
 
-      if (me.events.on_sort) {
-        me.events.on_sort.apply(null, [colIndex, sortByAction]);
+      if (self.events.on_sort) {
+        self.events.on_sort.apply(null, [colIndex, sortByAction]);
       } else {
-        me.sortRows(colIndex, sortByAction);
-        me.refreshRows();
+        self.sortRows(colIndex, sortByAction);
+        self.refreshRows();
       }
     });
   }
 
   sortRows(colIndex, sortBy = 'none') {
-    this.rows.sort((a, b) => {
-      const _aIndex = a[0].row_index;
-      const _bIndex = b[0].row_index;
-      const _a = a[colIndex].data;
-      const _b = b[colIndex].data;
+    this.data.rows.sort((a, b) => {
+      const _aIndex = a[0].rowIndex;
+      const _bIndex = b[0].rowIndex;
+      const _a = a[colIndex].content;
+      const _b = b[colIndex].content;
 
       if (sortBy === 'none') {
         return _aIndex - _bIndex;
@@ -280,12 +293,19 @@ export default class ReGrid {
     $el.css('width', width);
   }
 
+  setBodyWidth() {
+    this.bodyScrollable.css(
+      'width',
+      parseInt(this.header.css('width'), 10) + 1
+    );
+  }
+
   getColumn(colIndex) {
-    return this.columns.find(col => col.col_index === colIndex);
+    return this.data.columns.find(col => col.col_index === colIndex);
   }
 
   getRow(rowIndex) {
-    return this.rows.find(row => row[0].row_index === rowIndex);
+    return this.data.rows.find(row => row[0].row_index === rowIndex);
   }
 }
 
