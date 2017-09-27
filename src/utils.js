@@ -106,6 +106,10 @@ function prepareRows(rows) {
   return rows.map(prepareRow);
 }
 
+function getDefault(a, b) {
+  return a !== undefined ? a : b;
+}
+
 export default {
   getHeaderHTML,
   getBodyHTML,
@@ -113,5 +117,6 @@ export default {
   getColumnHTML,
   prepareRowHeader,
   prepareRows,
-  makeDataAttributeString
+  makeDataAttributeString,
+  getDefault
 };
