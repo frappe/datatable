@@ -1,12 +1,25 @@
-import { getHeaderHTML, getBodyHTML, getColumnHTML, prepareRowHeader, prepareRows } from './utils.js';
+import {
+  getHeaderHTML,
+  getBodyHTML,
+  getColumnHTML,
+  prepareRowHeader,
+  prepareRows,
+  getDefault
+} from './utils.js';
 import $ from 'jQuery';
 
 import './style.scss';
 
 export default class ReGrid {
-  constructor({ wrapper, events, data }) {
+  constructor({ wrapper, events, data, addSerialNoColumn }) {
     this.wrapper = $(wrapper);
-    this.events = events || {};
+    if (this.wrapper.length === 0) {
+      throw new Error('Invalid argument given for `wrapper`');
+    }
+
+    this.events = getDefault(events, {});
+    this.addSerialNoColumn = getDefault(addSerialNoColumn, 0);
+
     this.makeDom();
     this.bindEvents();
     if (data) {
@@ -83,7 +96,20 @@ export default class ReGrid {
   }
 
   prepareData(data) {
-    const { columns, rows } = data;
+    let { columns, rows } = data;
+
+    if (this.addSerialNoColumn) {
+      const serialNoColumn = 'Sr. No';
+
+      columns = [serialNoColumn].concat(columns);
+
+      rows = rows.map((row, i) => {
+        const val = (i + 1) + "";
+
+        return [val].concat(row);
+      });
+    }
+
     const _columns = prepareRowHeader(columns);
     const _rows = prepareRows(rows);
 
@@ -141,6 +167,7 @@ export default class ReGrid {
     });
 
     this.setBodyWidth();
+    this.setColumnWidths();
 
     this.bodyScrollable.css({
       marginTop: this.header.height() + 1
@@ -218,9 +245,9 @@ export default class ReGrid {
 
     $('body').on('mousemove', function (e) {
       if (!isDragging) return;
-      const fwidth = startWidth + (e.pageX - startX);
+      const finalWidth = startWidth + (e.pageX - startX);
 
-      $currCell.find('.content').width(fwidth);
+      self.setColumnHeaderWidth($currCell, finalWidth);
     });
   }
 
@@ -293,6 +320,44 @@ export default class ReGrid {
     $el.css('width', width);
   }
 
+  setColumnHeaderWidth(colIndex, width) {
+    let $cell;
+
+    if (typeof colIndex === 'number') {
+      $cell = this.getColumnHeaderElement(colIndex);
+    } else {
+      // directly element is passed
+      $cell = colIndex;
+    }
+
+    $cell.find('.content').width(width);
+  }
+
+  setColumnWidths() {
+    const availableWidth = this.wrapper.width();
+    const headerWidth = this.header.width();
+
+    if (headerWidth > availableWidth) {
+      // don't resize, horizontal scroll takes place
+      return;
+    }
+
+    const deltaWidth = (availableWidth - headerWidth) / this.data.columns.length;
+
+    this.data.columns.map(col => {
+      const width = this.getColumnHeaderElement(col.colIndex).width();
+      let finalWidth = width + deltaWidth - 16;
+
+      if (this.addSerialNoColumn && col.colIndex === 0) {
+        return;
+      }
+
+      this.setColumnHeaderWidth(col.colIndex, finalWidth);
+      this.setColumnWidth(col.colIndex, finalWidth);
+    });
+    this.setBodyWidth();
+  }
+
   setBodyWidth() {
     this.bodyScrollable.css(
       'width',
@@ -301,11 +366,18 @@ export default class ReGrid {
   }
 
   getColumn(colIndex) {
-    return this.data.columns.find(col => col.col_index === colIndex);
+    return this.data.columns.find(col => col.colIndex === colIndex);
   }
 
   getRow(rowIndex) {
-    return this.data.rows.find(row => row[0].row_index === rowIndex);
+    return this.data.rows.find(row => row[0].rowIndex === rowIndex);
+  }
+
+  getColumnHeaderElement(colIndex) {
+    if (colIndex < 0) return null;
+    return this.wrapper.find(
+      `.data-table-col[data-is-header][data-col-index="${colIndex}"]`
+    );
   }
 }
 
