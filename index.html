@@ -6,11 +6,19 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>Document</title>
+	<style>
+		body {
+			font-family: 'Tahoma';
+			font-weight: normal;
+			font-size: 14px;
+		}
+	</style>
 </head>
 
 <body>
 	<h1>ReGrid</h1>
-	<section>
+	<button onclick="_regrid.render()">Refresh</button>
+	<section style="width: 60%;">
 
 	</section>
 	<script src="./node_modules/jquery/dist/jquery.js"></script>
@@ -487,10 +495,27 @@
 				]
 			};
 
+			data.rows = data.rows.concat(data.rows);
+			data.rows = data.rows.concat(data.rows);
+
+			performance.mark("ReGrid-start");
 			var grid = new ReGrid({
 				wrapper: document.querySelector('section'),
+				addSerialNoColumn: true,
+				enableClusterize: true,
 				data
 			});
+			performance.mark("ReGrid-end");
+
+			performance.measure(
+				"ReGrid",
+				"ReGrid-start",
+				"ReGrid-end"
+			);
+
+			var measures = performance.getEntriesByName("ReGrid");
+			var measure = measures[0];
+			console.log(measure.duration);
 
 			window._regrid = grid;
 		})

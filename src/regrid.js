@@ -1,24 +1,27 @@
 import {
   getHeaderHTML,
   getBodyHTML,
+  getRowHTML,
   getColumnHTML,
   prepareRowHeader,
   prepareRows,
   getDefault
 } from './utils.js';
 import $ from 'jQuery';
+import Clusterize from 'clusterize.js';
 
 import './style.scss';
 
 export default class ReGrid {
-  constructor({ wrapper, events, data, addSerialNoColumn }) {
+  constructor({ wrapper, events, data, addSerialNoColumn, enableClusterize }) {
     this.wrapper = $(wrapper);
     if (this.wrapper.length === 0) {
       throw new Error('Invalid argument given for `wrapper`');
     }
 
     this.events = getDefault(events, {});
-    this.addSerialNoColumn = getDefault(addSerialNoColumn, 0);
+    this.addSerialNoColumn = getDefault(addSerialNoColumn, false);
+    this.enableClusterize = getDefault(enableClusterize, false);
 
     this.makeDom();
     this.bindEvents();
@@ -56,7 +59,11 @@ export default class ReGrid {
     }
 
     this.renderHeader();
-    this.renderBody();
+    if (this.enableClusterize) {
+      this.renderBodyWithClusterize();
+    } else {
+      this.renderBody();
+    }
     this.setDimensions();
   }
 
@@ -72,6 +79,25 @@ export default class ReGrid {
         ${getBodyHTML(this.data.rows)}
       </table>
     `);
+  }
+
+  renderBodyWithClusterize() {
+    // empty body
+    this.bodyScrollable.html(`
+      <table class="data-table-body table table-bordered">
+        ${getBodyHTML([])}
+      </table>
+    `);
+
+    const data = this.data.rows.map(
+      (row) => getRowHTML(row, { rowIndex: row[0].rowIndex })
+    );
+
+    this.clusterize = new Clusterize({
+      rows: data,
+      scrollElem: this.bodyScrollable.get(0),
+      contentElem: this.bodyScrollable.find('tbody').get(0)
+    });
   }
 
   updateCell(rowIndex, colIndex, value) {

@@ -48,6 +48,7 @@
   "homepage": "https://github.com/netchampfaris/regrid",
   "dependencies": {
     "bootstrap": "^4.0.0-beta",
+    "clusterize.js": "^0.17.6",
     "popper.js": "^1.12.5"
   }
 }
