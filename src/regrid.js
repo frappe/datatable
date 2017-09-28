@@ -130,7 +130,7 @@ export default class ReGrid {
       columns = [serialNoColumn].concat(columns);
 
       rows = rows.map((row, i) => {
-        const val = (i + 1) + "";
+        const val = (i + 1) + '';
 
         return [val].concat(row);
       });
@@ -170,8 +170,6 @@ export default class ReGrid {
   }
 
   setDimensions() {
-    const self = this;
-
     // setting width as 0 will ensure that the
     // header doesn't take the available space
     this.header.css({
@@ -179,21 +177,27 @@ export default class ReGrid {
       margin: 0
     });
 
+    let styles = '';
+
     // set the width for each cell
     this.header.find('.data-table-col').each(function () {
       const col = $(this);
       const height = col.find('.content').height();
       const width = col.find('.content').width();
       const colIndex = col.attr('data-col-index');
-      const selector = `.data-table-col[data-col-index="${colIndex}"] .content`;
-      const $cell = self.bodyScrollable.find(selector);
 
-      $cell.width(width);
-      $cell.height(height);
+      styles += `
+        [data-col-index="${colIndex}"] .content {
+          width: ${width}px;
+          height: ${height}px;
+        }
+      `;
     });
 
+    this.appendStyle(styles);
     this.setBodyWidth();
-    this.setColumnWidths();
+
+    // this.setColumnWidths();
 
     this.bodyScrollable.css({
       marginTop: this.header.height() + 1
@@ -389,6 +393,19 @@ export default class ReGrid {
       'width',
       parseInt(this.header.css('width'), 10) + 1
     );
+  }
+
+  appendStyle(style) {
+    let $style = this.wrapper.find('style[data-id="regrid"]');
+
+    if ($style.length === 0) {
+      $style = $('<style data-id="regrid"></style>').prependTo(this.wrapper);
+    }
+    // existing styles
+    let styles = $style.text();
+
+    styles += style;
+    $style.html(styles);
   }
 
   getColumn(colIndex) {
