@@ -110,6 +110,11 @@ function getDefault(a, b) {
   return a !== undefined ? a : b;
 }
 
+function escapeRegExp(str) {
+  // https://stackoverflow.com/a/6969486
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+}
+
 export default {
   getHeaderHTML,
   getBodyHTML,
@@ -118,5 +123,6 @@ export default {
   prepareRowHeader,
   prepareRows,
   makeDataAttributeString,
-  getDefault
+  getDefault,
+  escapeRegExp
 };

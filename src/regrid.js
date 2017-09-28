@@ -5,7 +5,8 @@ import {
   getColumnHTML,
   prepareRowHeader,
   prepareRows,
-  getDefault
+  getDefault,
+  escapeRegExp
 } from './utils.js';
 import $ from 'jQuery';
 import Clusterize from 'clusterize.js';
@@ -125,7 +126,10 @@ export default class ReGrid {
     let { columns, rows } = data;
 
     if (this.addSerialNoColumn) {
-      const serialNoColumn = 'Sr. No';
+      const serialNoColumn = {
+        content: 'Sr. No',
+        resizable: false
+      };
 
       columns = [serialNoColumn].concat(columns);
 
@@ -248,7 +252,8 @@ export default class ReGrid {
 
     this.header.on('mousedown', '.data-table-col', function (e) {
       $currCell = $(this);
-      const col = self.getColumn($currCell.attr('data-col-index'));
+      const colIndex = $currCell.attr('data-col-index');
+      const col = self.getColumn(colIndex);
 
       if (col && col.resizable === false) {
         return;
@@ -262,13 +267,13 @@ export default class ReGrid {
     $('body').on('mouseup', function (e) {
       if (!$currCell) return;
       isDragging = false;
-      const colIndex = $currCell.attr('data-col-index');
+      // const colIndex = $currCell.attr('data-col-index');
 
       if ($currCell) {
-        const width = $currCell.find('.content').css('width');
+        // const width = $currCell.find('.content').css('width');
 
-        self.setColumnWidth(colIndex, width);
-        self.setBodyWidth();
+        // self.setColumnWidth(colIndex, width);
+        // self.setBodyWidth();
         $currCell = null;
       }
     });
@@ -276,8 +281,11 @@ export default class ReGrid {
     $('body').on('mousemove', function (e) {
       if (!isDragging) return;
       const finalWidth = startWidth + (e.pageX - startX);
+      const colIndex = $currCell.attr('data-col-index');
 
-      self.setColumnHeaderWidth($currCell, finalWidth);
+      self.setStyle(`[data-col-index="${colIndex}"] .content`, `width: ${finalWidth}px;`);
+      self.setBodyWidth();
+      // self.setColumnHeaderWidth($currCell, finalWidth);
     });
   }
 
@@ -351,6 +359,7 @@ export default class ReGrid {
   }
 
   setColumnHeaderWidth(colIndex, width) {
+    colIndex = +colIndex;
     let $cell;
 
     if (typeof colIndex === 'number') {
@@ -408,15 +417,41 @@ export default class ReGrid {
     $style.html(styles);
   }
 
+  setStyle(rule, style) {
+    let $style = this.wrapper.find('style[data-id="regrid"]');
+
+    if ($style.length === 0) {
+      $style = $('<style data-id="regrid"></style>').prependTo(this.wrapper);
+    }
+
+    let styles = $style.text();
+    const patternStr = `${escapeRegExp(rule)} {([^}]*)}`;
+    const pattern = new RegExp(patternStr, 'g');
+
+    const property = style.split(':')[0];
+    const propPattern = new RegExp(`${escapeRegExp(property)}[^;]*;`);
+
+    styles = styles.replace(pattern, function (match, p1) {
+      const replacer =
+        `${rule} {${p1.trim()}${style}}`;
+
+      return replacer.replace(propPattern, '');
+    });
+    $style.html(styles);
+  }
+
   getColumn(colIndex) {
+    colIndex = +colIndex;
     return this.data.columns.find(col => col.colIndex === colIndex);
   }
 
   getRow(rowIndex) {
+    rowIndex = +rowIndex;
     return this.data.rows.find(row => row[0].rowIndex === rowIndex);
   }
 
   getColumnHeaderElement(colIndex) {
+    colIndex = +colIndex;
     if (colIndex < 0) return null;
     return this.wrapper.find(
       `.data-table-col[data-is-header][data-col-index="${colIndex}"]`
