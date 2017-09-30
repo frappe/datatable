@@ -243,12 +243,14 @@ export default class ReGrid {
       margin: 0
     });
 
+    this.minWidthMap = [];
     // set the width for each column
     this.header.find('.data-table-col').each(function () {
       const col = $(this);
       const width = col.find('.content').width();
       const colIndex = col.attr('data-col-index');
 
+      self.minWidthMap[colIndex] = width;
       self.setColumnWidth(colIndex, width);
     });
 
@@ -334,6 +336,11 @@ export default class ReGrid {
       if (!isDragging) return;
       const finalWidth = startWidth + (e.pageX - startX);
       const colIndex = $currCell.attr('data-col-index');
+
+      if (self.getColumnMinWidth(colIndex) > finalWidth) {
+        // don't resize past minWidth
+        return;
+      }
 
       self.setColumnWidth(colIndex, finalWidth);
       self.setBodyWidth();
@@ -513,6 +520,11 @@ export default class ReGrid {
     return this.wrapper.find(
       `.data-table-col[data-is-header][data-col-index="${colIndex}"]`
     );
+  }
+
+  getColumnMinWidth(colIndex) {
+    colIndex = +colIndex;
+    return this.minWidthMap && this.minWidthMap[colIndex];
   }
 
   log() {
