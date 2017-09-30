@@ -14,7 +14,14 @@ import Clusterize from 'clusterize.js';
 import './style.scss';
 
 export default class ReGrid {
-  constructor({ wrapper, events, data, addSerialNoColumn, enableClusterize, enableLogs }) {
+  constructor({
+    wrapper,
+    events,
+    data,
+    addSerialNoColumn,
+    enableClusterize,
+    enableLogs
+  }) {
     this.wrapper = $(wrapper);
     if (this.wrapper.length === 0) {
       throw new Error('Invalid argument given for `wrapper`');
@@ -217,12 +224,14 @@ export default class ReGrid {
       $col.addClass('selected');
     });
 
-    this.bindCellDoubleClick();
+    this.bindEditCell();
     this.bindResizeColumn();
     this.bindSortColumn();
   }
 
   setDimensions() {
+    const self = this;
+
     // setting width as 0 will ensure that the
     // header doesn't take the available space
     this.header.css({
@@ -230,27 +239,16 @@ export default class ReGrid {
       margin: 0
     });
 
-    let styles = '';
-
-    // set the width for each cell
+    // set the width for each column
     this.header.find('.data-table-col').each(function () {
       const col = $(this);
-      const height = col.find('.content').height();
       const width = col.find('.content').width();
       const colIndex = col.attr('data-col-index');
 
-      styles += `
-        [data-col-index="${colIndex}"] .content {
-          width: ${width}px;
-          height: ${height}px;
-        }
-      `;
+      self.setColumnWidth(colIndex, width);
     });
 
-    this.appendStyle(styles);
     this.setBodyWidth();
-
-    // this.setColumnWidths();
 
     this.bodyScrollable.css({
       marginTop: this.header.height() + 1
@@ -259,7 +257,7 @@ export default class ReGrid {
     this.bodyScrollable.find('.table').css('margin', 0);
   }
 
-  bindCellDoubleClick() {
+  bindEditCell() {
     const { events } = this;
     const $editPopup = this.wrapper.find('.edit-popup');
 
@@ -332,7 +330,7 @@ export default class ReGrid {
       const finalWidth = startWidth + (e.pageX - startX);
       const colIndex = $currCell.attr('data-col-index');
 
-      self.setStyle(`[data-col-index="${colIndex}"] .content`, `width: ${finalWidth}px;`);
+      self.setColumnWidth(colIndex, finalWidth);
       self.setBodyWidth();
       // self.setColumnHeaderWidth($currCell, finalWidth);
     });
@@ -395,16 +393,18 @@ export default class ReGrid {
     });
   }
 
-  setColumnWidth(colIndex, width, header = false) {
-    const selector = `.data-table-col[data-col-index="${colIndex}"] .content`;
-    let $el;
+  setColumnWidth(colIndex, width) {
+    this.setStyle(
+      `[data-col-index="${colIndex}"] .content`,
+      `width: ${width}px;`
+    );
+  }
 
-    if (header) {
-      $el = this.header.find(selector);
-    } else {
-      $el = this.bodyScrollable.find(selector);
-    }
-    $el.css('width', width);
+  setRowHeight(rowIndex, height) {
+    self.setStyle(
+      `[data-row-index="${rowIndex}"] .content`,
+      `width: ${height}px;`
+    );
   }
 
   setColumnHeaderWidth(colIndex, width) {
@@ -453,32 +453,35 @@ export default class ReGrid {
     );
   }
 
-  appendStyle(style) {
-    this.getStyleEl();
-
-    // existing styles
-    let styles = this.$style.text();
-
-    styles += style;
-    this.$style.html(styles);
-  }
-
   setStyle(rule, style) {
     this.getStyleEl();
 
     let styles = this.$style.text();
-    const patternStr = `${escapeRegExp(rule)} {([^}]*)}`;
-    const pattern = new RegExp(patternStr, 'g');
+    const rulePatternStr = `${escapeRegExp(rule)} {([^}]*)}`;
+    const rulePattern = new RegExp(rulePatternStr, 'g');
 
-    const property = style.split(':')[0];
-    const propPattern = new RegExp(`${escapeRegExp(property)}[^;]*;`);
+    if (styles.match(rulePattern)) {
+      // rules exists, append/replace properties
+      const property = style.split(':')[0];
+      const propPattern = new RegExp(`${escapeRegExp(property)}[^;]*;`);
 
-    styles = styles.replace(pattern, function (match, p1) {
-      const replacer =
-        `${rule} {${p1.trim()}${style}}`;
+      styles = styles.replace(rulePattern, function (match, propertyStr) {
+        if (propertyStr.match(propPattern)) {
+          // property exists, replace with empty string
+          propertyStr = propertyStr.replace(propPattern, '');
+        }
+        propertyStr = propertyStr.trim();
 
-      return replacer.replace(propPattern, '');
-    });
+        const replacer =
+          `${rule} {${propertyStr}${style}}`;
+
+        return replacer;
+      });
+    } else {
+      // rules doesn't exists, add rule with properties
+      styles += `${rule} {${style}}`;
+    }
+
     this.$style.html(styles);
   }
 
