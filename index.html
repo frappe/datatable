@@ -495,8 +495,11 @@
 				]
 			};
 
-			data.rows = data.rows.concat(data.rows);
-			data.rows = data.rows.concat(data.rows);
+			for (let i = 0; i < 12; i++) {
+				data.rows = data.rows.concat(data.rows);
+			}
+
+			console.log('No of Rows:', data.rows.length)
 
 			performance.mark("ReGrid-start");
 			var grid = new ReGrid({

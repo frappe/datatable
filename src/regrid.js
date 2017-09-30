@@ -90,15 +90,54 @@ export default class ReGrid {
       </table>
     `);
 
-    const data = this.data.rows.map(
-      (row) => getRowHTML(row, { rowIndex: row[0].rowIndex })
+    this.start = 0;
+    this.pageLength = 1000;
+    this.end = this.start + this.pageLength;
+
+    const initialData = this.getDataForClusterize(
+      // only append ${this.pageLength} rows in the beginning
+      // defer remaining rows
+      this.data.rows.slice(this.start, this.end)
     );
 
     this.clusterize = new Clusterize({
-      rows: data,
+      rows: initialData,
       scrollElem: this.bodyScrollable.get(0),
       contentElem: this.bodyScrollable.find('tbody').get(0)
     });
+
+    this.appendRemainingData();
+  }
+
+  appendRemainingData() {
+    let dataAppended = this.pageLength;
+    const promises = [];
+
+    while (dataAppended + this.pageLength < this.data.rows.length) {
+      this.start = this.end;
+      this.end = this.start + this.pageLength;
+
+      const promise = new Promise(resolve => {
+        setTimeout(() => {
+          const rows = this.data.rows.slice(this.start, this.end);
+          const data = this.getDataForClusterize(rows);
+
+          this.clusterize.append(data);
+          resolve();
+        }, 0);
+      });
+
+      dataAppended += this.pageLength;
+      promises.push(promise);
+    }
+
+    return promises.reduce(
+      (prev, cur) => prev.then(cur), Promise.resolve()
+    );
+  }
+
+  getDataForClusterize(rows) {
+    return rows.map((row) => getRowHTML(row, { rowIndex: row[0].rowIndex }));
   }
 
   updateCell(rowIndex, colIndex, value) {
@@ -405,26 +444,19 @@ export default class ReGrid {
   }
 
   appendStyle(style) {
-    let $style = this.wrapper.find('style[data-id="regrid"]');
+    this.getStyleEl();
 
-    if ($style.length === 0) {
-      $style = $('<style data-id="regrid"></style>').prependTo(this.wrapper);
-    }
     // existing styles
-    let styles = $style.text();
+    let styles = this.$style.text();
 
     styles += style;
-    $style.html(styles);
+    this.$style.html(styles);
   }
 
   setStyle(rule, style) {
-    let $style = this.wrapper.find('style[data-id="regrid"]');
+    this.getStyleEl();
 
-    if ($style.length === 0) {
-      $style = $('<style data-id="regrid"></style>').prependTo(this.wrapper);
-    }
-
-    let styles = $style.text();
+    let styles = this.$style.text();
     const patternStr = `${escapeRegExp(rule)} {([^}]*)}`;
     const pattern = new RegExp(patternStr, 'g');
 
@@ -437,7 +469,16 @@ export default class ReGrid {
 
       return replacer.replace(propPattern, '');
     });
-    $style.html(styles);
+    this.$style.html(styles);
+  }
+
+  getStyleEl() {
+    if (!this.$style) {
+      this.$style = $('<style data-id="regrid"></style>')
+        .prependTo(this.wrapper);
+    }
+
+    return this.$style;
   }
 
   getColumn(colIndex) {
