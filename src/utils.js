@@ -17,6 +17,14 @@ function makeDataAttributeString(props) {
     .trim();
 }
 
+function getEditCellHTML() {
+  return `
+    <div class="edit-cell">
+      <input type="text" />
+    </div>
+  `;
+}
+
 function getColumnHTML(column) {
   const { rowIndex, colIndex, isHeader } = column;
   const dataAttr = makeDataAttributeString({
@@ -25,12 +33,15 @@ function getColumnHTML(column) {
     isHeader
   });
 
+  const editCellHTML = isHeader ? '' : getEditCellHTML();
+
   return `
     <td class="data-table-col noselect" ${dataAttr}>
       <div class="content ellipsis">
         ${column.format ? column.format(column.content) : column.content}
         <span class="sort-indicator"></span>
       </div>
+      ${editCellHTML}
     </td>
   `;
 }
@@ -121,6 +132,7 @@ export default {
   getBodyHTML,
   getRowHTML,
   getColumnHTML,
+  getEditCellHTML,
   prepareRowHeader,
   prepareRows,
   makeDataAttributeString,

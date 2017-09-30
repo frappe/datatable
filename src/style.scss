@@ -63,12 +63,37 @@
 
 .edit-popup {
     position: absolute;
-    border: 1px solid gray;
     background: white;
-    border-radius: 4px;
 	box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
 
-	padding: 12px;
+	input {
+		outline: none;
+		padding: 8px;
+		font-size: inherit;
+		font-family: inherit;
+		width: inherit;
+		height: inherit;
+		border: 2px solid theme-color('primary');
+	}
+}
+
+.edit-cell {
+	position: absolute;
+	top: -1px;
+	left: -1px;
+    background: white;
+	box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+	z-index: 1;
+
+	input {
+		outline: none;
+		padding: 8px;
+		font-size: inherit;
+		font-family: inherit;
+		width: inherit;
+		height: inherit;
+		border: 2px solid theme-color('primary');
+	}
 }
 
 .noselect {
