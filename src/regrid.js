@@ -14,7 +14,7 @@ import Clusterize from 'clusterize.js';
 import './style.scss';
 
 export default class ReGrid {
-  constructor({ wrapper, events, data, addSerialNoColumn, enableClusterize }) {
+  constructor({ wrapper, events, data, addSerialNoColumn, enableClusterize, enableLogs }) {
     this.wrapper = $(wrapper);
     if (this.wrapper.length === 0) {
       throw new Error('Invalid argument given for `wrapper`');
@@ -23,6 +23,7 @@ export default class ReGrid {
     this.events = getDefault(events, {});
     this.addSerialNoColumn = getDefault(addSerialNoColumn, false);
     this.enableClusterize = getDefault(enableClusterize, false);
+    this.enableLogs = getDefault(enableLogs, true);
 
     this.makeDom();
     this.bindEvents();
@@ -116,24 +117,33 @@ export default class ReGrid {
     while (dataAppended + this.pageLength < this.data.rows.length) {
       this.start = this.end;
       this.end = this.start + this.pageLength;
-
-      const promise = new Promise(resolve => {
-        setTimeout(() => {
-          const rows = this.data.rows.slice(this.start, this.end);
-          const data = this.getDataForClusterize(rows);
-
-          this.clusterize.append(data);
-          resolve();
-        }, 0);
-      });
-
+      promises.push(this.appendNextPagePromise(this.start, this.end));
       dataAppended += this.pageLength;
-      promises.push(promise);
+    }
+
+    if (this.data.rows.length % this.pageLength > 0) {
+      // last page
+      this.start = this.end;
+      this.end = this.start + this.pageLength;
+      promises.push(this.appendNextPagePromise(this.start, this.end));
     }
 
     return promises.reduce(
       (prev, cur) => prev.then(cur), Promise.resolve()
     );
+  }
+
+  appendNextPagePromise(start, end) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const rows = this.data.rows.slice(start, end);
+        const data = this.getDataForClusterize(rows);
+
+        this.clusterize.append(data);
+        this.log('dataAppended', rows.length);
+        resolve();
+      }, 0);
+    });
   }
 
   getDataForClusterize(rows) {
@@ -497,6 +507,12 @@ export default class ReGrid {
     return this.wrapper.find(
       `.data-table-col[data-is-header][data-col-index="${colIndex}"]`
     );
+  }
+
+  log() {
+    if (this.enableLogs) {
+      console.log.apply(console, arguments);
+    }
   }
 }
 
