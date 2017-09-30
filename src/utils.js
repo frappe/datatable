@@ -29,6 +29,7 @@ function getColumnHTML(column) {
     <td class="data-table-col noselect" ${dataAttr}>
       <div class="content ellipsis">
         ${column.format ? column.format(column.content) : column.content}
+        <span class="sort-indicator"></span>
       </div>
     </td>
   `;

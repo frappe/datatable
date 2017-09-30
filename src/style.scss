@@ -34,9 +34,17 @@
 	.content span {
 		cursor: pointer;
 	}
+
+	.sort-indicator {
+		position: absolute;
+		right: 8px;
+		top: 9px;
+	}
 }
 
 .data-table-col {
+	position: relative;
+
 	.content {
 		padding: 8px;
 		border: 1px solid white;

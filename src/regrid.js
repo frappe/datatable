@@ -68,11 +68,7 @@ export default class ReGrid {
     }
 
     this.renderHeader();
-    if (this.enableClusterize) {
-      this.renderBodyWithClusterize();
-    } else {
-      this.renderBody();
-    }
+    this.renderBody();
     this.setDimensions();
   }
 
@@ -82,6 +78,14 @@ export default class ReGrid {
   }
 
   renderBody() {
+    if (this.enableClusterize) {
+      this.renderBodyWithClusterize();
+    } else {
+      this.renderBodyHTML();
+    }
+  }
+
+  renderBodyHTML() {
     // scrollable body
     this.bodyScrollable.html(`
       <table class="data-table-body table table-bordered">
@@ -250,9 +254,10 @@ export default class ReGrid {
 
     this.setBodyWidth();
 
-    this.bodyScrollable.css({
-      marginTop: this.header.height() + 1
-    });
+    this.setStyle(
+      '.data-table .body-scrollable',
+      `margin-top: ${this.header.height() + 1}px;`
+    );
 
     this.bodyScrollable.find('.table').css('margin', 0);
   }
@@ -341,50 +346,48 @@ export default class ReGrid {
 
     this.header.on('click', '.data-table-col .content span', function () {
       const $cell = $(this).closest('.data-table-col');
-      const sortBy = $cell.attr('data-sort-by');
+      const sortAction = getDefault($cell.attr('data-sort-action'), 'none');
       const colIndex = $cell.attr('data-col-index');
 
-      if (sortBy === 'none') {
-        $cell.attr('data-sort-by', 'asc');
-        $cell
-          .find('.content')
-          .append('<span class="octicon octicon-chevron-up">');
-      } else if (sortBy === 'asc') {
-        $cell.attr('data-sort-by', 'desc');
-        $cell
-          .find('.content .octicon')
-          .removeClass('octicon-chevron-up')
-          .addClass('octicon-chevron-down');
-      } else if (sortBy === 'desc') {
-        $cell.attr('data-sort-by', 'none');
-        $cell.find('.content .octicon').remove();
+      if (sortAction === 'none') {
+        $cell.attr('data-sort-action', 'asc');
+        $cell.find('.sort-indicator').text('▲');
+      } else if (sortAction === 'asc') {
+        $cell.attr('data-sort-action', 'desc');
+        $cell.find('.sort-indicator').text('▼');
+      } else if (sortAction === 'desc') {
+        $cell.attr('data-sort-action', 'none');
+        $cell.find('.sort-indicator').text('');
       }
 
-      const sortByAction = $cell.attr('data-sort-by');
+      // sortWith this action
+      const sortWith = $cell.attr('data-sort-action');
 
-      if (self.events.on_sort) {
-        self.events.on_sort.apply(null, [colIndex, sortByAction]);
+      if (self.events.onSort) {
+        self.events.onSort(colIndex, sortWith);
       } else {
-        self.sortRows(colIndex, sortByAction);
+        self.sortRows(colIndex, sortWith);
         self.refreshRows();
       }
     });
   }
 
-  sortRows(colIndex, sortBy = 'none') {
+  sortRows(colIndex, sortAction = 'none') {
+    colIndex = +colIndex;
+
     this.data.rows.sort((a, b) => {
       const _aIndex = a[0].rowIndex;
       const _bIndex = b[0].rowIndex;
       const _a = a[colIndex].content;
       const _b = b[colIndex].content;
 
-      if (sortBy === 'none') {
+      if (sortAction === 'none') {
         return _aIndex - _bIndex;
-      } else if (sortBy === 'asc') {
+      } else if (sortAction === 'asc') {
         if (_a < _b) return -1;
         if (_a > _b) return 1;
         if (_a === _b) return 0;
-      } else if (sortBy === 'desc') {
+      } else if (sortAction === 'desc') {
         if (_a < _b) return 1;
         if (_a > _b) return -1;
         if (_a === _b) return 0;
