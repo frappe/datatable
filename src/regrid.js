@@ -1,3 +1,4 @@
+/* globals $, Clusterize */
 import {
   getHeaderHTML,
   getBodyHTML,
@@ -8,8 +9,8 @@ import {
   prepareRows,
   getDefault
 } from './utils.js';
-import $ from 'jQuery';
-import Clusterize from 'clusterize.js';
+// import $ from 'jQuery';
+// import Clusterize from 'clusterize.js';
 
 import './style.scss';
 
@@ -117,7 +118,7 @@ export default class ReGrid {
       scrollElem: this.bodyScrollable.get(0),
       contentElem: this.bodyScrollable.find('tbody').get(0)
     });
-
+    this.log('dataAppended', this.pageLength);
     this.appendRemainingData();
   }
 
