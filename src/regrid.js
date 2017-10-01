@@ -3,11 +3,10 @@ import {
   getBodyHTML,
   getRowHTML,
   getColumnHTML,
-  getEditCellHTML,
   prepareRowHeader,
+  buildCSSRule,
   prepareRows,
-  getDefault,
-  escapeRegExp
+  getDefault
 } from './utils.js';
 import $ from 'jQuery';
 import Clusterize from 'clusterize.js';
@@ -220,15 +219,7 @@ export default class ReGrid {
   }
 
   bindEvents() {
-    const self = this;
-
-    this.bodyScrollable.on('click', '.data-table-col', function () {
-      const $col = $(this);
-
-      self.bodyScrollable.find('.data-table-col').removeClass('selected');
-      $col.addClass('selected');
-    });
-
+    this.bindFocusCell();
     this.bindEditCell();
     this.bindResizeColumn();
     this.bindSortColumn();
@@ -269,46 +260,62 @@ export default class ReGrid {
     this.bodyScrollable.find('.table').css('margin', 0);
   }
 
+  bindFocusCell() {
+    const self = this;
+
+    this.$focusedCell = null;
+    this.bodyScrollable.on('click', '.data-table-col', function () {
+      const $cell = $(this);
+
+      self.$focusedCell = $cell;
+      self.bodyScrollable.find('.data-table-col').removeClass('selected');
+      $cell.addClass('selected');
+    });
+  }
+
   bindEditCell() {
     const self = this;
     const $editPopup = this.wrapper.find('.edit-popup');
 
     $editPopup.hide();
+    this.$editingCell = null;
     // if (!self.events.onCellEdit) return;
 
     this.bodyScrollable.on('dblclick', '.data-table-col', function () {
-      const $cell = $(this);
-      const rowIndex = $cell.attr('data-row-index');
-      const colIndex = $cell.attr('data-col-index');
-      const $editCell = $cell.find('.edit-cell');
+      self.activateEditing($(this));
+    });
 
-      const cell = self.getCell(rowIndex, colIndex);
-
-      $editCell.find('input').val(cell.content);
-      // $editPopup.html(getEditCellHTML(cellValue.content));
-
-      const width = $cell.find('.content').width() + 1;
-      const height = $cell.find('.content').height() + 1;
-
-      const selector = `.data-table .body-scrollable [data-row-index="${rowIndex}"][data-row-index="${rowIndex}"] .edit-cell`;
-
-      self.setStyle(selector, { width, height });
-      $editCell.show();
-      $editCell.find('input').select();
-
-      // showing the popup is the responsibility of event handler
-      // self.events.onCellEdit(
-      //   $cell.get(0),
-      //   $editPopup,
-      //   rowIndex,
-      //   colIndex
-      // );
+    $(document.body).on('keypress', (e) => {
+      // enter keypress on focused cell
+      if (e.which === 13 && this.$focusedCell) {
+        self.activateEditing(this.$focusedCell);
+      }
     });
 
     $(document.body).on('click', e => {
       if ($(e.target).is('.edit-cell, .edit-cell *')) return;
       self.bodyScrollable.find('.edit-cell').hide();
     });
+  }
+
+  activateEditing($cell) {
+    const rowIndex = $cell.attr('data-row-index');
+    const colIndex = $cell.attr('data-col-index');
+    const $editCell = $cell.find('.edit-cell');
+    const cell = this.getCell(rowIndex, colIndex);
+
+    this.$editingCell = $cell;
+    $editCell.find('input').val(cell.content);
+    $editCell.show();
+    $editCell.find('input').select();
+
+    // showing the popup is the responsibility of event handler
+    // self.events.onCellEdit(
+    //   $cell.get(0),
+    //   $editPopup,
+    //   rowIndex,
+    //   colIndex
+    // );
   }
 
   bindResizeColumn() {
@@ -416,7 +423,12 @@ export default class ReGrid {
   }
 
   setColumnWidth(colIndex, width) {
+    // set width for content
     this.setStyle(`[data-col-index="${colIndex}"] .content`, {
+      width: width + 'px'
+    });
+    // set width for edit cell
+    this.setStyle(`[data-col-index="${colIndex}"] .edit-cell`, {
       width: width + 'px'
     });
   }
@@ -475,56 +487,10 @@ export default class ReGrid {
 
   setStyle(rule, styleMap) {
     this.getStyleEl();
-    const self = this;
     let styles = this.$style.text();
-    const rulePatternStr = `${escapeRegExp(rule)} {([^}]*)}`;
-    const rulePattern = new RegExp(rulePatternStr, 'g');
 
-    if (styles.match(rulePattern)) {
-      // rules exists, append/replace properties
-
-      for (const property in styleMap) {
-        const value = styleMap[property];
-
-        const propPattern = new RegExp(`${escapeRegExp(property)}[^;]*;`);
-
-        styles = styles.replace(rulePattern, function (match, propertyStr) {
-          if (propertyStr.match(propPattern)) {
-            // property exists, replace with empty string
-            propertyStr = propertyStr.replace(propPattern, '');
-          }
-          propertyStr = propertyStr.trim();
-
-          const _styleMap = {};
-
-          _styleMap[property] = value;
-          const replacer =
-            `${rule} {${propertyStr}${self.getCSSString(_styleMap)}}`;
-
-          return replacer;
-        });
-      }
-
-    } else {
-      // rules doesn't exists, add rule with properties
-      styles += `${rule} {${styleMap}}`;
-    }
-
+    styles = buildCSSRule(rule, styleMap, styles);
     this.$style.html(styles);
-  }
-
-  getCSSString(styleMap) {
-    let style = '';
-
-    for (const prop in styleMap) {
-      if (styleMap.hasOwnProperty(prop)) {
-        style += `${prop}: ${styleMap[prop]};`;
-      }
-    }
-
-    console.log(style);
-
-    return style;
   }
 
   getStyleEl() {
@@ -563,6 +529,10 @@ export default class ReGrid {
   getColumnMinWidth(colIndex) {
     colIndex = +colIndex;
     return this.minWidthMap && this.minWidthMap[colIndex];
+  }
+
+  getCellAttr($cell) {
+    return $cell.data();
   }
 
   log() {

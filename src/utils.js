@@ -127,6 +127,61 @@ function escapeRegExp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
 }
 
+function getCSSString(styleMap) {
+  let style = '';
+
+  for (const prop in styleMap) {
+    if (styleMap.hasOwnProperty(prop)) {
+      style += `${prop}: ${styleMap[prop]}; `;
+    }
+  }
+
+  return style.trim();
+}
+
+function getCSSRuleBlock(rule, styleMap) {
+  return `${rule} { ${getCSSString(styleMap)} }`;
+}
+
+function namespaceSelector(selector) {
+  return '.data-table ' + selector;
+}
+
+function buildCSSRule(rule, styleMap, cssRulesString = '') {
+  // build css rules efficiently,
+  // append new rule if doesnt exist,
+  // update existing ones
+
+  const rulePatternStr = `${escapeRegExp(rule)} {([^}]*)}`;
+  const rulePattern = new RegExp(rulePatternStr, 'g');
+
+  if (cssRulesString && cssRulesString.match(rulePattern)) {
+    for (const property in styleMap) {
+      const value = styleMap[property];
+      const propPattern = new RegExp(`${escapeRegExp(property)}:([^;]*);`);
+
+      cssRulesString = cssRulesString.replace(rulePattern, function (match, propertyStr) {
+        if (propertyStr.match(propPattern)) {
+          // property exists, replace value with new value
+          propertyStr = propertyStr.replace(propPattern, (match, valueStr) => {
+            return `${property}: ${value};`;
+          });
+        }
+        propertyStr = propertyStr.trim();
+
+        const replacer =
+          `${rule} { ${propertyStr} }`;
+
+        return replacer;
+      });
+    }
+
+    return cssRulesString;
+  }
+  // no match, append new rule block
+  return `${cssRulesString}${getCSSRuleBlock(rule, styleMap)}`;
+}
+
 export default {
   getHeaderHTML,
   getBodyHTML,
@@ -135,6 +190,9 @@ export default {
   getEditCellHTML,
   prepareRowHeader,
   prepareRows,
+  namespaceSelector,
+  getCSSString,
+  buildCSSRule,
   makeDataAttributeString,
   getDefault,
   escapeRegExp
