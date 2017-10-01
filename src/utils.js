@@ -19,9 +19,7 @@ function makeDataAttributeString(props) {
 
 function getEditCellHTML() {
   return `
-    <div class="edit-cell">
-      <input type="text" />
-    </div>
+    <div class="edit-cell"></div>
   `;
 }
 

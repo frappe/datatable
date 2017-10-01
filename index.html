@@ -507,7 +507,12 @@
 				wrapper: document.querySelector('section'),
 				addSerialNoColumn: true,
 				enableClusterize: true,
-				data
+				data,
+				editing: {
+					getInput() {
+						return $('<input type="text" style="background: yellow;" />').get(0)
+					}
+				}
 			});
 			performance.mark("ReGrid-end");
 

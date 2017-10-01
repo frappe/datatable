@@ -19,6 +19,7 @@ export default class ReGrid {
     wrapper,
     events,
     data,
+    editing,
     addSerialNoColumn,
     enableClusterize,
     enableLogs
@@ -32,6 +33,7 @@ export default class ReGrid {
     this.addSerialNoColumn = getDefault(addSerialNoColumn, false);
     this.enableClusterize = getDefault(enableClusterize, false);
     this.enableLogs = getDefault(enableLogs, true);
+    this.editing = getDefault(editing, {});
 
     if (data) {
       this.refresh(data);
@@ -187,6 +189,8 @@ export default class ReGrid {
   }
 
   prepareData(data) {
+    // cache original data passed
+    this._data = data;
     let { columns, rows } = data;
 
     if (this.addSerialNoColumn) {
@@ -211,15 +215,6 @@ export default class ReGrid {
       columns: _columns,
       rows: _rows
     };
-  }
-
-  prepareColumns(columns) {
-    return columns.map((col, i) => {
-      col.colIndex = i;
-      col.isHeader = 1;
-      col.format = val => `<span>${val}</span>`;
-      return col;
-    });
   }
 
   bindEvents() {
@@ -292,9 +287,7 @@ export default class ReGrid {
 
   bindEditCell() {
     const self = this;
-    const $editPopup = this.wrapper.find('.edit-popup');
 
-    $editPopup.hide();
     this.$editingCell = null;
     // if (!self.events.onCellEdit) return;
 
@@ -316,15 +309,26 @@ export default class ReGrid {
   }
 
   activateEditing($cell) {
-    const rowIndex = $cell.attr('data-row-index');
-    const colIndex = $cell.attr('data-col-index');
-    const $editCell = $cell.find('.edit-cell');
-    const cell = this.getCell(rowIndex, colIndex);
+    const { rowIndex, colIndex } = this.getCellAttr($cell);
+
+    if (this.$editingCell) {
+      const { _rowIndex, _colIndex } = this.getCellAttr(this.$editingCell);
+
+      if (rowIndex === _rowIndex && colIndex === _colIndex) {
+        // editing the same cell
+        return;
+      }
+    }
 
     this.$editingCell = $cell;
-    $editCell.find('input').val(cell.content);
-    $editCell.show();
-    $editCell.find('input').select();
+    const $editCell = $cell.find('.edit-cell').empty();
+    const cell = this.getCell(rowIndex, colIndex);
+
+    const render = this.renderEditingInput(colIndex, cell.content, $editCell);
+
+    if (render) {
+      $editCell.show();
+    }
 
     // showing the popup is the responsibility of event handler
     // self.events.onCellEdit(
@@ -333,6 +337,19 @@ export default class ReGrid {
     //   rowIndex,
     //   colIndex
     // );
+  }
+
+  renderEditingInput(colIndex, value, parent) {
+    if (this.editing.renderInput) {
+      return this.editing.renderInput(colIndex, value, parent);
+    }
+    // render fallback
+    const $input = $('<input type="text" />');
+
+    parent.append($input);
+    $input.val(value);
+    $input.select();
+    return true;
   }
 
   bindResizeColumn() {
