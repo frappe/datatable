@@ -33,11 +33,8 @@ export default class ReGrid {
     this.enableClusterize = getDefault(enableClusterize, false);
     this.enableLogs = getDefault(enableLogs, true);
 
-    this.makeDom();
-    this.bindEvents();
     if (data) {
-      this.data = this.prepareData(data);
-      this.render();
+      this.refresh(data);
     }
   }
 
@@ -62,9 +59,15 @@ export default class ReGrid {
     this.footer = this.wrapper.find('.data-table-footer');
   }
 
+  refresh(data) {
+    this.data = this.prepareData(data);
+    this.render();
+  }
+
   render() {
     if (this.wrapper.find('.data-table').length === 0) {
       this.makeDom();
+      this.makeStyle();
       this.bindEvents();
     }
 
@@ -236,18 +239,28 @@ export default class ReGrid {
       margin: 0
     });
 
+    // cache minWidth for each column
     this.minWidthMap = getDefault(this.minWidthMap, []);
-    // set the width for each column
     this.header.find('.data-table-col').each(function () {
       const col = $(this);
-      const width = col.find('.content').width();
+      const width = parseInt(col.find('.content').css('width'), 10);
       const colIndex = col.attr('data-col-index');
 
       if (!self.minWidthMap[colIndex]) {
         // only set this once
         self.minWidthMap[colIndex] = width;
       }
+    });
+
+    // set initial width as naturally calculated by table's first row
+    this.bodyScrollable.find('.data-table-row[data-row-index="0"] .data-table-col').each(function () {
+      const $cell = $(this);
+      const width = parseInt($cell.find('.content').css('width'), 10);
+      const height = parseInt($cell.find('.content').css('height'), 10);
+      const { colIndex } = self.getCellAttr($cell);
+
       self.setColumnWidth(colIndex, width);
+      self.setDefaultCellHeight(height);
     });
 
     this.setBodyWidth();
@@ -344,13 +357,13 @@ export default class ReGrid {
     $('body').on('mouseup', function (e) {
       if (!$currCell) return;
       isDragging = false;
-      // const colIndex = $currCell.attr('data-col-index');
+      const colIndex = $currCell.attr('data-col-index');
 
       if ($currCell) {
-        // const width = $currCell.find('.content').css('width');
+        const width = parseInt($currCell.find('.content').css('width'), 10);
 
-        // self.setColumnWidth(colIndex, width);
-        // self.setBodyWidth();
+        self.setColumnWidth(colIndex, width);
+        self.setBodyWidth();
         $currCell = null;
       }
     });
@@ -365,9 +378,7 @@ export default class ReGrid {
         return;
       }
 
-      self.setColumnWidth(colIndex, finalWidth);
-      self.setBodyWidth();
-      // self.setColumnHeaderWidth($currCell, finalWidth);
+      self.setColumnHeaderWidth(colIndex, finalWidth);
     });
   }
 
@@ -441,24 +452,22 @@ export default class ReGrid {
     });
   }
 
-  setRowHeight(rowIndex, height) {
-    this.setStyle(`[data-row-index="${rowIndex}"] .content`, {
+  setColumnHeaderWidth(colIndex, width) {
+    this.setStyle(`[data-col-index="${colIndex}"][data-is-header] .content`, {
+      width: width + 'px'
+    });
+  }
+
+  setDefaultCellHeight(height) {
+    this.setStyle('.data-table-col .content', {
       height: height + 'px'
     });
   }
 
-  setColumnHeaderWidth(colIndex, width) {
-    colIndex = +colIndex;
-    let $cell;
-
-    if (typeof colIndex === 'number') {
-      $cell = this.getColumnHeaderElement(colIndex);
-    } else {
-      // directly element is passed
-      $cell = colIndex;
-    }
-
-    $cell.find('.content').width(width);
+  setRowHeight(rowIndex, height) {
+    this.setStyle(`[data-row-index="${rowIndex}"] .content`, {
+      height: height + 'px'
+    });
   }
 
   setColumnWidths() {
@@ -494,20 +503,15 @@ export default class ReGrid {
   }
 
   setStyle(rule, styleMap) {
-    this.getStyleEl();
     let styles = this.$style.text();
 
     styles = buildCSSRule(rule, styleMap, styles);
     this.$style.html(styles);
   }
 
-  getStyleEl() {
-    if (!this.$style) {
-      this.$style = $('<style data-id="regrid"></style>')
-        .prependTo(this.wrapper);
-    }
-
-    return this.$style;
+  makeStyle() {
+    this.$style = $('<style data-id="regrid"></style>')
+      .prependTo(this.wrapper);
   }
 
   getColumn(colIndex) {
