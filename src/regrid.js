@@ -235,14 +235,17 @@ export default class ReGrid {
       margin: 0
     });
 
-    this.minWidthMap = [];
+    this.minWidthMap = getDefault(this.minWidthMap, []);
     // set the width for each column
     this.header.find('.data-table-col').each(function () {
       const col = $(this);
       const width = col.find('.content').width();
       const colIndex = col.attr('data-col-index');
 
-      self.minWidthMap[colIndex] = width;
+      if (!self.minWidthMap[colIndex]) {
+        // only set this once
+        self.minWidthMap[colIndex] = width;
+      }
       self.setColumnWidth(colIndex, width);
     });
 
@@ -374,6 +377,10 @@ export default class ReGrid {
       const $cell = $(this).closest('.data-table-col');
       const sortAction = getDefault($cell.attr('data-sort-action'), 'none');
       const colIndex = $cell.attr('data-col-index');
+
+      // reset sort indicator
+      self.header.find('.sort-indicator').text('');
+      self.header.find('.data-table-col').attr('data-sort-action', 'none');
 
       if (sortAction === 'none') {
         $cell.attr('data-sort-action', 'asc');
@@ -515,7 +522,7 @@ export default class ReGrid {
   getCell(rowIndex, colIndex) {
     rowIndex = +rowIndex;
     colIndex = +colIndex;
-    return this.data.rows[rowIndex][colIndex];
+    return this.data.rows.find(row => row[0].rowIndex === rowIndex)[colIndex];
   }
 
   getColumnHeaderElement(colIndex) {
