@@ -33,7 +33,7 @@ export default class ReGrid {
     this.addSerialNoColumn = getDefault(addSerialNoColumn, false);
     this.enableClusterize = getDefault(enableClusterize, false);
     this.enableLogs = getDefault(enableLogs, true);
-    this.editing = getDefault(editing, {});
+    this.editing = getDefault(editing, null);
 
     if (data) {
       this.refresh(data);
@@ -168,10 +168,9 @@ export default class ReGrid {
   }
 
   updateCell(rowIndex, colIndex, value) {
-    const row = this.getRow(rowIndex);
-    const cell = row.find(cell => cell.col_index === colIndex);
+    const cell = this.getCell(rowIndex, colIndex);
 
-    cell.data = value;
+    cell.content = value;
     this.refreshCell(cell);
   }
 
@@ -181,8 +180,8 @@ export default class ReGrid {
   }
 
   refreshCell(cell) {
-    const selector = `.data-table-col[data-row-index="${cell.row_index}"][data-col-index="${cell.col_index}"]`;
-    const $cell = this.body.find(selector);
+    const selector = `.data-table-col[data-row-index="${cell.rowIndex}"][data-col-index="${cell.colIndex}"]`;
+    const $cell = this.bodyScrollable.find(selector);
     const $newCell = $(getColumnHTML(cell));
 
     $cell.replaceWith($newCell);
@@ -289,22 +288,32 @@ export default class ReGrid {
     const self = this;
 
     this.$editingCell = null;
-    // if (!self.events.onCellEdit) return;
-
     this.bodyScrollable.on('dblclick', '.data-table-col', function () {
       self.activateEditing($(this));
     });
 
     $(document.body).on('keypress', (e) => {
       // enter keypress on focused cell
-      if (e.which === 13 && this.$focusedCell) {
-        self.activateEditing(this.$focusedCell);
+      if (e.which === 13 && this.$focusedCell && !this.$editingCell) {
+        this.log('editingCell');
+        this.activateEditing(this.$focusedCell);
+        e.stopImmediatePropagation();
+      }
+    });
+
+    $(document.body).on('keypress', (e) => {
+      // enter keypress on editing cell
+      if (e.which === 13 && this.$editingCell) {
+        this.log('submitCell');
+        this.submitEditing(this.$editingCell);
+        e.stopImmediatePropagation();
       }
     });
 
     $(document.body).on('click', e => {
       if ($(e.target).is('.edit-cell, .edit-cell *')) return;
       self.bodyScrollable.find('.edit-cell').hide();
+      this.$editingCell = null;
     });
   }
 
@@ -323,33 +332,61 @@ export default class ReGrid {
     this.$editingCell = $cell;
     const $editCell = $cell.find('.edit-cell').empty();
     const cell = this.getCell(rowIndex, colIndex);
+    const editing = this.getEditingObject(colIndex, rowIndex, cell.content, $editCell);
 
-    const render = this.renderEditingInput(colIndex, cell.content, $editCell);
-
-    if (render) {
+    if (editing) {
+      this.currentCellEditing = editing;
+      // initialize editing input with cell value
+      editing.initValue(cell.content);
       $editCell.show();
     }
-
-    // showing the popup is the responsibility of event handler
-    // self.events.onCellEdit(
-    //   $cell.get(0),
-    //   $editPopup,
-    //   rowIndex,
-    //   colIndex
-    // );
   }
 
-  renderEditingInput(colIndex, value, parent) {
-    if (this.editing.renderInput) {
-      return this.editing.renderInput(colIndex, value, parent);
+  getEditingObject(colIndex, rowIndex, value, parent) {
+    if (this.editing) {
+      return this.editing(colIndex, rowIndex, value, parent);
     }
-    // render fallback
+
+    // editing fallback
     const $input = $('<input type="text" />');
 
     parent.append($input);
-    $input.val(value);
-    $input.select();
-    return true;
+
+    return {
+      initValue(value) {
+        return $input.val(value);
+      },
+      getValue() {
+        return $input.val();
+      },
+      setValue(value) {
+        return $input.val(value);
+      }
+    };
+  }
+
+  submitEditing($cell) {
+    const { rowIndex, colIndex } = this.getCellAttr($cell);
+
+    if ($cell) {
+      const editing = this.currentCellEditing;
+
+      if (editing) {
+        const value = editing.getValue();
+        const done = editing.setValue(value);
+
+        if (done && done.then) {
+          // wait for promise then update internal state
+          done.then(
+            () => this.updateCell(rowIndex, colIndex, value)
+          );
+        } else {
+          this.updateCell(rowIndex, colIndex, value);
+        }
+      }
+    }
+
+    this.currentCellEditing = null;
   }
 
   bindResizeColumn() {
