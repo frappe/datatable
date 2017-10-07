@@ -592,7 +592,12 @@ export default class DataTable {
   checkAll(toggle) {
     const value = toggle ? 1 : 0;
 
-    this.checkMap.map(c => value);
+    // update internal map
+    if (toggle) {
+      this.checkMap = Array.from(Array(this.getTotalRows())).map(c => value);
+    } else {
+      this.checkMap = [];
+    }
     // set checkbox value
     this.bodyScrollable
       .find('.data-table-col[data-col-index="0"] [type="checkbox"]')
@@ -602,7 +607,8 @@ export default class DataTable {
   }
 
   highlightRow(rowIndex, toggle = true) {
-    const $row = this.bodyScrollable.find(`.data-table-row[data-row-index="${rowIndex}"]`);
+    const $row = this.bodyScrollable
+      .find(`.data-table-row[data-row-index="${rowIndex}"]:not(.row-highlight)`);
 
     if (toggle) {
       $row.addClass('row-highlight');
@@ -721,6 +727,10 @@ export default class DataTable {
 
   getCellAttr($cell) {
     return $cell.data();
+  }
+
+  getTotalRows() {
+    return this.data.rows.length;
   }
 
   log() {
