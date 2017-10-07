@@ -119,10 +119,17 @@ export default class ReGrid {
       this.data.rows.slice(this.start, this.end)
     );
 
+    const self = this;
+
     this.clusterize = new Clusterize({
       rows: initialData,
       scrollElem: this.bodyScrollable.get(0),
-      contentElem: this.bodyScrollable.find('tbody').get(0)
+      contentElem: this.bodyScrollable.find('tbody').get(0),
+      callbacks: {
+        clusterChanged() {
+          self.highlightCheckedRows();
+        }
+      }
     });
     this.log('dataAppended', this.pageLength);
     this.appendRemainingData();
@@ -534,6 +541,9 @@ export default class ReGrid {
     if (!this.options.addCheckbox) return;
     const self = this;
 
+    // map of checked rows
+    this.checkMap = [];
+
     this.wrapper.on('click', '.data-table-col[data-col-index="0"] [type="checkbox"]', function () {
       const $checkbox = $(this);
       const $cell = $checkbox.closest('.data-table-col');
@@ -541,20 +551,54 @@ export default class ReGrid {
       const checked = $checkbox.is(':checked');
 
       if (isHeader) {
-        self.highlightAll(checked);
+        self.checkAll(checked);
       } else {
-        self.highlightRow(rowIndex, checked);
+        self.checkRow(rowIndex, checked);
       }
     });
   }
 
-  highlightAll(toggle = true) {
+  getCheckedRows() {
+    return this.checkMap
+      .map((c, rowIndex) => {
+        if (c) {
+          return rowIndex;
+        }
+        return null;
+      })
+      .filter(c => {
+        return c !== null || c !== undefined;
+      });
+  }
+
+  highlightCheckedRows() {
+    this.getCheckedRows()
+      .map(rowIndex => this.checkRow(rowIndex, true));
+  }
+
+  checkRow(rowIndex, toggle) {
+    const value = toggle ? 1 : 0;
+
+    // update internal map
+    this.checkMap[rowIndex] = value;
+    // set checkbox value explicitly
+    this.bodyScrollable
+      .find(`.data-table-col[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`)
+      .prop('checked', toggle);
+    // highlight row
+    this.highlightRow(rowIndex, toggle);
+  }
+
+  checkAll(toggle) {
+    const value = toggle ? 1 : 0;
+
+    this.checkMap.map(c => value);
+    // set checkbox value
     this.bodyScrollable
       .find('.data-table-col[data-col-index="0"] [type="checkbox"]')
       .prop('checked', toggle);
-    this.bodyScrollable
-      .find('.data-table-row')
-      .toggleClass('row-highlight', toggle);
+    // highlight all
+    this.highlightAll(toggle);
   }
 
   highlightRow(rowIndex, toggle = true) {
@@ -565,6 +609,12 @@ export default class ReGrid {
     } else {
       $row.removeClass('row-highlight');
     }
+  }
+
+  highlightAll(toggle = true) {
+    this.bodyScrollable
+      .find('.data-table-row')
+      .toggleClass('row-highlight', toggle);
   }
 
   setColumnWidth(colIndex, width) {
