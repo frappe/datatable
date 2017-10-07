@@ -1,4 +1,4 @@
-# ReGrid
+# Frappé DataTable
 
 A modern datatable library for the web
 
@@ -13,25 +13,12 @@ A modern datatable library for the web
 ## Usage
 
 ```js
-var grid = new ReGrid({
-  wrapper: document.querySelector('#data-table'),
+var grid = new DataTable(document.querySelector('#data-table'), {
   data: {
-    columns: [
-      'Sr No.',
-      'First Name',
-      'Last Name',
-    ],
+    columns: [ 'Sr No.', 'First Name', 'Last Name' ],
     rows: [
-      [
-        '1',
-        'Don',
-        'Joe'
-      ],
-      [
-        '2',
-        'Mary',
-        'Jane'
-      ]
+      [ '1', 'Don', 'Joe' ],
+      [ '2', 'Mary', 'Jane' ]
     ]
   }
 });
