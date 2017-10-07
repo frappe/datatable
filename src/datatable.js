@@ -25,7 +25,7 @@ const DEFAULT_OPTIONS = {
   addCheckbox: true
 };
 
-export default class ReGrid {
+export default class DataTable {
   constructor(wrapper, options) {
 
     this.wrapper = $(wrapper);
@@ -686,7 +686,7 @@ export default class ReGrid {
   }
 
   makeStyle() {
-    this.$style = $('<style data-id="regrid"></style>')
+    this.$style = $('<style data-id="datatable"></style>')
       .prependTo(this.wrapper);
   }
 

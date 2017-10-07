@@ -1,2 +1,2 @@
-import ReGrid from './regrid.js';
-export default ReGrid;
+import DataTable from './datatable.js';
+export default DataTable;

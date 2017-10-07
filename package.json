@@ -1,8 +1,8 @@
 {
-  "name": "regrid",
+  "name": "frappe-datatable",
   "version": "0.0.1",
   "description": "A modern datatable library for the web",
-  "main": "lib/regrid.js",
+  "main": "lib/frappe-datatable.js",
   "scripts": {
     "build": "webpack --env build",
     "dev": "webpack --progress --colors --watch --env dev",
@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/netchampfaris/regrid.git"
+    "url": "https://github.com/frappe/datatable.git"
   },
   "keywords": [
     "webpack",
@@ -43,12 +43,11 @@
   "author": "Faris Ansari",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/netchampfaris/regrid/issues"
+    "url": "https://github.com/frappe/datatable/issues"
   },
-  "homepage": "https://github.com/netchampfaris/regrid",
+  "homepage": "https://frappe.github.io/datatable",
   "dependencies": {
     "bootstrap": "^4.0.0-beta",
-    "clusterize.js": "^0.17.6",
     "popper.js": "^1.12.5"
   }
 }

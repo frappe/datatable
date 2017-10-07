@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>ReGrid</title>
+	<title>Frappé DataTable</title>
 	<style>
 		body {
 			font-family: 'Tahoma';
@@ -16,14 +16,14 @@
 </head>
 
 <body>
-	<h1>ReGrid</h1>
+	<h1>Frappé DataTable</h1>
 	<button onclick="_regrid.render()">Refresh</button>
 	<section style="width: 60%;">
 
 	</section>
 	<script src="./node_modules/jquery/dist/jquery.js"></script>
 	<script src="./node_modules/clusterize.js/clusterize.js"></script>
-	<script src="./lib/ReGrid.js"></script>
+	<script src="./lib/frappe-datatable.js"></script>
 	<script>
 		$(() => {
 
@@ -502,25 +502,25 @@
 
 			console.log('No of Rows:', data.rows.length)
 
-			performance.mark("ReGrid-start");
-			var grid = new ReGrid(document.querySelector('section'), {
+			performance.mark("DataTable-start");
+			var datatable = new DataTable(document.querySelector('section'), {
 				addSerialNoColumn: true,
 				enableClusterize: true,
 				data
 			});
-			performance.mark("ReGrid-end");
+			performance.mark("DataTable-end");
 
 			performance.measure(
-				"ReGrid",
-				"ReGrid-start",
-				"ReGrid-end"
+				"DataTable",
+				"DataTable-start",
+				"DataTable-end"
 			);
 
-			var measures = performance.getEntriesByName("ReGrid");
+			var measures = performance.getEntriesByName("DataTable");
 			var measure = measures[0];
 			console.log(measure.duration);
 
-			window._regrid = grid;
+			window.datatable = datatable;
 		})
 	</script>
 </body>
