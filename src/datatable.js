@@ -608,7 +608,7 @@ export default class DataTable {
 
   highlightRow(rowIndex, toggle = true) {
     const $row = this.bodyScrollable
-      .find(`.data-table-row[data-row-index="${rowIndex}"]:not(.row-highlight)`);
+      .find(`.data-table-row[data-row-index="${rowIndex}"]`);
 
     if (toggle) {
       $row.addClass('row-highlight');
