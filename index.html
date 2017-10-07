@@ -503,8 +503,7 @@
 			console.log('No of Rows:', data.rows.length)
 
 			performance.mark("ReGrid-start");
-			var grid = new ReGrid({
-				wrapper: document.querySelector('section'),
+			var grid = new ReGrid(document.querySelector('section'), {
 				addSerialNoColumn: true,
 				enableClusterize: true,
 				data

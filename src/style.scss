@@ -47,7 +47,7 @@
 
 	.content {
 		padding: 8px;
-		border: 1px solid white;
+		border: 1px solid transparent;
 	}
 
 	&.selected .content {
@@ -59,6 +59,12 @@
 		white-space: nowrap;
 		overflow: hidden;
 	}
+}
+
+.data-table-row {
+  &.row-highlight {
+    background-color: theme-color('light');
+  }
 }
 
 .edit-cell {

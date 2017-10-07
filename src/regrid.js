@@ -9,34 +9,35 @@ import {
   prepareRows,
   getDefault
 } from './utils.js';
-// import $ from 'jQuery';
-// import Clusterize from 'clusterize.js';
 
 import './style.scss';
 
+const DEFAULT_OPTIONS = {
+  events: null,
+  data: {
+    columns: [],
+    rows: []
+  },
+  editing: null,
+  addSerialNoColumn: true,
+  enableClusterize: true,
+  enableLogs: false,
+  addCheckbox: true
+};
+
 export default class ReGrid {
-  constructor({
-    wrapper,
-    events,
-    data,
-    editing,
-    addSerialNoColumn,
-    enableClusterize,
-    enableLogs
-  }) {
+  constructor(wrapper, options) {
+
     this.wrapper = $(wrapper);
     if (this.wrapper.length === 0) {
       throw new Error('Invalid argument given for `wrapper`');
     }
 
-    this.events = getDefault(events, {});
-    this.addSerialNoColumn = getDefault(addSerialNoColumn, false);
-    this.enableClusterize = getDefault(enableClusterize, false);
-    this.enableLogs = getDefault(enableLogs, true);
-    this.editing = getDefault(editing, null);
+    this.options = Object.assign({}, DEFAULT_OPTIONS, options);
+    this.events = this.options.events;
 
-    if (data) {
-      this.refresh(data);
+    if (this.options.data) {
+      this.refresh(this.options.data);
     }
   }
 
@@ -84,7 +85,7 @@ export default class ReGrid {
   }
 
   renderBody() {
-    if (this.enableClusterize) {
+    if (this.options.enableClusterize) {
       this.renderBodyWithClusterize();
     } else {
       this.renderBodyHTML();
@@ -192,16 +193,34 @@ export default class ReGrid {
     this._data = data;
     let { columns, rows } = data;
 
-    if (this.addSerialNoColumn) {
+    if (this.options.addSerialNoColumn) {
       const serialNoColumn = {
         content: 'Sr. No',
         resizable: false
       };
 
-      columns = [serialNoColumn].concat(columns);
+      columns.unshift(serialNoColumn);
 
       rows = rows.map((row, i) => {
         const val = (i + 1) + '';
+
+        return [val].concat(row);
+      });
+    }
+
+    if (this.options.addCheckbox) {
+      const addCheckboxColumn = {
+        content: '<input type="checkbox" />',
+        resizable: false,
+        sortable: false,
+        editable: false
+      };
+
+      columns.unshift(addCheckboxColumn);
+
+      rows = rows.map((row, i) => {
+        // make copy of object, else it will be mutated
+        const val = Object.assign({}, addCheckboxColumn);
 
         return [val].concat(row);
       });
@@ -221,6 +240,7 @@ export default class ReGrid {
     this.bindEditCell();
     this.bindResizeColumn();
     this.bindSortColumn();
+    this.bindCheckbox();
   }
 
   setDimensions() {
@@ -277,6 +297,11 @@ export default class ReGrid {
     this.$focusedCell = null;
     this.bodyScrollable.on('click', '.data-table-col', function () {
       const $cell = $(this);
+      const { colIndex } = self.getCellAttr($cell);
+
+      if (self.options.addCheckbox && colIndex === 0) {
+        return;
+      }
 
       self.$focusedCell = $cell;
       self.bodyScrollable.find('.data-table-col').removeClass('selected');
@@ -319,6 +344,11 @@ export default class ReGrid {
 
   activateEditing($cell) {
     const { rowIndex, colIndex } = this.getCellAttr($cell);
+    const col = this.getColumn(colIndex);
+
+    if (col && col.editable === false) {
+      return;
+    }
 
     if (this.$editingCell) {
       const { _rowIndex, _colIndex } = this.getCellAttr(this.$editingCell);
@@ -343,8 +373,8 @@ export default class ReGrid {
   }
 
   getEditingObject(colIndex, rowIndex, value, parent) {
-    if (this.editing) {
-      return this.editing(colIndex, rowIndex, value, parent);
+    if (this.options.editing) {
+      return this.options.editing(colIndex, rowIndex, value, parent);
     }
 
     // editing fallback
@@ -443,6 +473,11 @@ export default class ReGrid {
       const $cell = $(this).closest('.data-table-col');
       const sortAction = getDefault($cell.attr('data-sort-action'), 'none');
       const colIndex = $cell.attr('data-col-index');
+      const col = self.getColumn(colIndex);
+
+      if (col && col.sortable === false) {
+        return;
+      }
 
       // reset sort indicator
       self.header.find('.sort-indicator').text('');
@@ -462,7 +497,7 @@ export default class ReGrid {
       // sortWith this action
       const sortWith = $cell.attr('data-sort-action');
 
-      if (self.events.onSort) {
+      if (self.events && self.events.onSort) {
         self.events.onSort(colIndex, sortWith);
       } else {
         self.sortRows(colIndex, sortWith);
@@ -493,6 +528,43 @@ export default class ReGrid {
       }
       return 0;
     });
+  }
+
+  bindCheckbox() {
+    if (!this.options.addCheckbox) return;
+    const self = this;
+
+    this.wrapper.on('click', '.data-table-col[data-col-index="0"] [type="checkbox"]', function () {
+      const $checkbox = $(this);
+      const $cell = $checkbox.closest('.data-table-col');
+      const { rowIndex, isHeader } = self.getCellAttr($cell);
+      const checked = $checkbox.is(':checked');
+
+      if (isHeader) {
+        self.highlightAll(checked);
+      } else {
+        self.highlightRow(rowIndex, checked);
+      }
+    });
+  }
+
+  highlightAll(toggle = true) {
+    this.bodyScrollable
+      .find('.data-table-col[data-col-index="0"] [type="checkbox"]')
+      .prop('checked', toggle);
+    this.bodyScrollable
+      .find('.data-table-row')
+      .toggleClass('row-highlight', toggle);
+  }
+
+  highlightRow(rowIndex, toggle = true) {
+    const $row = this.bodyScrollable.find(`.data-table-row[data-row-index="${rowIndex}"]`);
+
+    if (toggle) {
+      $row.addClass('row-highlight');
+    } else {
+      $row.removeClass('row-highlight');
+    }
   }
 
   setColumnWidth(colIndex, width) {
@@ -539,7 +611,7 @@ export default class ReGrid {
       const width = this.getColumnHeaderElement(col.colIndex).width();
       let finalWidth = width + deltaWidth - 16;
 
-      if (this.addSerialNoColumn && col.colIndex === 0) {
+      if (this.options.addSerialNoColumn && col.colIndex === 0) {
         return;
       }
 
@@ -602,7 +674,7 @@ export default class ReGrid {
   }
 
   log() {
-    if (this.enableLogs) {
+    if (this.options.enableLogs) {
       console.log.apply(console, arguments);
     }
   }
