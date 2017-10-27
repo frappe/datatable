@@ -276,10 +276,14 @@ export default class DataTable {
     // set initial width as naturally calculated by table's first row
     this.bodyScrollable.find('.data-table-row[data-row-index="0"] .data-table-col').each(function () {
       const $cell = $(this);
-      const width = parseInt($cell.find('.content').css('width'), 10);
+      let width = parseInt($cell.find('.content').css('width'), 10);
       const height = parseInt($cell.find('.content').css('height'), 10);
       const { colIndex } = self.getCellAttr($cell);
+      const minWidth = self.getColumnMinWidth(colIndex);
 
+      if (width < minWidth) {
+        width = minWidth;
+      }
       self.setColumnWidth(colIndex, width);
       self.setDefaultCellHeight(height);
     });
