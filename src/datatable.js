@@ -22,7 +22,8 @@ const DEFAULT_OPTIONS = {
   addSerialNoColumn: true,
   addCheckboxColumn: true,
   enableClusterize: true,
-  enableLogs: false
+  enableLogs: false,
+  takeAvailableSpace: false
 };
 
 export default class DataTable {
@@ -218,10 +219,15 @@ export default class DataTable {
   setDimensions() {
     const self = this;
 
-    // setting width as 0 will ensure that the
-    // header doesn't take the available space
+    if (!this.options.takeAvailableSpace) {
+      // setting width as 0 will ensure that the
+      // header doesn't take the available space
+      this.header.css({
+        width: 0
+      });
+    }
+
     this.header.css({
-      width: 0,
       margin: 0
     });
 
@@ -634,7 +640,7 @@ export default class DataTable {
   setBodyWidth() {
     this.bodyScrollable.css(
       'width',
-      parseInt(this.header.css('width'), 10) + 1
+      parseInt(this.header.css('width'), 10)
     );
   }
 

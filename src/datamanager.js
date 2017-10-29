@@ -24,6 +24,7 @@ export default class DataManager {
     if (this.options.addSerialNoColumn && !this._serialNoColumnAdded) {
       const val = {
         content: 'Sr. No',
+        editable: false,
         resizable: false
       };
 
@@ -34,6 +35,7 @@ export default class DataManager {
     if (this.options.addCheckboxColumn && !this._checkboxColumnAdded) {
       const val = {
         content: '<input type="checkbox" />',
+        editable: false,
         resizable: false
       };
 

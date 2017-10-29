@@ -1,8 +1,20 @@
 @import "~bootstrap/scss/functions";
 @import "~bootstrap/scss/mixins";
 @import "~bootstrap/scss/variables";
-@import "~bootstrap/scss/reboot";
+// @import "~bootstrap/scss/reboot";
 @import "~bootstrap/scss/tables";
+
+*, *::after, *::before {
+	box-sizing: border-box;
+}
+
+button, input {
+	overflow: visible;
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+	margin: 0;
+}
 
 .data-table * {
 	outline: none;
