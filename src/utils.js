@@ -95,7 +95,7 @@ function prepareColumn(col, i) {
 function prepareColumns(columns, props = {}) {
   const _columns = columns.map(prepareColumn);
 
-  return _columns.map(col => Object.assign(col, props));
+  return _columns.map(col => Object.assign({}, col, props));
 }
 
 function prepareRowHeader(columns) {

@@ -4,11 +4,11 @@ import {
   getBodyHTML,
   getRowHTML,
   getColumnHTML,
-  prepareRowHeader,
   buildCSSRule,
-  prepareRows,
   getDefault
-} from './utils.js';
+} from './utils';
+
+import DataManager from './datamanager';
 
 import './style.scss';
 
@@ -20,9 +20,9 @@ const DEFAULT_OPTIONS = {
   },
   editing: null,
   addSerialNoColumn: true,
+  addCheckboxColumn: true,
   enableClusterize: true,
-  enableLogs: false,
-  addCheckbox: true
+  enableLogs: false
 };
 
 export default class DataTable {
@@ -35,6 +35,8 @@ export default class DataTable {
 
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
     this.events = this.options.events;
+
+    this.datamanager = new DataManager(this.options);
 
     if (this.options.data) {
       this.refresh(this.options.data);
@@ -63,7 +65,12 @@ export default class DataTable {
   }
 
   refresh(data) {
-    this.data = this.prepareData(data);
+    this.datamanager.init(data);
+    this.render();
+  }
+
+  appendRows(rows) {
+    this.datamanager.appendRows(rows);
     this.render();
   }
 
@@ -80,8 +87,9 @@ export default class DataTable {
   }
 
   renderHeader() {
-    // fixed header
-    this.header.html(getHeaderHTML(this.data.columns));
+    const columns = this.datamanager.getColumns();
+
+    this.header.html(getHeaderHTML(columns));
   }
 
   renderBody() {
@@ -93,15 +101,18 @@ export default class DataTable {
   }
 
   renderBodyHTML() {
-    // scrollable body
+    const rows = this.datamanager.getRows();
+
     this.bodyScrollable.html(`
       <table class="data-table-body table table-bordered">
-        ${getBodyHTML(this.data.rows)}
+        ${getBodyHTML(rows)}
       </table>
     `);
   }
 
   renderBodyWithClusterize() {
+    const self = this;
+
     // empty body
     this.bodyScrollable.html(`
       <table class="data-table-body table table-bordered">
@@ -113,13 +124,10 @@ export default class DataTable {
     this.pageLength = 1000;
     this.end = this.start + this.pageLength;
 
-    const initialData = this.getDataForClusterize(
-      // only append ${this.pageLength} rows in the beginning
-      // defer remaining rows
-      this.data.rows.slice(this.start, this.end)
-    );
-
-    const self = this;
+    // only append ${this.pageLength} rows in the beginning,
+    // defer remaining
+    const rows = this.datamanager.getRows(this.start, this.end);
+    const initialData = this.getDataForClusterize(rows);
 
     this.clusterize = new Clusterize({
       rows: initialData,
@@ -138,15 +146,16 @@ export default class DataTable {
   appendRemainingData() {
     let dataAppended = this.pageLength;
     const promises = [];
+    const rowCount = this.datamanager.getRowCount();
 
-    while (dataAppended + this.pageLength < this.data.rows.length) {
+    while (dataAppended + this.pageLength < rowCount) {
       this.start = this.end;
       this.end = this.start + this.pageLength;
       promises.push(this.appendNextPagePromise(this.start, this.end));
       dataAppended += this.pageLength;
     }
 
-    if (this.data.rows.length % this.pageLength > 0) {
+    if (rowCount % this.pageLength > 0) {
       // last page
       this.start = this.end;
       this.end = this.start + this.pageLength;
@@ -161,7 +170,7 @@ export default class DataTable {
   appendNextPagePromise(start, end) {
     return new Promise(resolve => {
       setTimeout(() => {
-        const rows = this.data.rows.slice(start, end);
+        const rows = this.datamanager.getRows(start, end);
         const data = this.getDataForClusterize(rows);
 
         this.clusterize.append(data);
@@ -193,53 +202,6 @@ export default class DataTable {
     const $newCell = $(getColumnHTML(cell));
 
     $cell.replaceWith($newCell);
-  }
-
-  prepareData(data) {
-    // cache original data passed
-    this._data = data;
-    let { columns, rows } = data;
-
-    if (this.options.addSerialNoColumn) {
-      const serialNoColumn = {
-        content: 'Sr. No',
-        resizable: false
-      };
-
-      columns.unshift(serialNoColumn);
-
-      rows = rows.map((row, i) => {
-        const val = (i + 1) + '';
-
-        return [val].concat(row);
-      });
-    }
-
-    if (this.options.addCheckbox) {
-      const addCheckboxColumn = {
-        content: '<input type="checkbox" />',
-        resizable: false,
-        sortable: false,
-        editable: false
-      };
-
-      columns.unshift(addCheckboxColumn);
-
-      rows = rows.map((row, i) => {
-        // make copy of object, else it will be mutated
-        const val = Object.assign({}, addCheckboxColumn);
-
-        return [val].concat(row);
-      });
-    }
-
-    const _columns = prepareRowHeader(columns);
-    const _rows = prepareRows(rows);
-
-    return {
-      columns: _columns,
-      rows: _rows
-    };
   }
 
   bindEvents() {
@@ -519,26 +481,7 @@ export default class DataTable {
 
   sortRows(colIndex, sortAction = 'none') {
     colIndex = +colIndex;
-
-    this.data.rows.sort((a, b) => {
-      const _aIndex = a[0].rowIndex;
-      const _bIndex = b[0].rowIndex;
-      const _a = a[colIndex].content;
-      const _b = b[colIndex].content;
-
-      if (sortAction === 'none') {
-        return _aIndex - _bIndex;
-      } else if (sortAction === 'asc') {
-        if (_a < _b) return -1;
-        if (_a > _b) return 1;
-        if (_a === _b) return 0;
-      } else if (sortAction === 'desc') {
-        if (_a < _b) return 1;
-        if (_a > _b) return -1;
-        if (_a === _b) return 0;
-      }
-      return 0;
-    });
+    this.datamanager.sortRows(colIndex, sortAction);
   }
 
   bindCheckbox() {
@@ -563,6 +506,8 @@ export default class DataTable {
   }
 
   getCheckedRows() {
+    this.checkMap = this.checkMap || [];
+
     return this.checkMap
       .map((c, rowIndex) => {
         if (c) {
