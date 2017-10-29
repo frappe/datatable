@@ -34,7 +34,10 @@ export default class DataTable {
     }
 
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
+    // custom user events
     this.events = this.options.events;
+    // map of checked rows
+    this.checkMap = [];
 
     this.datamanager = new DataManager(this.options);
 
@@ -272,7 +275,7 @@ export default class DataTable {
       const $cell = $(this);
       const { colIndex } = self.getCellAttr($cell);
 
-      if (self.options.addCheckbox && colIndex === 0) {
+      if (self.options.addCheckboxColumn && colIndex === 0) {
         return;
       }
 
@@ -444,7 +447,7 @@ export default class DataTable {
 
     this.header.on('click', '.data-table-col .content span', function () {
       const $cell = $(this).closest('.data-table-col');
-      const sortAction = getDefault($cell.attr('data-sort-action'), 'none');
+      let sortOrder = getDefault($cell.attr('data-sort-order'), 'none');
       const colIndex = $cell.attr('data-col-index');
       const col = self.getColumn(colIndex);
 
@@ -454,42 +457,38 @@ export default class DataTable {
 
       // reset sort indicator
       self.header.find('.sort-indicator').text('');
-      self.header.find('.data-table-col').attr('data-sort-action', 'none');
+      self.header.find('.data-table-col').attr('data-sort-order', 'none');
 
-      if (sortAction === 'none') {
-        $cell.attr('data-sort-action', 'asc');
+      if (sortOrder === 'none') {
+        $cell.attr('data-sort-order', 'asc');
         $cell.find('.sort-indicator').text('▲');
-      } else if (sortAction === 'asc') {
-        $cell.attr('data-sort-action', 'desc');
+      } else if (sortOrder === 'asc') {
+        $cell.attr('data-sort-order', 'desc');
         $cell.find('.sort-indicator').text('▼');
-      } else if (sortAction === 'desc') {
-        $cell.attr('data-sort-action', 'none');
+      } else if (sortOrder === 'desc') {
+        $cell.attr('data-sort-order', 'none');
         $cell.find('.sort-indicator').text('');
       }
 
       // sortWith this action
-      const sortWith = $cell.attr('data-sort-action');
+      sortOrder = $cell.attr('data-sort-order');
 
       if (self.events && self.events.onSort) {
-        self.events.onSort(colIndex, sortWith);
+        self.events.onSort(colIndex, sortOrder);
       } else {
-        self.sortRows(colIndex, sortWith);
+        self.sortRows(colIndex, sortOrder);
         self.refreshRows();
       }
     });
   }
 
-  sortRows(colIndex, sortAction = 'none') {
-    colIndex = +colIndex;
-    this.datamanager.sortRows(colIndex, sortAction);
+  sortRows(colIndex, sortOrder) {
+    this.datamanager.sortRows(colIndex, sortOrder);
   }
 
   bindCheckbox() {
-    if (!this.options.addCheckbox) return;
+    if (!this.options.addCheckboxColumn) return;
     const self = this;
-
-    // map of checked rows
-    this.checkMap = [];
 
     this.wrapper.on('click', '.data-table-col[data-col-index="0"] [type="checkbox"]', function () {
       const $checkbox = $(this);
@@ -506,7 +505,6 @@ export default class DataTable {
   }
 
   getCheckedRows() {
-    this.checkMap = this.checkMap || [];
 
     return this.checkMap
       .map((c, rowIndex) => {
@@ -610,9 +608,10 @@ export default class DataTable {
       return;
     }
 
-    const deltaWidth = (availableWidth - headerWidth) / this.data.columns.length;
+    const columns = this.datamanager.getColumns();
+    const deltaWidth = (availableWidth - headerWidth) / this.datamanager.getColumnCount();
 
-    this.data.columns.map(col => {
+    columns.map(col => {
       const width = this.getColumnHeaderElement(col.colIndex).width();
       let finalWidth = width + deltaWidth - 16;
 
@@ -646,19 +645,15 @@ export default class DataTable {
   }
 
   getColumn(colIndex) {
-    colIndex = +colIndex;
-    return this.data.columns.find(col => col.colIndex === colIndex);
+    return this.datamanager.getColumn(colIndex);
   }
 
   getRow(rowIndex) {
-    rowIndex = +rowIndex;
-    return this.data.rows.find(row => row[0].rowIndex === rowIndex);
+    return this.datamanager.getRow(rowIndex);
   }
 
   getCell(rowIndex, colIndex) {
-    rowIndex = +rowIndex;
-    colIndex = +colIndex;
-    return this.data.rows.find(row => row[0].rowIndex === rowIndex)[colIndex];
+    return this.datamanager.getCell(rowIndex, colIndex);
   }
 
   getColumnHeaderElement(colIndex) {
@@ -679,7 +674,7 @@ export default class DataTable {
   }
 
   getTotalRows() {
-    return this.data.rows.length;
+    return this.datamanager.getRowCount();
   }
 
   log() {

@@ -2,8 +2,11 @@
 export default class DataManager {
   constructor(options) {
     this.options = options;
-    this._data = {};
     this.rowCount = 0;
+    this.currentSort = {
+      sortBy: -1, // colIndex
+      sortOrder: 'none' // asc, desc, none
+    };
   }
 
   init(data) {
@@ -91,7 +94,20 @@ export default class DataManager {
     this.rows = this.rows.concat(_rows);
   }
 
-  sortRows(colIndex, sortAction) {
+  sortRows(colIndex, sortOrder = 'none') {
+    colIndex = +colIndex;
+
+    if (this.currentSort.colIndex === colIndex) {
+      // reverse the array if only sortOrder changed
+      if (
+        (this.currentSort.sortOrder === 'asc' && sortOrder === 'desc') ||
+        (this.currentSort.sortOrder === 'desc' && sortOrder === 'asc')
+      ) {
+        this.reverseArray(this.rows);
+        this.currentSort.sortOrder = sortOrder;
+        return;
+      }
+    }
 
     this.rows.sort((a, b) => {
       const _aIndex = a[0].rowIndex;
@@ -99,24 +115,28 @@ export default class DataManager {
       const _a = a[colIndex].content;
       const _b = b[colIndex].content;
 
-      if (sortAction === 'none') {
+      if (sortOrder === 'none') {
         return _aIndex - _bIndex;
-      } else if (sortAction === 'asc') {
+      } else if (sortOrder === 'asc') {
         if (_a < _b) return -1;
         if (_a > _b) return 1;
         if (_a === _b) return 0;
-      } else if (sortAction === 'desc') {
+      } else if (sortOrder === 'desc') {
         if (_a < _b) return 1;
         if (_a > _b) return -1;
         if (_a === _b) return 0;
       }
       return 0;
     });
+
+    this.currentSort.colIndex = colIndex;
+    this.currentSort.sortOrder = sortOrder;
   }
 
   reverseArray(array) {
     let left = null;
     let right = null;
+    let length = array.length;
 
     for (left = 0, right = length - 1; left < right; left += 1, right -= 1) {
       const temporary = array[left];
@@ -143,6 +163,26 @@ export default class DataManager {
 
   getColumns() {
     return this.columns;
+  }
+
+  getColumnCount() {
+    return this.columns.length;
+  }
+
+  getColumn(colIndex) {
+    colIndex = +colIndex;
+    return this.columns.find(col => col.colIndex === colIndex);
+  }
+
+  getRow(rowIndex) {
+    rowIndex = +rowIndex;
+    return this.rows.find(row => row[0].rowIndex === rowIndex);
+  }
+
+  getCell(rowIndex, colIndex) {
+    rowIndex = +rowIndex;
+    colIndex = +colIndex;
+    return this.rows.find(row => row[0].rowIndex === rowIndex)[colIndex];
   }
 
   get() {
