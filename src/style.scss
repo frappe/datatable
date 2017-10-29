@@ -1,7 +1,12 @@
 @import "~bootstrap/scss/functions";
 @import "~bootstrap/scss/mixins";
 @import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/reboot";
 @import "~bootstrap/scss/tables";
+
+.data-table * {
+	outline: none;
+}
 
 .data-table {
 	width: 100%;
@@ -48,16 +53,43 @@
 	.content {
 		padding: 8px;
 		border: 1px solid transparent;
+
+		&.ellipsis {
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			overflow: hidden;
+		}
+	}
+
+	.edit-cell {
+		display: none;
+		position: absolute;
+		padding: 8px;
+		background: #fff;
+		z-index: 1;
+		height: 100%;
+
+		input {
+			outline: none;
+			width: 100%;
+			border: none;
+			height: 1em;
+		}
 	}
 
 	&.selected .content {
 		border: 1px solid theme-color('primary');
 	}
 
-	.content.ellipsis {
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		overflow: hidden;
+	&.editing {
+		.content {
+			display: none;
+		}
+
+		.edit-cell {
+			border: 2px solid theme-color('primary');
+			display: block;
+		}
 	}
 }
 
@@ -65,24 +97,6 @@
   &.row-highlight {
     background-color: theme-color('light');
   }
-}
-
-.edit-cell {
-	position: absolute;
-	top: -1px;
-	left: -1px;
-    background: white;
-	z-index: 1;
-
-	input {
-		outline: none;
-		padding: 8px;
-		font-size: inherit;
-		font-family: inherit;
-		width: inherit;
-		height: inherit;
-		border: 2px solid theme-color('primary');
-	}
 }
 
 .noselect {

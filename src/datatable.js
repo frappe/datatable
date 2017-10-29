@@ -259,10 +259,14 @@ export default class DataTable {
       'margin-top': (this.header.height() + 1) + 'px'
     });
 
-    // hide edit cells by default
-    this.setStyle('.data-table .body-scrollable .edit-cell', {
-      display: 'none'
-    });
+    // center align Sr. No column
+    if (this.options.addSerialNoColumn) {
+      const index = this.getSerialColumnIndex();
+
+      this.setStyle(`.data-table [data-col-index="${index}"]`, {
+        'text-align': 'center'
+      });
+    }
 
     this.bodyScrollable.find('.table').css('margin', 0);
   }
@@ -296,7 +300,6 @@ export default class DataTable {
     $(document.body).on('keypress', (e) => {
       // enter keypress on focused cell
       if (e.which === 13 && this.$focusedCell && !this.$editingCell) {
-        this.log('editingCell');
         this.activateEditing(this.$focusedCell);
         e.stopImmediatePropagation();
       }
@@ -313,7 +316,9 @@ export default class DataTable {
 
     $(document.body).on('click', e => {
       if ($(e.target).is('.edit-cell, .edit-cell *')) return;
-      self.bodyScrollable.find('.edit-cell').hide();
+      if (!this.$editingCell) return;
+
+      this.$editingCell.removeClass('editing');
       this.$editingCell = null;
     });
   }
@@ -336,6 +341,8 @@ export default class DataTable {
     }
 
     this.$editingCell = $cell;
+    $cell.addClass('editing');
+
     const $editCell = $cell.find('.edit-cell').empty();
     const cell = this.getCell(rowIndex, colIndex);
     const editing = this.getEditingObject(colIndex, rowIndex, cell.content, $editCell);
@@ -344,7 +351,6 @@ export default class DataTable {
       this.currentCellEditing = editing;
       // initialize editing input with cell value
       editing.initValue(cell.content);
-      $editCell.show();
     }
   }
 
@@ -675,6 +681,12 @@ export default class DataTable {
 
   getTotalRows() {
     return this.datamanager.getRowCount();
+  }
+
+  getSerialColumnIndex() {
+    const columns = this.datamanager.getColumns();
+
+    return columns.findIndex(column => column.content.includes('Sr. No'));
   }
 
   log() {
