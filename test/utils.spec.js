@@ -4,7 +4,8 @@ import chai from 'chai';
 import {
 	makeDataAttributeString,
 	getCSSString,
-	buildCSSRule,
+  buildCSSRule,
+  removeCSSRule
 } from '../src/utils.js';
 
 chai.expect();
@@ -67,4 +68,14 @@ describe('#utils', () => {
         .to.be.equal('.test { width: 5px; height: 19px; margin-top: 3px; }.test2 { height: 45px; }');
     });
   });
+
+  describe('removeCSSRule', () => {
+    it('should remove the css rule based on the selector', () => {
+      const rule = '.test';
+      const cssRuleString = `.test {margin-top: 2px;} .test2 {color: blue;}`;
+
+      expect(removeCSSRule(rule, cssRuleString))
+        .to.be.equal('.test2 {color: blue;}');
+    })
+  })
 });

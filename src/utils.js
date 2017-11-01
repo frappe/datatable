@@ -180,6 +180,18 @@ function buildCSSRule(rule, styleMap, cssRulesString = '') {
   return `${cssRulesString}${getCSSRuleBlock(rule, styleMap)}`;
 }
 
+function removeCSSRule(rule, cssRulesString = '') {
+  const rulePatternStr = `${escapeRegExp(rule)} {([^}]*)}`;
+  const rulePattern = new RegExp(rulePatternStr, 'g');
+  let output = cssRulesString;
+
+  if (cssRulesString && cssRulesString.match(rulePattern)) {
+    output = cssRulesString.replace(rulePattern, '');
+  }
+
+  return output.trim();
+}
+
 export default {
   getHeaderHTML,
   getBodyHTML,
@@ -191,6 +203,7 @@ export default {
   namespaceSelector,
   getCSSString,
   buildCSSRule,
+  removeCSSRule,
   makeDataAttributeString,
   getDefault,
   escapeRegExp
