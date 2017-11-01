@@ -3,12 +3,13 @@ import {
   getHeaderHTML,
   getBodyHTML,
   getRowHTML,
-  getColumnHTML,
   buildCSSRule,
+  removeCSSRule,
   getDefault
 } from './utils';
 
 import DataManager from './datamanager';
+import CellManager from './cellmanager';
 
 import './style.scss';
 
@@ -40,10 +41,22 @@ export default class DataTable {
     // map of checked rows
     this.checkMap = [];
 
+    // make dom, make style, bind events
+    this.make();
+
     this.datamanager = new DataManager(this.options);
+    this.cellmanager = new CellManager(this);
 
     if (this.options.data) {
       this.refresh(this.options.data);
+    }
+  }
+
+  make() {
+    if (this.wrapper.find('.data-table').length === 0) {
+      this.makeDom();
+      this.makeStyle();
+      this.bindEvents();
     }
   }
 
@@ -56,8 +69,9 @@ export default class DataTable {
         </div>
         <div class="data-table-footer">
         </div>
-        <div class="data-table-popup">
-          <div class="edit-popup"></div>
+        <div class="data-table-borders">
+          <div class="border-outline"></div>
+          <div class="border-background"></div>
         </div>
       </div>
     `);
@@ -66,6 +80,7 @@ export default class DataTable {
     this.bodyScrollable = this.wrapper.find('.body-scrollable');
     // this.body = this.wrapper.find('.data-table-body');
     this.footer = this.wrapper.find('.data-table-footer');
+    this.$borders = this.wrapper.find('.data-table-borders');
   }
 
   refresh(data) {
@@ -79,12 +94,6 @@ export default class DataTable {
   }
 
   render() {
-    if (this.wrapper.find('.data-table').length === 0) {
-      this.makeDom();
-      this.makeStyle();
-      this.bindEvents();
-    }
-
     this.renderHeader();
     this.renderBody();
     this.setDimensions();
@@ -188,29 +197,12 @@ export default class DataTable {
     return rows.map((row) => getRowHTML(row, { rowIndex: row[0].rowIndex }));
   }
 
-  updateCell(rowIndex, colIndex, value) {
-    const cell = this.getCell(rowIndex, colIndex);
-
-    cell.content = value;
-    this.refreshCell(cell);
-  }
-
   refreshRows() {
     this.renderBody();
     this.setDimensions();
   }
 
-  refreshCell(cell) {
-    const selector = `.data-table-col[data-row-index="${cell.rowIndex}"][data-col-index="${cell.colIndex}"]`;
-    const $cell = this.bodyScrollable.find(selector);
-    const $newCell = $(getColumnHTML(cell));
-
-    $cell.replaceWith($newCell);
-  }
-
   bindEvents() {
-    this.bindFocusCell();
-    this.bindEditCell();
     this.bindResizeColumn();
     this.bindSortColumn();
     this.bindCheckbox();
@@ -275,136 +267,6 @@ export default class DataTable {
     }
 
     this.bodyScrollable.find('.table').css('margin', 0);
-  }
-
-  bindFocusCell() {
-    const self = this;
-
-    this.$focusedCell = null;
-    this.bodyScrollable.on('click', '.data-table-col', function () {
-      const $cell = $(this);
-      const { colIndex } = self.getCellAttr($cell);
-
-      if (self.options.addCheckboxColumn && colIndex === 0) {
-        return;
-      }
-
-      self.$focusedCell = $cell;
-      self.bodyScrollable.find('.data-table-col').removeClass('selected');
-      $cell.addClass('selected');
-    });
-  }
-
-  bindEditCell() {
-    const self = this;
-
-    this.$editingCell = null;
-    this.bodyScrollable.on('dblclick', '.data-table-col', function () {
-      self.activateEditing($(this));
-    });
-
-    $(document.body).on('keypress', (e) => {
-      // enter keypress on focused cell
-      if (e.which === 13 && this.$focusedCell && !this.$editingCell) {
-        this.activateEditing(this.$focusedCell);
-        e.stopImmediatePropagation();
-      }
-    });
-
-    $(document.body).on('keypress', (e) => {
-      // enter keypress on editing cell
-      if (e.which === 13 && this.$editingCell) {
-        this.log('submitCell');
-        this.submitEditing(this.$editingCell);
-        e.stopImmediatePropagation();
-      }
-    });
-
-    $(document.body).on('click', e => {
-      if ($(e.target).is('.edit-cell, .edit-cell *')) return;
-      if (!this.$editingCell) return;
-
-      this.$editingCell.removeClass('editing');
-      this.$editingCell = null;
-    });
-  }
-
-  activateEditing($cell) {
-    const { rowIndex, colIndex } = this.getCellAttr($cell);
-    const col = this.getColumn(colIndex);
-
-    if (col && col.editable === false) {
-      return;
-    }
-
-    if (this.$editingCell) {
-      const { _rowIndex, _colIndex } = this.getCellAttr(this.$editingCell);
-
-      if (rowIndex === _rowIndex && colIndex === _colIndex) {
-        // editing the same cell
-        return;
-      }
-    }
-
-    this.$editingCell = $cell;
-    $cell.addClass('editing');
-
-    const $editCell = $cell.find('.edit-cell').empty();
-    const cell = this.getCell(rowIndex, colIndex);
-    const editing = this.getEditingObject(colIndex, rowIndex, cell.content, $editCell);
-
-    if (editing) {
-      this.currentCellEditing = editing;
-      // initialize editing input with cell value
-      editing.initValue(cell.content);
-    }
-  }
-
-  getEditingObject(colIndex, rowIndex, value, parent) {
-    if (this.options.editing) {
-      return this.options.editing(colIndex, rowIndex, value, parent);
-    }
-
-    // editing fallback
-    const $input = $('<input type="text" />');
-
-    parent.append($input);
-
-    return {
-      initValue(value) {
-        return $input.val(value);
-      },
-      getValue() {
-        return $input.val();
-      },
-      setValue(value) {
-        return $input.val(value);
-      }
-    };
-  }
-
-  submitEditing($cell) {
-    const { rowIndex, colIndex } = this.getCellAttr($cell);
-
-    if ($cell) {
-      const editing = this.currentCellEditing;
-
-      if (editing) {
-        const value = editing.getValue();
-        const done = editing.setValue(value);
-
-        if (done && done.then) {
-          // wait for promise then update internal state
-          done.then(
-            () => this.updateCell(rowIndex, colIndex, value)
-          );
-        } else {
-          this.updateCell(rowIndex, colIndex, value);
-        }
-      }
-    }
-
-    this.currentCellEditing = null;
   }
 
   bindResizeColumn() {
@@ -648,6 +510,13 @@ export default class DataTable {
     let styles = this.$style.text();
 
     styles = buildCSSRule(rule, styleMap, styles);
+    this.$style.html(styles);
+  }
+
+  removeStyle(rule) {
+    let styles = this.$style.text();
+
+    styles = removeCSSRule(rule, styles);
     this.$style.html(styles);
   }
 
