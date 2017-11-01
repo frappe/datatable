@@ -50,7 +50,7 @@ export default class DataTable {
   makeDom() {
     this.wrapper.html(`
       <div class="data-table">
-        <table class="data-table-header table table-bordered">
+        <table class="data-table-header">
         </table>
         <div class="body-scrollable">
         </div>
@@ -262,7 +262,7 @@ export default class DataTable {
     this.setBodyWidth();
 
     this.setStyle('.data-table .body-scrollable', {
-      'margin-top': (this.header.height() + 1) + 'px'
+      'margin-top': this.header.height() + 'px'
     });
 
     // center align Sr. No column

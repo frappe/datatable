@@ -1,9 +1,12 @@
-@import "~bootstrap/scss/functions";
-@import "~bootstrap/scss/mixins";
-@import "~bootstrap/scss/variables";
-// @import "~bootstrap/scss/reboot";
-@import "~bootstrap/scss/tables";
+/* variables */
 
+:root {
+	--border-color: #d1d8dd;
+	--primary-color: rgb(82, 146, 247);
+	--light-bg: #fafbfc;
+}
+
+/* resets */
 *, *::after, *::before {
 	box-sizing: border-box;
 }
@@ -16,6 +19,8 @@ button, input {
 	margin: 0;
 }
 
+/* styling */
+
 .data-table * {
 	outline: none;
 }
@@ -25,19 +30,24 @@ button, input {
 	position: relative;
 	overflow: auto;
 
-	.table {
+	table {
 		border-collapse: collapse;
 	}
 
-	.table > thead > tr > td, .table > tbody > tr > td {
+	table td {
 		padding: 0;
+		border: 1px solid var(--border-color);
+	}
+
+	thead td {
+		border-bottom-width: 2px;
 	}
 }
 
 .body-scrollable {
 	max-height: 500px;
 	overflow: auto;
-	border-bottom: 1px solid $border-color;
+	border-bottom: 1px solid var(--border-color);
 }
 
 .data-table-header {
@@ -75,7 +85,7 @@ button, input {
 
 	.edit-cell {
 		display: none;
-		position: absolute;
+		// position: absolute;
 		padding: 8px;
 		background: #fff;
 		z-index: 1;
@@ -90,7 +100,7 @@ button, input {
 	}
 
 	&.selected .content {
-		border: 1px solid theme-color('primary');
+		border: 1px solid var(--primary-color);
 	}
 
 	&.editing {
@@ -99,7 +109,7 @@ button, input {
 		}
 
 		.edit-cell {
-			border: 2px solid theme-color('primary');
+			border: 2px solid var(--primary-color);
 			display: block;
 		}
 	}
@@ -107,7 +117,7 @@ button, input {
 
 .data-table-row {
   &.row-highlight {
-    background-color: theme-color('light');
+    background-color: var(--light-bg);
   }
 }
 
