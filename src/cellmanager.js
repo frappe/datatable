@@ -20,6 +20,7 @@ export default class CellManager {
     this.bindFocusCell();
     this.bindEditCell();
     this.bindKeyboardNav();
+    this.bindKeyboardSelection();
   }
 
   bindFocusCell() {
@@ -34,6 +35,7 @@ export default class CellManager {
   focusCell($cell) {
     if (!$cell.length) return;
     this.deactivateEditing();
+    this.clearSelection();
 
     const { colIndex } = this.getCellAttr($cell);
 
@@ -98,47 +100,120 @@ export default class CellManager {
   }
 
   bindKeyboardNav() {
-    keyboard.on('left', () => {
+    const focusCell = (direction) => {
       if (!this.$focusedCell) return;
+      let $cell = this.$focusedCell;
 
-      this.focusCell(this.$focusedCell.prev());
-    });
+      if (direction === 'left') {
+        $cell = this.getLeftCell$($cell);
+      } else if (direction === 'right') {
+        $cell = this.getRightCell$($cell);
+      } else if (direction === 'up') {
+        $cell = this.getAboveCell$($cell);
+      } else if (direction === 'down') {
+        $cell = this.getBelowCell$($cell);
+      }
 
-    keyboard.on('right', () => {
-      if (!this.$focusedCell) return;
+      this.focusCell($cell);
+    };
 
-      this.focusCell(this.$focusedCell.next());
-    });
-
-    keyboard.on('up', () => {
-      if (!this.$focusedCell) return;
-
-      const { colIndex } = this.getCellAttr(this.$focusedCell);
-      const $upRow = this.$focusedCell.parent().prev();
-      const $upCell = $upRow.find(`[data-col-index="${colIndex}"]`);
-
-      this.focusCell($upCell);
-    });
-
-    keyboard.on('down', () => {
-      if (!this.$focusedCell) return;
-
-      const { colIndex } = this.getCellAttr(this.$focusedCell);
-      const $downRow = this.$focusedCell.parent().next();
-      const $downCell = $downRow.find(`[data-col-index="${colIndex}"]`);
-
-      this.focusCell($downCell);
-    });
-
-    keyboard.on('shift+left', () => {
-      if (!this.$focusedCell) return;
-
-      // this.focusCell($downCell);
-    });
+    ['left', 'right', 'up', 'down'].map(
+      direction => keyboard.on(direction, () => focusCell(direction))
+    );
 
     keyboard.on('esc', () => {
       this.deactivateEditing();
     });
+  }
+
+  bindKeyboardSelection() {
+    const getNextSelectionCursor = (direction) => {
+      let $selectionCursor = this.getSelectionCursor();
+
+      if (direction === 'left') {
+        $selectionCursor = this.getLeftCell$($selectionCursor);
+      } else if (direction === 'right') {
+        $selectionCursor = this.getRightCell$($selectionCursor);
+      } else if (direction === 'up') {
+        $selectionCursor = this.getAboveCell$($selectionCursor);
+      } else if (direction === 'down') {
+        $selectionCursor = this.getBelowCell$($selectionCursor);
+      }
+
+      return $selectionCursor;
+    };
+
+    const selectArea = ($selectionCursor) => {
+      if (!this.$focusedCell) return;
+
+      if (this.selectArea(this.$focusedCell, $selectionCursor)) {
+        // valid selection
+        this.$selectionCursor = $selectionCursor;
+      }
+    };
+
+    ['left', 'right', 'up', 'down'].map(
+      direction => keyboard.on('shift+' + direction,
+        () => selectArea(getNextSelectionCursor(direction)))
+    );
+  }
+
+  selectArea(colIndex1, rowIndex1, colIndex2, rowIndex2) {
+
+    if (typeof colIndex1 === 'object') {
+      if (!(colIndex1.length && rowIndex1.length)) return false;
+
+      const cell1 = this.getCellAttr(colIndex1);
+      const cell2 = this.getCellAttr(rowIndex1);
+
+      colIndex1 = cell1.colIndex;
+      rowIndex1 = cell1.rowIndex;
+      colIndex2 = cell2.colIndex;
+      rowIndex2 = cell2.rowIndex;
+    }
+
+    if (rowIndex1 > rowIndex2) {
+      [rowIndex1, rowIndex2] = [rowIndex2, rowIndex1];
+    }
+
+    if (colIndex1 > colIndex2) {
+      [colIndex1, colIndex2] = [colIndex2, colIndex1];
+    }
+
+    this.clearSelection();
+
+    let cells = [];
+    let colIndex = colIndex1;
+    let rowIndex = rowIndex1;
+    let rowIndices = [];
+
+    while (rowIndex <= rowIndex2) {
+      rowIndices.push(rowIndex);
+      rowIndex++;
+    }
+
+    rowIndices.map(rowIndex => {
+      while (colIndex <= colIndex2) {
+        cells.push([colIndex, rowIndex]);
+        colIndex++;
+      }
+      colIndex = colIndex1;
+    });
+
+    const $cells = cells.map(([c, r]) => this.getCell$(r, c)[0]);
+
+    $($cells).addClass('highlight');
+
+    return true;
+  }
+
+  clearSelection() {
+    this.bodyScrollable.find('.data-table-col').removeClass('highlight');
+    this.$selectionCursor = null;
+  }
+
+  getSelectionCursor() {
+    return this.$selectionCursor || this.$focusedCell;
   }
 
   activateEditing($cell) {
@@ -240,6 +315,32 @@ export default class CellManager {
     const $newCell = $(getColumnHTML(cell));
 
     $cell.replaceWith($newCell);
+  }
+
+  getCell$(rowIndex, colIndex) {
+    return this.bodyScrollable.find(`.data-table-col[data-row-index="${rowIndex}"][data-col-index="${colIndex}"]`);
+  }
+
+  getAboveCell$($cell) {
+    const { colIndex } = this.getCellAttr($cell);
+    const $aboveRow = $cell.parent().prev();
+
+    return $aboveRow.find(`[data-col-index="${colIndex}"]`);
+  }
+
+  getBelowCell$($cell) {
+    const { colIndex } = this.getCellAttr($cell);
+    const $belowRow = $cell.parent().next();
+
+    return $belowRow.find(`[data-col-index="${colIndex}"]`);
+  }
+
+  getLeftCell$($cell) {
+    return $cell.prev();
+  }
+
+  getRightCell$($cell) {
+    return $cell.next();
   }
 
   getCell(rowIndex, colIndex) {

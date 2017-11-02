@@ -32,12 +32,13 @@ function getColumnHTML(column) {
   });
 
   const editCellHTML = isHeader ? '' : getEditCellHTML();
+  const sortIndicator = isHeader ? '<span class="sort-indicator"></span>' : '';
 
   return `
     <td class="data-table-col noselect" ${dataAttr}>
       <div class="content ellipsis">
         ${column.format ? column.format(column.content) : column.content}
-        <span class="sort-indicator"></span>
+        ${sortIndicator}
       </div>
       ${editCellHTML}
     </td>

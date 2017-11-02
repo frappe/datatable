@@ -113,6 +113,10 @@ button, input {
 			display: block;
 		}
 	}
+
+	&.highlight {
+		background-color: var(--light-bg);
+	}
 }
 
 .data-table-row {
