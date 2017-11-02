@@ -22,6 +22,7 @@ export default class CellManager {
     this.bindKeyboardNav();
     this.bindKeyboardSelection();
     this.bindCopyCellContents();
+    this.bindMouseEvents();
   }
 
   bindFocusCell() {
@@ -102,18 +103,9 @@ export default class CellManager {
       return $selectionCursor;
     };
 
-    const selectArea = ($selectionCursor) => {
-      if (!this.$focusedCell) return;
-
-      if (this.selectArea(this.$focusedCell, $selectionCursor)) {
-        // valid selection
-        this.$selectionCursor = $selectionCursor;
-      }
-    };
-
     ['left', 'right', 'up', 'down'].map(
       direction => keyboard.on('shift+' + direction,
-        () => selectArea(getNextSelectionCursor(direction)))
+        () => this.selectArea(getNextSelectionCursor(direction)))
     );
   }
 
@@ -123,11 +115,30 @@ export default class CellManager {
     });
   }
 
+  bindMouseEvents() {
+    let mouseDown = null;
+
+    this.bodyScrollable.on('mousedown', '.data-table-col', (e) => {
+      mouseDown = true;
+      this.focusCell($(e.currentTarget));
+    });
+
+    this.bodyScrollable.on('mouseup', () => {
+      mouseDown = false;
+    });
+
+    this.bodyScrollable.on('mousemove', '.data-table-col', (e) => {
+      if (!mouseDown) return;
+      this.selectArea($(e.currentTarget));
+    });
+  }
+
   focusCell($cell) {
     if (!$cell.length) return;
+
     const { colIndex } = this.getCellAttr($cell);
 
-    if (colIndex < this.instance.getFirstColumnIndex()) {
+    if (this.isStandardCell(colIndex)) {
       return;
     }
 
@@ -173,7 +184,16 @@ export default class CellManager {
     };
   }
 
-  selectArea($cell1, $cell2) {
+  selectArea($selectionCursor) {
+    if (!this.$focusedCell) return;
+
+    if (this._selectArea(this.$focusedCell, $selectionCursor)) {
+      // valid selection
+      this.$selectionCursor = $selectionCursor;
+    }
+  };
+
+  _selectArea($cell1, $cell2) {
     const cells = this.getCellsInRange(...arguments);
 
     if (!cells) return false;
@@ -211,6 +231,10 @@ export default class CellManager {
 
     if (colIndex1 > colIndex2) {
       [colIndex1, colIndex2] = [colIndex2, colIndex1];
+    }
+
+    if (this.isStandardCell(colIndex1) || this.isStandardCell(colIndex2)) {
+      return false;
     }
 
     let cells = [];
@@ -365,6 +389,11 @@ export default class CellManager {
     const $cell = this.bodyScrollable.find(selector);
 
     $cell.html(getCellContent(cell));
+  }
+
+  isStandardCell(colIndex) {
+    // Standard cells are in Sr. No and Checkbox column
+    return colIndex < this.instance.getFirstColumnIndex();
   }
 
   getCell$(rowIndex, colIndex) {
