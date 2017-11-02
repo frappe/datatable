@@ -584,6 +584,14 @@ export default class DataTable {
     return columns.findIndex(column => column.content.includes('Sr. No'));
   }
 
+  getViewportHeight() {
+    if (!this.viewportHeight) {
+      this.viewportHeight = this.bodyScrollable.height();
+    }
+
+    return this.viewportHeight;
+  }
+
   log() {
     if (this.options.enableLogs) {
       console.log.apply(console, arguments);

@@ -103,12 +103,29 @@ export default class CellManager {
       return true;
     };
 
+    const scrollToCell = (direction) => {
+      if (!this.$focusedCell) return false;
+
+      if (!this.inViewport(this.$focusedCell)) {
+        const { rowIndex } = this.getCellAttr(this.$focusedCell);
+
+        this.scrollToRow(rowIndex - this.getRowCountPerPage() + 2);
+        return true;
+      }
+
+      return false;
+    };
+
     ['left', 'right', 'up', 'down'].map(
       direction => keyboard.on(direction, () => focusCell(direction))
     );
 
     ['left', 'right', 'up', 'down'].map(
       direction => keyboard.on('ctrl+' + direction, () => focusLastCell(direction))
+    );
+
+    ['left', 'right', 'up', 'down'].map(
+      direction => keyboard.on(direction, () => scrollToCell(direction))
     );
 
     keyboard.on('esc', () => {
@@ -474,6 +491,51 @@ export default class CellManager {
 
   getCellAttr($cell) {
     return $cell.data();
+  }
+
+  getRowHeight() {
+    return this.bodyScrollable.find('.data-table-row:first').height();
+  }
+
+  inViewport($cell) {
+    let colIndex, rowIndex;
+
+    if (typeof $cell === 'number') {
+      [colIndex, rowIndex] = arguments;
+    } else {
+      let cell = this.getCellAttr($cell);
+
+      colIndex = cell.colIndex;
+      rowIndex = cell.rowIndex;
+    }
+
+    const viewportHeight = this.instance.getViewportHeight();
+    const rowHeight = this.getRowHeight();
+    const rowOffset = rowIndex * rowHeight;
+
+    const scrollTopOffset = this.bodyScrollable[0].scrollTop;
+
+    if (rowOffset - scrollTopOffset + rowHeight < viewportHeight) {
+      return true;
+    }
+
+    return false;
+  }
+
+  scrollToCell($cell) {
+    const { rowIndex } = this.getCellAttr($cell);
+
+    this.scrollToRow(rowIndex);
+  }
+
+  getRowCountPerPage() {
+    return Math.ceil(this.instance.getViewportHeight() / this.getRowHeight());
+  }
+
+  scrollToRow(rowIndex) {
+    const offset = rowIndex * this.getRowHeight();
+
+    this.bodyScrollable[0].scrollTop = offset;
   }
 }
 
