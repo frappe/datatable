@@ -558,6 +558,18 @@ export default class DataTable {
     return this.datamanager.getRowCount();
   }
 
+  getFirstColumnIndex() {
+    if (this.options.addCheckboxColumn && this.options.addSerialNoColumn) {
+      return 2;
+    }
+
+    if (this.options.addCheckboxColumn || this.options.addSerialNoColumn) {
+      return 1;
+    }
+
+    return 0;
+  }
+
   getSerialColumnIndex() {
     const columns = this.datamanager.getColumns();
 

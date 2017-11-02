@@ -34,17 +34,24 @@ export default class CellManager {
 
   focusCell($cell) {
     if (!$cell.length) return;
+    const { colIndex } = this.getCellAttr($cell);
+
+    if (colIndex < this.instance.getFirstColumnIndex()) {
+      return;
+    }
+
     this.deactivateEditing();
     this.clearSelection();
-
-    const { colIndex } = this.getCellAttr($cell);
 
     if (this.options.addCheckboxColumn && colIndex === 0) {
       return;
     }
 
+    if (this.$focusedCell) {
+      this.$focusedCell.removeClass('selected');
+    }
+
     this.$focusedCell = $cell;
-    this.bodyScrollable.find('.data-table-col').removeClass('selected');
     $cell.addClass('selected');
 
     this.highlightRowColumnHeader($cell);
@@ -208,7 +215,7 @@ export default class CellManager {
   }
 
   clearSelection() {
-    this.bodyScrollable.find('.data-table-col').removeClass('highlight');
+    this.bodyScrollable.find('.data-table-col.highlight').removeClass('highlight');
     this.$selectionCursor = null;
   }
 
