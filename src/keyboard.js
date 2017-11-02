@@ -33,11 +33,16 @@ function handler(e) {
   const _handlers = handlers[key];
 
   if (_handlers && _handlers.length > 0) {
-    _handlers.map(h => h());
+    _handlers.map(handler => {
+      const preventBubbling = handler();
 
-    if (!e.isDefaultPrevented()) {
-      e.preventDefault();
-    }
+      if (preventBubbling === undefined || preventBubbling === true) {
+        if (!e.isDefaultPrevented()) {
+          e.preventDefault();
+        }
+      }
+    });
+
   }
 }
 

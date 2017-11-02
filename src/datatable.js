@@ -570,6 +570,14 @@ export default class DataTable {
     return 0;
   }
 
+  getLastColumnIndex() {
+    return this.datamanager.getColumnCount() - 1;
+  }
+
+  getLastRowIndex() {
+    return this.datamanager.getRowCount() - 1;
+  }
+
   getSerialColumnIndex() {
     const columns = this.datamanager.getColumns();
 

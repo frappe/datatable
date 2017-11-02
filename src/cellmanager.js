@@ -61,7 +61,10 @@ export default class CellManager {
 
   bindKeyboardNav() {
     const focusCell = (direction) => {
-      if (!this.$focusedCell) return;
+      if (!this.$focusedCell || this.$editingCell) {
+        return false;
+      }
+
       let $cell = this.$focusedCell;
 
       if (direction === 'left') {
@@ -75,10 +78,37 @@ export default class CellManager {
       }
 
       this.focusCell($cell);
+      return true;
+    };
+
+    const focusLastCell = (direction) => {
+      if (!this.$focusedCell || this.$editingCell) {
+        return false;
+      }
+
+      let $cell = this.$focusedCell;
+      const { rowIndex, colIndex } = this.getCellAttr($cell);
+
+      if (direction === 'left') {
+        $cell = this.getLeftMostCell$(rowIndex);
+      } else if (direction === 'right') {
+        $cell = this.getRightMostCell$(rowIndex);
+      } else if (direction === 'up') {
+        $cell = this.getTopMostCell$(colIndex);
+      } else if (direction === 'down') {
+        $cell = this.getBottomMostCell$(colIndex);
+      }
+
+      this.focusCell($cell);
+      return true;
     };
 
     ['left', 'right', 'up', 'down'].map(
       direction => keyboard.on(direction, () => focusCell(direction))
+    );
+
+    ['left', 'right', 'up', 'down'].map(
+      direction => keyboard.on('ctrl+' + direction, () => focusLastCell(direction))
     );
 
     keyboard.on('esc', () => {
@@ -420,6 +450,22 @@ export default class CellManager {
 
   getRightCell$($cell) {
     return $cell.next();
+  }
+
+  getLeftMostCell$(rowIndex) {
+    return this.getCell$(rowIndex, this.instance.getFirstColumnIndex());
+  }
+
+  getRightMostCell$(rowIndex) {
+    return this.getCell$(rowIndex, this.instance.getLastColumnIndex());
+  }
+
+  getTopMostCell$(colIndex) {
+    return this.getCell$(0, colIndex);
+  }
+
+  getBottomMostCell$(colIndex) {
+    return this.getCell$(this.instance.getLastRowIndex(), colIndex);
   }
 
   getCell(colIndex, rowIndex) {
