@@ -334,7 +334,9 @@ export default class CellManager {
     if (!cells) return;
 
     const values = cells
+      // get cell objects
       .map(index => this.getCell(...index))
+      // convert to array of rows
       .reduce((acc, curr) => {
         const rowIndex = curr.rowIndex;
 
@@ -343,7 +345,9 @@ export default class CellManager {
 
         return acc;
       }, [])
+      // join values by tab
       .map(row => row.join('\t'))
+      // join rows by newline
       .join('\n');
 
     copyTextToClipboard(values);
