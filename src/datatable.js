@@ -533,8 +533,8 @@ export default class DataTable {
     return this.datamanager.getRow(rowIndex);
   }
 
-  getCell(rowIndex, colIndex) {
-    return this.datamanager.getCell(rowIndex, colIndex);
+  getCell(colIndex, rowIndex) {
+    return this.datamanager.getCell(colIndex, rowIndex);
   }
 
   getColumnHeaderElement(colIndex) {

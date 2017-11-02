@@ -181,7 +181,7 @@ export default class DataManager {
     return this.rows.find(row => row[0].rowIndex === rowIndex);
   }
 
-  getCell(rowIndex, colIndex) {
+  getCell(colIndex, rowIndex) {
     rowIndex = +rowIndex;
     colIndex = +colIndex;
     return this.rows.find(row => row[0].rowIndex === rowIndex)[colIndex];

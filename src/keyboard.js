@@ -9,7 +9,8 @@ const KEYCODES = {
   39: 'right',
   40: 'down',
   9: 'tab',
-  27: 'esc'
+  27: 'esc',
+  67: 'c'
 };
 
 const handlers = {};

@@ -1,4 +1,4 @@
-import { getColumnHTML } from './utils';
+import { getCellContent, copyTextToClipboard } from './utils';
 import keyboard from 'keyboard';
 
 export default class CellManager {
@@ -21,6 +21,7 @@ export default class CellManager {
     this.bindEditCell();
     this.bindKeyboardNav();
     this.bindKeyboardSelection();
+    this.bindCopyCellContents();
   }
 
   bindFocusCell() {
@@ -30,56 +31,6 @@ export default class CellManager {
     bodyScrollable.on('click', '.data-table-col', (e) => {
       this.focusCell($(e.currentTarget));
     });
-  }
-
-  focusCell($cell) {
-    if (!$cell.length) return;
-    const { colIndex } = this.getCellAttr($cell);
-
-    if (colIndex < this.instance.getFirstColumnIndex()) {
-      return;
-    }
-
-    this.deactivateEditing();
-    this.clearSelection();
-
-    if (this.options.addCheckboxColumn && colIndex === 0) {
-      return;
-    }
-
-    if (this.$focusedCell) {
-      this.$focusedCell.removeClass('selected');
-    }
-
-    this.$focusedCell = $cell;
-    $cell.addClass('selected');
-
-    this.highlightRowColumnHeader($cell);
-  }
-
-  highlightRowColumnHeader($cell) {
-    const { colIndex, rowIndex } = this.getCellAttr($cell);
-    const _colIndex = this.instance.getSerialColumnIndex();
-    const colHeaderSelector = `.data-table-header .data-table-col[data-col-index="${colIndex}"]`;
-    const rowHeaderSelector = `.data-table-col[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
-
-    if (this.lastSelectors) {
-      this.instance.removeStyle(this.lastSelectors.colHeaderSelector);
-      this.instance.removeStyle(this.lastSelectors.rowHeaderSelector);
-    }
-
-    this.instance.setStyle(colHeaderSelector, {
-      'background-color': 'var(--light-bg)'
-    });
-
-    this.instance.setStyle(rowHeaderSelector, {
-      'background-color': 'var(--light-bg)'
-    });
-
-    this.lastSelectors = {
-      colHeaderSelector,
-      rowHeaderSelector
-    };
   }
 
   bindEditCell() {
@@ -97,6 +48,7 @@ export default class CellManager {
       } else if (this.$editingCell) {
         // enter keypress on editing cell
         this.submitEditing(this.$editingCell);
+        this.deactivateEditing();
       }
     });
 
@@ -165,13 +117,87 @@ export default class CellManager {
     );
   }
 
-  selectArea(colIndex1, rowIndex1, colIndex2, rowIndex2) {
+  bindCopyCellContents() {
+    keyboard.on('ctrl+c', () => {
+      this.copyCellContents(this.$focusedCell, this.$selectionCursor);
+    });
+  }
 
-    if (typeof colIndex1 === 'object') {
-      if (!(colIndex1.length && rowIndex1.length)) return false;
+  focusCell($cell) {
+    if (!$cell.length) return;
+    const { colIndex } = this.getCellAttr($cell);
 
-      const cell1 = this.getCellAttr(colIndex1);
-      const cell2 = this.getCellAttr(rowIndex1);
+    if (colIndex < this.instance.getFirstColumnIndex()) {
+      return;
+    }
+
+    this.deactivateEditing();
+    this.clearSelection();
+
+    if (this.options.addCheckboxColumn && colIndex === 0) {
+      return;
+    }
+
+    if (this.$focusedCell) {
+      this.$focusedCell.removeClass('selected');
+    }
+
+    this.$focusedCell = $cell;
+    $cell.addClass('selected');
+
+    this.highlightRowColumnHeader($cell);
+  }
+
+  highlightRowColumnHeader($cell) {
+    const { colIndex, rowIndex } = this.getCellAttr($cell);
+    const _colIndex = this.instance.getSerialColumnIndex();
+    const colHeaderSelector = `.data-table-header .data-table-col[data-col-index="${colIndex}"]`;
+    const rowHeaderSelector = `.data-table-col[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
+
+    if (this.lastSelectors) {
+      this.instance.removeStyle(this.lastSelectors.colHeaderSelector);
+      this.instance.removeStyle(this.lastSelectors.rowHeaderSelector);
+    }
+
+    this.instance.setStyle(colHeaderSelector, {
+      'background-color': 'var(--light-bg)'
+    });
+
+    this.instance.setStyle(rowHeaderSelector, {
+      'background-color': 'var(--light-bg)'
+    });
+
+    this.lastSelectors = {
+      colHeaderSelector,
+      rowHeaderSelector
+    };
+  }
+
+  selectArea($cell1, $cell2) {
+    const cells = this.getCellsInRange(...arguments);
+
+    if (!cells) return false;
+    this.clearSelection();
+    const $cells = cells.map(([c, r]) => this.getCell$(r, c)[0]);
+
+    $($cells).addClass('highlight');
+    return true;
+  }
+
+  getCellsInRange($cell1, $cell2) {
+    let colIndex1, rowIndex1, colIndex2, rowIndex2;
+
+    if (typeof $cell1 === 'number') {
+      [colIndex1, rowIndex1, colIndex2, rowIndex2] = arguments;
+    } else
+    if (typeof $cell1 === 'object') {
+
+      if (!($cell1.length && $cell2.length)) {
+        return false;
+      }
+
+      const cell1 = this.getCellAttr($cell1);
+      const cell2 = this.getCellAttr($cell2);
 
       colIndex1 = cell1.colIndex;
       rowIndex1 = cell1.rowIndex;
@@ -186,8 +212,6 @@ export default class CellManager {
     if (colIndex1 > colIndex2) {
       [colIndex1, colIndex2] = [colIndex2, colIndex1];
     }
-
-    this.clearSelection();
 
     let cells = [];
     let colIndex = colIndex1;
@@ -207,11 +231,7 @@ export default class CellManager {
       colIndex = colIndex1;
     });
 
-    const $cells = cells.map(([c, r]) => this.getCell$(r, c)[0]);
-
-    $($cells).addClass('highlight');
-
-    return true;
+    return cells;
   }
 
   clearSelection() {
@@ -244,7 +264,7 @@ export default class CellManager {
     $cell.addClass('editing');
 
     const $editCell = $cell.find('.edit-cell').empty();
-    const cell = this.instance.getCell(rowIndex, colIndex);
+    const cell = this.getCell(colIndex, rowIndex);
     const editing = this.getEditingObject(colIndex, rowIndex, cell.content, $editCell);
 
     if (editing) {
@@ -308,8 +328,29 @@ export default class CellManager {
     this.currentCellEditing = null;
   }
 
+  copyCellContents($cell1, $cell2) {
+    const cells = this.getCellsInRange(...arguments);
+
+    if (!cells) return;
+
+    const values = cells
+      .map(index => this.getCell(...index))
+      .reduce((acc, curr) => {
+        const rowIndex = curr.rowIndex;
+
+        acc[rowIndex] = acc[rowIndex] || [];
+        acc[rowIndex].push(curr.content);
+
+        return acc;
+      }, [])
+      .map(row => row.join('\t'))
+      .join('\n');
+
+    copyTextToClipboard(values);
+  }
+
   updateCell(rowIndex, colIndex, value) {
-    const cell = this.getCell(rowIndex, colIndex);
+    const cell = this.getCell(colIndex, rowIndex);
 
     cell.content = value;
     this.refreshCell(cell);
@@ -317,11 +358,9 @@ export default class CellManager {
 
   refreshCell(cell) {
     const selector = `.data-table-col[data-row-index="${cell.rowIndex}"][data-col-index="${cell.colIndex}"]`;
-    const bodyScrollable = this.instance.bodyScrollable;
-    const $cell = bodyScrollable.find(selector);
-    const $newCell = $(getColumnHTML(cell));
+    const $cell = this.bodyScrollable.find(selector);
 
-    $cell.replaceWith($newCell);
+    $cell.html(getCellContent(cell));
   }
 
   getCell$(rowIndex, colIndex) {
@@ -350,8 +389,8 @@ export default class CellManager {
     return $cell.next();
   }
 
-  getCell(rowIndex, colIndex) {
-    return this.instance.datamanager.getCell(rowIndex, colIndex);
+  getCell(colIndex, rowIndex) {
+    return this.instance.datamanager.getCell(colIndex, rowIndex);
   }
 
   getCellAttr($cell) {
