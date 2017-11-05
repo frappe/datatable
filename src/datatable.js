@@ -3,13 +3,12 @@ import {
   getHeaderHTML,
   getBodyHTML,
   getRowHTML,
-  buildCSSRule,
-  removeCSSRule,
   getDefault
 } from './utils';
 
 import DataManager from './datamanager';
 import CellManager from './cellmanager';
+import Style from './style';
 
 import './style.scss';
 
@@ -253,15 +252,15 @@ export default class DataTable {
 
     this.setBodyWidth();
 
-    this.setStyle('.data-table .body-scrollable', {
-      'margin-top': this.header.height() + 'px'
+    this.style.set(this.bodyScrollable[0], {
+      marginTop: this.header.height() + 'px'
     });
 
     // center align Sr. No column
     if (this.options.addSerialNoColumn) {
       const index = this.getSerialColumnIndex();
 
-      this.setStyle(`.data-table [data-col-index="${index}"]`, {
+      this.style.setStyle(`.data-table [data-col-index="${index}"]`, {
         'text-align': 'center'
       });
     }
@@ -446,29 +445,29 @@ export default class DataTable {
 
   setColumnWidth(colIndex, width) {
     // set width for content
-    this.setStyle(`[data-col-index="${colIndex}"] .content`, {
+    this.style.setStyle(`[data-col-index="${colIndex}"] .content`, {
       width: width + 'px'
     });
     // set width for edit cell
-    this.setStyle(`[data-col-index="${colIndex}"] .edit-cell`, {
+    this.style.setStyle(`[data-col-index="${colIndex}"] .edit-cell`, {
       width: width + 'px'
     });
   }
 
   setColumnHeaderWidth(colIndex, width) {
-    this.setStyle(`[data-col-index="${colIndex}"][data-is-header] .content`, {
+    this.style.setStyle(`[data-col-index="${colIndex}"][data-is-header] .content`, {
       width: width + 'px'
     });
   }
 
   setDefaultCellHeight(height) {
-    this.setStyle('.data-table-col .content', {
+    this.style.setStyle('.data-table-col .content', {
       height: height + 'px'
     });
   }
 
   setRowHeight(rowIndex, height) {
-    this.setStyle(`[data-row-index="${rowIndex}"] .content`, {
+    this.style.setStyle(`[data-row-index="${rowIndex}"] .content`, {
       height: height + 'px'
     });
   }
@@ -506,23 +505,8 @@ export default class DataTable {
     );
   }
 
-  setStyle(rule, styleMap) {
-    let styles = this.$style.text();
-
-    styles = buildCSSRule(rule, styleMap, styles);
-    this.$style.html(styles);
-  }
-
-  removeStyle(rule) {
-    let styles = this.$style.text();
-
-    styles = removeCSSRule(rule, styles);
-    this.$style.html(styles);
-  }
-
   makeStyle() {
-    this.$style = $('<style data-id="datatable"></style>')
-      .prependTo(this.wrapper);
+    this.style = new Style(this.wrapper);
   }
 
   getColumn(colIndex) {

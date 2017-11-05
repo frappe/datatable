@@ -1,10 +1,12 @@
 import { getCellContent, copyTextToClipboard } from './utils';
 import keyboard from 'keyboard';
+import perf from './performance';
 
 export default class CellManager {
   constructor(instance) {
     this.instance = instance;
     this.options = this.instance.options;
+    this.style = this.instance.style;
     this.bodyScrollable = this.instance.bodyScrollable;
 
     this.prepare();
@@ -19,19 +21,13 @@ export default class CellManager {
   bindEvents() {
     this.bindFocusCell();
     this.bindEditCell();
-    this.bindKeyboardNav();
     this.bindKeyboardSelection();
     this.bindCopyCellContents();
     this.bindMouseEvents();
   }
 
   bindFocusCell() {
-    const bodyScrollable = this.instance.bodyScrollable;
-
-    this.$focusedCell = null;
-    bodyScrollable.on('click', '.data-table-col', (e) => {
-      this.focusCell($(e.currentTarget));
-    });
+    this.bindKeyboardNav();
   }
 
   bindEditCell() {
@@ -212,23 +208,18 @@ export default class CellManager {
     const colHeaderSelector = `.data-table-header .data-table-col[data-col-index="${colIndex}"]`;
     const rowHeaderSelector = `.data-table-col[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
 
-    if (this.lastSelectors) {
-      this.instance.removeStyle(this.lastSelectors.colHeaderSelector);
-      this.instance.removeStyle(this.lastSelectors.rowHeaderSelector);
+    if (this.lastHeaders) {
+      this.style.unset(this.lastHeaders, 'backgroundColor');
     }
 
-    this.instance.setStyle(colHeaderSelector, {
-      'background-color': 'var(--light-bg)'
+    const colHeader = document.querySelector(colHeaderSelector);
+    const rowHeader = document.querySelector(rowHeaderSelector);
+
+    this.style.set([colHeader, rowHeader], {
+      backgroundColor: 'var(--light-bg)'
     });
 
-    this.instance.setStyle(rowHeaderSelector, {
-      'background-color': 'var(--light-bg)'
-    });
-
-    this.lastSelectors = {
-      colHeaderSelector,
-      rowHeaderSelector
-    };
+    this.lastHeaders = [colHeader, rowHeader];
   }
 
   selectArea($selectionCursor) {

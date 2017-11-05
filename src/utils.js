@@ -271,5 +271,6 @@ export default {
   getDefault,
   escapeRegExp,
   getCellContent,
-  copyTextToClipboard
+  copyTextToClipboard,
+  camelCaseToDash
 };
