@@ -22,7 +22,7 @@
     "it": true,
     "expect": true,
     "sinon": true,
-    "$": true
+    "Clusterize": true
   },
 
   "parser": "babel-eslint",

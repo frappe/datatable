@@ -36,7 +36,8 @@ export default class DataManager {
       const val = {
         content: '<input type="checkbox" />',
         editable: false,
-        resizable: false
+        resizable: false,
+        sortable: false
       };
 
       columns = [val].concat(columns);

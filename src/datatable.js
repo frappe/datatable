@@ -1,10 +1,11 @@
-/* globals $, Clusterize */
 import {
   getHeaderHTML,
   getBodyHTML,
   getRowHTML,
   getDefault
 } from './utils';
+
+import $ from './dom';
 
 import DataManager from './datamanager';
 import CellManager from './cellmanager';
@@ -29,8 +30,8 @@ const DEFAULT_OPTIONS = {
 export default class DataTable {
   constructor(wrapper, options) {
 
-    this.wrapper = $(wrapper);
-    if (this.wrapper.length === 0) {
+    this.wrapper = wrapper;
+    if (!this.wrapper) {
       throw new Error('Invalid argument given for `wrapper`');
     }
 
@@ -52,15 +53,13 @@ export default class DataTable {
   }
 
   make() {
-    if (this.wrapper.find('.data-table').length === 0) {
-      this.makeDom();
-      this.makeStyle();
-      this.bindEvents();
-    }
+    this.makeDom();
+    this.makeStyle();
+    this.bindEvents();
   }
 
   makeDom() {
-    this.wrapper.html(`
+    this.wrapper.innerHTML = `
       <div class="data-table">
         <table class="data-table-header">
         </table>
@@ -73,13 +72,10 @@ export default class DataTable {
           <div class="border-background"></div>
         </div>
       </div>
-    `);
+    `;
 
-    this.header = this.wrapper.find('.data-table-header');
-    this.bodyScrollable = this.wrapper.find('.body-scrollable');
-    // this.body = this.wrapper.find('.data-table-body');
-    this.footer = this.wrapper.find('.data-table-footer');
-    this.$borders = this.wrapper.find('.data-table-borders');
+    this.header = $('.data-table-header', this.wrapper);
+    this.bodyScrollable = $('.body-scrollable', this.wrapper);
   }
 
   refresh(data) {
@@ -101,7 +97,7 @@ export default class DataTable {
   renderHeader() {
     const columns = this.datamanager.getColumns();
 
-    this.header.html(getHeaderHTML(columns));
+    this.header.innerHTML = getHeaderHTML(columns);
   }
 
   renderBody() {
@@ -115,22 +111,22 @@ export default class DataTable {
   renderBodyHTML() {
     const rows = this.datamanager.getRows();
 
-    this.bodyScrollable.html(`
-      <table class="data-table-body table table-bordered">
+    this.bodyScrollable.innerHTML = `
+      <table class="data-table-body">
         ${getBodyHTML(rows)}
       </table>
-    `);
+    `;
   }
 
   renderBodyWithClusterize() {
     const self = this;
 
     // empty body
-    this.bodyScrollable.html(`
-      <table class="data-table-body table table-bordered">
+    this.bodyScrollable.innerHTML = `
+      <table class="data-table-body">
         ${getBodyHTML([])}
       </table>
-    `);
+    `;
 
     this.start = 0;
     this.pageLength = 1000;
@@ -143,8 +139,8 @@ export default class DataTable {
 
     this.clusterize = new Clusterize({
       rows: initialData,
-      scrollElem: this.bodyScrollable.get(0),
-      contentElem: this.bodyScrollable.find('tbody').get(0),
+      scrollElem: this.bodyScrollable,
+      contentElem: $('tbody', this.bodyScrollable),
       callbacks: {
         clusterChanged() {
           self.highlightCheckedRows();
@@ -213,21 +209,21 @@ export default class DataTable {
     if (!this.options.takeAvailableSpace) {
       // setting width as 0 will ensure that the
       // header doesn't take the available space
-      this.header.css({
+      $.style(this.header, {
         width: 0
       });
     }
 
-    this.header.css({
+    $.style(this.header, {
       margin: 0
     });
 
     // cache minWidth for each column
     this.minWidthMap = getDefault(this.minWidthMap, []);
-    this.header.find('.data-table-col').each(function () {
-      const col = $(this);
-      const width = parseInt(col.find('.content').css('width'), 10);
-      const colIndex = col.attr('data-col-index');
+
+    $.each('.data-table-col', this.header).map(col => {
+      const width = $.style($('.content', col), 'width');
+      const { colIndex } = $.data(col);
 
       if (!self.minWidthMap[colIndex]) {
         // only set this once
@@ -236,10 +232,10 @@ export default class DataTable {
     });
 
     // set initial width as naturally calculated by table's first row
-    this.bodyScrollable.find('.data-table-row[data-row-index="0"] .data-table-col').each(function () {
-      const $cell = $(this);
-      let width = parseInt($cell.find('.content').css('width'), 10);
-      const height = parseInt($cell.find('.content').css('height'), 10);
+    $.each('.data-table-row[data-row-index="0"] .data-table-col', this.bodyScrollable).map($cell => {
+
+      let width = $.style($('.content', $cell), 'width');
+      const height = $.style($('.content', $cell), 'height');
       const { colIndex } = self.getCellAttr($cell);
       const minWidth = self.getColumnMinWidth(colIndex);
 
@@ -252,8 +248,8 @@ export default class DataTable {
 
     this.setBodyWidth();
 
-    this.style.set(this.bodyScrollable[0], {
-      marginTop: this.header.height() + 'px'
+    $.style(this.bodyScrollable, {
+      marginTop: $.style(this.header, 'height') + 'px'
     });
 
     // center align Sr. No column
@@ -265,7 +261,9 @@ export default class DataTable {
       });
     }
 
-    this.bodyScrollable.find('.table').css('margin', 0);
+    $.style($('table', this.bodyScrollable), {
+      margin: 0
+    });
   }
 
   bindResizeColumn() {
@@ -273,9 +271,9 @@ export default class DataTable {
     let isDragging = false;
     let $currCell, startWidth, startX;
 
-    this.header.on('mousedown', '.data-table-col', function (e) {
-      $currCell = $(this);
-      const colIndex = $currCell.attr('data-col-index');
+    $.on(this.header, 'mousedown', '.data-table-col', (e, cell) => {
+      $currCell = cell;
+      const { colIndex } = this.getCellAttr($currCell);
       const col = self.getColumn(colIndex);
 
       if (col && col.resizable === false) {
@@ -283,28 +281,26 @@ export default class DataTable {
       }
 
       isDragging = true;
-      startWidth = $currCell.find('.content').width();
+      startWidth = $.style($('.content', $currCell), 'width');
       startX = e.pageX;
     });
 
-    $('body').on('mouseup', function (e) {
+    $.on(document.body, 'mouseup', (e) => {
       if (!$currCell) return;
       isDragging = false;
-      const colIndex = $currCell.attr('data-col-index');
 
-      if ($currCell) {
-        const width = parseInt($currCell.find('.content').css('width'), 10);
+      const { colIndex } = this.getCellAttr($currCell);
+      const width = $.style($('.content', $currCell), 'width');
 
-        self.setColumnWidth(colIndex, width);
-        self.setBodyWidth();
-        $currCell = null;
-      }
+      self.setColumnWidth(colIndex, width);
+      self.setBodyWidth();
+      $currCell = null;
     });
 
-    $('body').on('mousemove', function (e) {
+    $.on(document.body, 'mousemove', (e) => {
       if (!isDragging) return;
       const finalWidth = startWidth + (e.pageX - startX);
-      const colIndex = $currCell.attr('data-col-index');
+      const { colIndex } = this.getCellAttr($currCell);
 
       if (self.getColumnMinWidth(colIndex) > finalWidth) {
         // don't resize past minWidth
@@ -318,10 +314,10 @@ export default class DataTable {
   bindSortColumn() {
     const self = this;
 
-    this.header.on('click', '.data-table-col .content span', function () {
-      const $cell = $(this).closest('.data-table-col');
-      let sortOrder = getDefault($cell.attr('data-sort-order'), 'none');
-      const colIndex = $cell.attr('data-col-index');
+    $.on(this.header, 'click', '.data-table-col .content span', (e, span) => {
+      const $cell = span.closest('.data-table-col');
+      let { colIndex, sortOrder } = this.getCellAttr($cell);
+      sortOrder = getDefault(sortOrder, 'none');
       const col = self.getColumn(colIndex);
 
       if (col && col.sortable === false) {
@@ -329,22 +325,24 @@ export default class DataTable {
       }
 
       // reset sort indicator
-      self.header.find('.sort-indicator').text('');
-      self.header.find('.data-table-col').attr('data-sort-order', 'none');
+      $('.sort-indicator', this.header).textContent = '';
+      $.each('.data-table-col', this.header).map($cell => {
+        $cell.setAttribute('data-sort-order', 'none');
+      });
 
       if (sortOrder === 'none') {
-        $cell.attr('data-sort-order', 'asc');
-        $cell.find('.sort-indicator').text('▲');
+        $cell.setAttribute('data-sort-order', 'asc');
+        $('.sort-indicator', $cell).textContent = '▲';
       } else if (sortOrder === 'asc') {
-        $cell.attr('data-sort-order', 'desc');
-        $cell.find('.sort-indicator').text('▼');
+        $cell.setAttribute('data-sort-order', 'desc');
+        $('.sort-indicator', $cell).textContent = '▼';
       } else if (sortOrder === 'desc') {
-        $cell.attr('data-sort-order', 'none');
-        $cell.find('.sort-indicator').text('');
+        $cell.setAttribute('data-sort-order', 'none');
+        $('.sort-indicator', $cell).textContent = '';
       }
 
       // sortWith this action
-      sortOrder = $cell.attr('data-sort-order');
+      sortOrder = $cell.getAttribute('data-sort-order');
 
       if (self.events && self.events.onSort) {
         self.events.onSort(colIndex, sortOrder);
@@ -361,24 +359,21 @@ export default class DataTable {
 
   bindCheckbox() {
     if (!this.options.addCheckboxColumn) return;
-    const self = this;
 
-    this.wrapper.on('click', '.data-table-col[data-col-index="0"] [type="checkbox"]', function () {
-      const $checkbox = $(this);
+    $.on(this.wrapper, 'click', '.data-table-col[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
       const $cell = $checkbox.closest('.data-table-col');
-      const { rowIndex, isHeader } = self.getCellAttr($cell);
-      const checked = $checkbox.is(':checked');
+      const { rowIndex, isHeader } = this.getCellAttr($cell);
+      const checked = $checkbox.checked;
 
       if (isHeader) {
-        self.checkAll(checked);
+        this.checkAll(checked);
       } else {
-        self.checkRow(rowIndex, checked);
+        this.checkRow(rowIndex, checked);
       }
     });
   }
 
   getCheckedRows() {
-
     return this.checkMap
       .map((c, rowIndex) => {
         if (c) {
@@ -402,9 +397,10 @@ export default class DataTable {
     // update internal map
     this.checkMap[rowIndex] = value;
     // set checkbox value explicitly
-    this.bodyScrollable
-      .find(`.data-table-col[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`)
-      .prop('checked', toggle);
+    $.each(`.data-table-col[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`, this.bodyScrollable)
+      .map(input => {
+        input.checked = toggle;
+      });
     // highlight row
     this.highlightRow(rowIndex, toggle);
   }
@@ -419,28 +415,30 @@ export default class DataTable {
       this.checkMap = [];
     }
     // set checkbox value
-    this.bodyScrollable
-      .find('.data-table-col[data-col-index="0"] [type="checkbox"]')
-      .prop('checked', toggle);
+    $.each('.data-table-col[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
+      .map(input => {
+        input.checked = toggle;
+      });
     // highlight all
     this.highlightAll(toggle);
   }
 
   highlightRow(rowIndex, toggle = true) {
-    const $row = this.bodyScrollable
-      .find(`.data-table-row[data-row-index="${rowIndex}"]`);
+    const $row = $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
 
     if (toggle) {
-      $row.addClass('row-highlight');
+      $row.classList.add('row-highlight');
     } else {
-      $row.removeClass('row-highlight');
+      $row.classList.remove('row-highlight');
     }
   }
 
   highlightAll(toggle = true) {
-    this.bodyScrollable
-      .find('.data-table-row')
-      .toggleClass('row-highlight', toggle);
+    if (toggle) {
+      this.bodyScrollable.classList.add('row-highlight-all');
+    } else {
+      this.bodyScrollable.classList.remove('row-highlight-all');
+    }
   }
 
   setColumnWidth(colIndex, width) {
@@ -485,7 +483,7 @@ export default class DataTable {
     const deltaWidth = (availableWidth - headerWidth) / this.datamanager.getColumnCount();
 
     columns.map(col => {
-      const width = this.getColumnHeaderElement(col.colIndex).width();
+      const width = $.style(this.getColumnHeaderElement(col.colIndex), 'width');
       let finalWidth = width + deltaWidth - 16;
 
       if (this.options.addSerialNoColumn && col.colIndex === 0) {
@@ -499,10 +497,9 @@ export default class DataTable {
   }
 
   setBodyWidth() {
-    this.bodyScrollable.css(
-      'width',
-      parseInt(this.header.css('width'), 10)
-    );
+    const width = $.style(this.header, 'width');
+
+    $.style(this.bodyScrollable, { width });
   }
 
   makeStyle() {
@@ -524,9 +521,7 @@ export default class DataTable {
   getColumnHeaderElement(colIndex) {
     colIndex = +colIndex;
     if (colIndex < 0) return null;
-    return this.wrapper.find(
-      `.data-table-col[data-is-header][data-col-index="${colIndex}"]`
-    );
+    return $(`.data-table-col[data-is-header][data-col-index="${colIndex}"]`, this.wrapper);
   }
 
   getColumnMinWidth(colIndex) {
@@ -535,7 +530,7 @@ export default class DataTable {
   }
 
   getCellAttr($cell) {
-    return $cell.data();
+    return $.data($cell);
   }
 
   getTotalRows() {
@@ -570,7 +565,7 @@ export default class DataTable {
 
   getViewportHeight() {
     if (!this.viewportHeight) {
-      this.viewportHeight = this.bodyScrollable.height();
+      this.viewportHeight = $.style(this.bodyScrollable, 'height');
     }
 
     return this.viewportHeight;

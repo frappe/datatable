@@ -48,6 +48,10 @@ button, input {
 	max-height: 500px;
 	overflow: auto;
 	border-bottom: 1px solid var(--border-color);
+
+	&.row-highlight-all .data-table-row {
+		background-color: var(--light-bg);
+	}
 }
 
 .data-table-header {

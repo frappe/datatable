@@ -1,21 +1,16 @@
 import { getCellContent, copyTextToClipboard } from './utils';
 import keyboard from 'keyboard';
-import perf from './performance';
+import $ from './dom';
 
 export default class CellManager {
   constructor(instance) {
     this.instance = instance;
+    this.wrapper = this.instance.wrapper;
     this.options = this.instance.options;
     this.style = this.instance.style;
     this.bodyScrollable = this.instance.bodyScrollable;
 
-    this.prepare();
     this.bindEvents();
-  }
-
-  prepare() {
-    this.$borderOutline = this.instance.$borders.find('.border-outline');
-    this.$borderBg = this.instance.$borders.find('.border-background');
   }
 
   bindEvents() {
@@ -31,11 +26,10 @@ export default class CellManager {
   }
 
   bindEditCell() {
-    const self = this;
-
     this.$editingCell = null;
-    this.bodyScrollable.on('dblclick', '.data-table-col', function () {
-      self.activateEditing($(this));
+
+    $.on(this.bodyScrollable, 'dblclick', '.data-table-col', (e, cell) => {
+      this.activateEditing(cell);
     });
 
     keyboard.on('enter', (e) => {
@@ -49,8 +43,8 @@ export default class CellManager {
       }
     });
 
-    $(document.body).on('click', e => {
-      if ($(e.target).is('.edit-cell, .edit-cell *')) return;
+    $.on(document.body, 'click', e => {
+      if (e.target.matches('.edit-cell, .edit-cell *')) return;
       this.deactivateEditing();
     });
   }
@@ -161,23 +155,23 @@ export default class CellManager {
   bindMouseEvents() {
     let mouseDown = null;
 
-    this.bodyScrollable.on('mousedown', '.data-table-col', (e) => {
+    $.on(this.bodyScrollable, 'mousedown', '.data-table-col', (e) => {
       mouseDown = true;
-      this.focusCell($(e.currentTarget));
+      this.focusCell($(e.delegatedTarget));
     });
 
-    this.bodyScrollable.on('mouseup', () => {
+    $.on(this.bodyScrollable, 'mouseup', () => {
       mouseDown = false;
     });
 
-    this.bodyScrollable.on('mousemove', '.data-table-col', (e) => {
+    $.on(this.bodyScrollable, 'mousemove', '.data-table-col', (e) => {
       if (!mouseDown) return;
-      this.selectArea($(e.currentTarget));
+      this.selectArea($(e.delegatedTarget));
     });
   }
 
   focusCell($cell) {
-    if (!$cell.length) return;
+    if (!$cell) return;
 
     const { colIndex } = this.getCellAttr($cell);
 
@@ -193,11 +187,11 @@ export default class CellManager {
     }
 
     if (this.$focusedCell) {
-      this.$focusedCell.removeClass('selected');
+      this.$focusedCell.classList.remove('selected');
     }
 
     this.$focusedCell = $cell;
-    $cell.addClass('selected');
+    $cell.classList.add('selected');
 
     this.highlightRowColumnHeader($cell);
   }
@@ -209,13 +203,13 @@ export default class CellManager {
     const rowHeaderSelector = `.data-table-col[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
 
     if (this.lastHeaders) {
-      this.style.unset(this.lastHeaders, 'backgroundColor');
+      $.removeStyle(this.lastHeaders, 'backgroundColor');
     }
 
-    const colHeader = document.querySelector(colHeaderSelector);
-    const rowHeader = document.querySelector(rowHeaderSelector);
+    const colHeader = $(colHeaderSelector, this.wrapper);
+    const rowHeader = $(rowHeaderSelector, this.wrapper);
 
-    this.style.set([colHeader, rowHeader], {
+    $.style([colHeader, rowHeader], {
       backgroundColor: 'var(--light-bg)'
     });
 
@@ -232,13 +226,11 @@ export default class CellManager {
   };
 
   _selectArea($cell1, $cell2) {
-    const cells = this.getCellsInRange(...arguments);
-
+    const cells = this.getCellsInRange($cell1, $cell2);
     if (!cells) return false;
-    this.clearSelection();
-    const $cells = cells.map(([c, r]) => this.getCell$(r, c)[0]);
 
-    $($cells).addClass('highlight');
+    this.clearSelection();
+    cells.map(index => this.getCell$(...index)).map($cell => $cell.classList.add('highlight'));
     return true;
   }
 
@@ -250,7 +242,7 @@ export default class CellManager {
     } else
     if (typeof $cell1 === 'object') {
 
-      if (!($cell1.length && $cell2.length)) {
+      if (!($cell1 && $cell2)) {
         return false;
       }
 
@@ -297,7 +289,9 @@ export default class CellManager {
   }
 
   clearSelection() {
-    this.bodyScrollable.find('.data-table-col.highlight').removeClass('highlight');
+    $.each('.data-table-col.highlight', this.bodyScrollable)
+      .map(cell => cell.classList.remove('highlight'));
+
     this.$selectionCursor = null;
   }
 
@@ -323,9 +317,11 @@ export default class CellManager {
     }
 
     this.$editingCell = $cell;
-    $cell.addClass('editing');
+    $cell.classList.add('editing');
 
-    const $editCell = $cell.find('.edit-cell').empty();
+    const $editCell = $('.edit-cell', $cell);
+    $editCell.innerHTML = '';
+
     const cell = this.getCell(colIndex, rowIndex);
     const editing = this.getEditingObject(colIndex, rowIndex, cell.content, $editCell);
 
@@ -338,7 +334,7 @@ export default class CellManager {
 
   deactivateEditing() {
     if (!this.$editingCell) return;
-    this.$editingCell.removeClass('editing');
+    this.$editingCell.classList.remove('editing');
     this.$editingCell = null;
   }
 
@@ -348,20 +344,21 @@ export default class CellManager {
     }
 
     // editing fallback
-    const $input = $('<input type="text" />');
-
-    parent.append($input);
+    const $input = $.create('input', {
+      type: 'text',
+      inside: parent
+    });
 
     return {
       initValue(value) {
         $input.focus();
-        return $input.val(value);
+        $input.value = value;
       },
       getValue() {
-        return $input.val();
+        return $input.value;
       },
       setValue(value) {
-        return $input.val(value);
+        $input.value = value;
       }
     };
   }
@@ -391,7 +388,7 @@ export default class CellManager {
   }
 
   copyCellContents($cell1, $cell2) {
-    const cells = this.getCellsInRange(...arguments);
+    const cells = this.getCellsInRange($cell1, $cell2);
 
     if (!cells) return;
 
@@ -424,9 +421,9 @@ export default class CellManager {
 
   refreshCell(cell) {
     const selector = `.data-table-col[data-row-index="${cell.rowIndex}"][data-col-index="${cell.colIndex}"]`;
-    const $cell = this.bodyScrollable.find(selector);
+    const $cell = $(selector, this.bodyScrollable);
 
-    $cell.html(getCellContent(cell));
+    $cell.innerHTML = getCellContent(cell);
   }
 
   isStandardCell(colIndex) {
@@ -434,30 +431,30 @@ export default class CellManager {
     return colIndex < this.instance.getFirstColumnIndex();
   }
 
-  getCell$(rowIndex, colIndex) {
-    return this.bodyScrollable.find(`.data-table-col[data-row-index="${rowIndex}"][data-col-index="${colIndex}"]`);
+  getCell$(colIndex, rowIndex) {
+    return $(`.data-table-col[data-row-index="${rowIndex}"][data-col-index="${colIndex}"]`, this.bodyScrollable);
   }
 
   getAboveCell$($cell) {
     const { colIndex } = this.getCellAttr($cell);
-    const $aboveRow = $cell.parent().prev();
+    const $aboveRow = $cell.parentElement.previousElementSibling;
 
-    return $aboveRow.find(`[data-col-index="${colIndex}"]`);
+    return $(`[data-col-index="${colIndex}"]`, $aboveRow);
   }
 
   getBelowCell$($cell) {
     const { colIndex } = this.getCellAttr($cell);
-    const $belowRow = $cell.parent().next();
+    const $belowRow = $cell.parentElement.nextElementSibling;
 
-    return $belowRow.find(`[data-col-index="${colIndex}"]`);
+    return $(`[data-col-index="${colIndex}"]`, $belowRow);
   }
 
   getLeftCell$($cell) {
-    return $cell.prev();
+    return $cell.previousElementSibling;
   }
 
   getRightCell$($cell) {
-    return $cell.next();
+    return $cell.nextElementSibling;
   }
 
   getLeftMostCell$(rowIndex) {
@@ -481,11 +478,11 @@ export default class CellManager {
   }
 
   getCellAttr($cell) {
-    return $cell.data();
+    return this.instance.getCellAttr($cell);
   }
 
   getRowHeight() {
-    return this.bodyScrollable.find('.data-table-row:first').height();
+    return $.style($('.data-table-row', this.bodyScrollable), 'height');
   }
 
   inViewport($cell) {
@@ -504,7 +501,7 @@ export default class CellManager {
     const rowHeight = this.getRowHeight();
     const rowOffset = rowIndex * rowHeight;
 
-    const scrollTopOffset = this.bodyScrollable[0].scrollTop;
+    const scrollTopOffset = this.bodyScrollable.scrollTop;
 
     if (rowOffset - scrollTopOffset + rowHeight < viewportHeight) {
       return true;
@@ -526,7 +523,7 @@ export default class CellManager {
   scrollToRow(rowIndex) {
     const offset = rowIndex * this.getRowHeight();
 
-    this.bodyScrollable[0].scrollTop = offset;
+    this.bodyScrollable.scrollTop = offset;
   }
 }
 
