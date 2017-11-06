@@ -255,6 +255,10 @@ function copyTextToClipboard(text) {
   document.body.removeChild(textArea);
 }
 
+function isNumeric(val) {
+  return !isNaN(val);
+}
+
 export default {
   getHeaderHTML,
   getBodyHTML,
@@ -272,5 +276,6 @@ export default {
   escapeRegExp,
   getCellContent,
   copyTextToClipboard,
-  camelCaseToDash
+  camelCaseToDash,
+  isNumeric
 };

@@ -91,8 +91,14 @@ $.fire = (target, type, properties) => {
   return target.dispatchEvent(evt);
 };
 
-$.data = (element) => {
-  return element.dataset;
+$.data = (element, attrs) => { // eslint-disable-line
+  if (!attrs) {
+    return element.dataset;
+  }
+
+  for (const attr in attrs) {
+    element.dataset[attr] = attrs[attr];
+  }
 };
 
 $.style = (elements, styleMap) => { // eslint-disable-line

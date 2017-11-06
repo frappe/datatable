@@ -9,6 +9,8 @@ export default class CellManager {
     this.options = this.instance.options;
     this.style = this.instance.style;
     this.bodyScrollable = this.instance.bodyScrollable;
+    this.columnmanager = this.instance.columnmanager;
+    this.rowmanager = this.instance.rowmanager;
 
     this.bindEvents();
   }
@@ -77,7 +79,7 @@ export default class CellManager {
       }
 
       let $cell = this.$focusedCell;
-      const { rowIndex, colIndex } = this.getCellAttr($cell);
+      const { rowIndex, colIndex } = $.data($cell);
 
       if (direction === 'left') {
         $cell = this.getLeftMostCell$(rowIndex);
@@ -97,7 +99,7 @@ export default class CellManager {
       if (!this.$focusedCell) return false;
 
       if (!this.inViewport(this.$focusedCell)) {
-        const { rowIndex } = this.getCellAttr(this.$focusedCell);
+        const { rowIndex } = $.data(this.$focusedCell);
 
         this.scrollToRow(rowIndex - this.getRowCountPerPage() + 2);
         return true;
@@ -173,9 +175,9 @@ export default class CellManager {
   focusCell($cell) {
     if (!$cell) return;
 
-    const { colIndex } = this.getCellAttr($cell);
+    const { colIndex, isHeader } = $.data($cell);
 
-    if (this.isStandardCell(colIndex)) {
+    if (this.isStandardCell(colIndex) || isHeader) {
       return;
     }
 
@@ -197,8 +199,8 @@ export default class CellManager {
   }
 
   highlightRowColumnHeader($cell) {
-    const { colIndex, rowIndex } = this.getCellAttr($cell);
-    const _colIndex = this.instance.getSerialColumnIndex();
+    const { colIndex, rowIndex } = $.data($cell);
+    const _colIndex = this.columnmanager.getSerialColumnIndex();
     const colHeaderSelector = `.data-table-header .data-table-col[data-col-index="${colIndex}"]`;
     const rowHeaderSelector = `.data-table-col[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
 
@@ -226,6 +228,8 @@ export default class CellManager {
   };
 
   _selectArea($cell1, $cell2) {
+    if ($cell1 === $cell2) return false;
+
     const cells = this.getCellsInRange($cell1, $cell2);
     if (!cells) return false;
 
@@ -246,8 +250,8 @@ export default class CellManager {
         return false;
       }
 
-      const cell1 = this.getCellAttr($cell1);
-      const cell2 = this.getCellAttr($cell2);
+      const cell1 = $.data($cell1);
+      const cell2 = $.data($cell2);
 
       colIndex1 = cell1.colIndex;
       rowIndex1 = cell1.rowIndex;
@@ -300,15 +304,15 @@ export default class CellManager {
   }
 
   activateEditing($cell) {
-    const { rowIndex, colIndex } = this.getCellAttr($cell);
-    const col = this.instance.getColumn(colIndex);
+    const { rowIndex, colIndex } = $.data($cell);
+    const col = this.instance.columnmanager.getColumn(colIndex);
 
     if (col && col.editable === false) {
       return;
     }
 
     if (this.$editingCell) {
-      const { _rowIndex, _colIndex } = this.getCellAttr(this.$editingCell);
+      const { _rowIndex, _colIndex } = $.data(this.$editingCell);
 
       if (rowIndex === _rowIndex && colIndex === _colIndex) {
         // editing the same cell
@@ -364,7 +368,7 @@ export default class CellManager {
   }
 
   submitEditing($cell) {
-    const { rowIndex, colIndex } = this.getCellAttr($cell);
+    const { rowIndex, colIndex } = $.data($cell);
 
     if ($cell) {
       const editing = this.currentCellEditing;
@@ -428,7 +432,7 @@ export default class CellManager {
 
   isStandardCell(colIndex) {
     // Standard cells are in Sr. No and Checkbox column
-    return colIndex < this.instance.getFirstColumnIndex();
+    return colIndex < this.columnmanager.getFirstColumnIndex();
   }
 
   getCell$(colIndex, rowIndex) {
@@ -436,14 +440,14 @@ export default class CellManager {
   }
 
   getAboveCell$($cell) {
-    const { colIndex } = this.getCellAttr($cell);
+    const { colIndex } = $.data($cell);
     const $aboveRow = $cell.parentElement.previousElementSibling;
 
     return $(`[data-col-index="${colIndex}"]`, $aboveRow);
   }
 
   getBelowCell$($cell) {
-    const { colIndex } = this.getCellAttr($cell);
+    const { colIndex } = $.data($cell);
     const $belowRow = $cell.parentElement.nextElementSibling;
 
     return $(`[data-col-index="${colIndex}"]`, $belowRow);
@@ -458,19 +462,19 @@ export default class CellManager {
   }
 
   getLeftMostCell$(rowIndex) {
-    return this.getCell$(rowIndex, this.instance.getFirstColumnIndex());
+    return this.getCell$(rowIndex, this.columnmanager.getFirstColumnIndex());
   }
 
   getRightMostCell$(rowIndex) {
-    return this.getCell$(rowIndex, this.instance.getLastColumnIndex());
+    return this.getCell$(rowIndex, this.columnmanager.getLastColumnIndex());
   }
 
   getTopMostCell$(colIndex) {
-    return this.getCell$(0, colIndex);
+    return this.getCell$(this.rowmanager.getFirstRowIndex(), colIndex);
   }
 
   getBottomMostCell$(colIndex) {
-    return this.getCell$(this.instance.getLastRowIndex(), colIndex);
+    return this.getCell$(this.rowmanager.getLastRowIndex(), colIndex);
   }
 
   getCell(colIndex, rowIndex) {
@@ -486,12 +490,12 @@ export default class CellManager {
   }
 
   inViewport($cell) {
-    let colIndex, rowIndex;
+    let colIndex, rowIndex; // eslint-disable-line
 
     if (typeof $cell === 'number') {
       [colIndex, rowIndex] = arguments;
     } else {
-      let cell = this.getCellAttr($cell);
+      let cell = $.data($cell);
 
       colIndex = cell.colIndex;
       rowIndex = cell.rowIndex;
@@ -511,7 +515,7 @@ export default class CellManager {
   }
 
   scrollToCell($cell) {
-    const { rowIndex } = this.getCellAttr($cell);
+    const { rowIndex } = $.data($cell);
 
     this.scrollToRow(rowIndex);
   }
