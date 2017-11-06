@@ -15,7 +15,7 @@
     "babel-eslint": "7.2.3",
     "babel-loader": "7.0.0",
     "babel-plugin-add-module-exports": "0.2.1",
-    "babel-preset-es2015": "6.24.1",
+    "babel-preset-env": "^1.6.1",
     "chai": "3.5.0",
     "css-loader": "^0.28.7",
     "eslint": "3.19.0",
@@ -47,7 +47,6 @@
   },
   "homepage": "https://frappe.github.io/datatable",
   "dependencies": {
-    "bootstrap": "^4.0.0-beta",
-    "popper.js": "^1.12.5"
+    "clusterize.js": "^0.18.0"
   }
 }
