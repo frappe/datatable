@@ -1,45 +1,37 @@
 import { getCellContent, copyTextToClipboard } from './utils';
 import keyboard from 'keyboard';
+import $ from './dom';
 
 export default class CellManager {
   constructor(instance) {
     this.instance = instance;
+    this.wrapper = this.instance.wrapper;
     this.options = this.instance.options;
+    this.style = this.instance.style;
     this.bodyScrollable = this.instance.bodyScrollable;
+    this.columnmanager = this.instance.columnmanager;
+    this.rowmanager = this.instance.rowmanager;
 
-    this.prepare();
     this.bindEvents();
-  }
-
-  prepare() {
-    this.$borderOutline = this.instance.$borders.find('.border-outline');
-    this.$borderBg = this.instance.$borders.find('.border-background');
   }
 
   bindEvents() {
     this.bindFocusCell();
     this.bindEditCell();
-    this.bindKeyboardNav();
     this.bindKeyboardSelection();
     this.bindCopyCellContents();
     this.bindMouseEvents();
   }
 
   bindFocusCell() {
-    const bodyScrollable = this.instance.bodyScrollable;
-
-    this.$focusedCell = null;
-    bodyScrollable.on('click', '.data-table-col', (e) => {
-      this.focusCell($(e.currentTarget));
-    });
+    this.bindKeyboardNav();
   }
 
   bindEditCell() {
-    const self = this;
-
     this.$editingCell = null;
-    this.bodyScrollable.on('dblclick', '.data-table-col', function () {
-      self.activateEditing($(this));
+
+    $.on(this.bodyScrollable, 'dblclick', '.data-table-col', (e, cell) => {
+      this.activateEditing(cell);
     });
 
     keyboard.on('enter', (e) => {
@@ -53,8 +45,8 @@ export default class CellManager {
       }
     });
 
-    $(document.body).on('click', e => {
-      if ($(e.target).is('.edit-cell, .edit-cell *')) return;
+    $.on(document.body, 'click', e => {
+      if (e.target.matches('.edit-cell, .edit-cell *')) return;
       this.deactivateEditing();
     });
   }
@@ -87,7 +79,7 @@ export default class CellManager {
       }
 
       let $cell = this.$focusedCell;
-      const { rowIndex, colIndex } = this.getCellAttr($cell);
+      const { rowIndex, colIndex } = $.data($cell);
 
       if (direction === 'left') {
         $cell = this.getLeftMostCell$(rowIndex);
@@ -107,7 +99,7 @@ export default class CellManager {
       if (!this.$focusedCell) return false;
 
       if (!this.inViewport(this.$focusedCell)) {
-        const { rowIndex } = this.getCellAttr(this.$focusedCell);
+        const { rowIndex } = $.data(this.$focusedCell);
 
         this.scrollToRow(rowIndex - this.getRowCountPerPage() + 2);
         return true;
@@ -165,27 +157,27 @@ export default class CellManager {
   bindMouseEvents() {
     let mouseDown = null;
 
-    this.bodyScrollable.on('mousedown', '.data-table-col', (e) => {
+    $.on(this.bodyScrollable, 'mousedown', '.data-table-col', (e) => {
       mouseDown = true;
-      this.focusCell($(e.currentTarget));
+      this.focusCell($(e.delegatedTarget));
     });
 
-    this.bodyScrollable.on('mouseup', () => {
+    $.on(this.bodyScrollable, 'mouseup', () => {
       mouseDown = false;
     });
 
-    this.bodyScrollable.on('mousemove', '.data-table-col', (e) => {
+    $.on(this.bodyScrollable, 'mousemove', '.data-table-col', (e) => {
       if (!mouseDown) return;
-      this.selectArea($(e.currentTarget));
+      this.selectArea($(e.delegatedTarget));
     });
   }
 
   focusCell($cell) {
-    if (!$cell.length) return;
+    if (!$cell) return;
 
-    const { colIndex } = this.getCellAttr($cell);
+    const { colIndex, isHeader } = $.data($cell);
 
-    if (this.isStandardCell(colIndex)) {
+    if (this.isStandardCell(colIndex) || isHeader) {
       return;
     }
 
@@ -197,38 +189,33 @@ export default class CellManager {
     }
 
     if (this.$focusedCell) {
-      this.$focusedCell.removeClass('selected');
+      this.$focusedCell.classList.remove('selected');
     }
 
     this.$focusedCell = $cell;
-    $cell.addClass('selected');
+    $cell.classList.add('selected');
 
     this.highlightRowColumnHeader($cell);
   }
 
   highlightRowColumnHeader($cell) {
-    const { colIndex, rowIndex } = this.getCellAttr($cell);
-    const _colIndex = this.instance.getSerialColumnIndex();
+    const { colIndex, rowIndex } = $.data($cell);
+    const _colIndex = this.columnmanager.getSerialColumnIndex();
     const colHeaderSelector = `.data-table-header .data-table-col[data-col-index="${colIndex}"]`;
     const rowHeaderSelector = `.data-table-col[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
 
-    if (this.lastSelectors) {
-      this.instance.removeStyle(this.lastSelectors.colHeaderSelector);
-      this.instance.removeStyle(this.lastSelectors.rowHeaderSelector);
+    if (this.lastHeaders) {
+      $.removeStyle(this.lastHeaders, 'backgroundColor');
     }
 
-    this.instance.setStyle(colHeaderSelector, {
-      'background-color': 'var(--light-bg)'
+    const colHeader = $(colHeaderSelector, this.wrapper);
+    const rowHeader = $(rowHeaderSelector, this.wrapper);
+
+    $.style([colHeader, rowHeader], {
+      backgroundColor: 'var(--light-bg)'
     });
 
-    this.instance.setStyle(rowHeaderSelector, {
-      'background-color': 'var(--light-bg)'
-    });
-
-    this.lastSelectors = {
-      colHeaderSelector,
-      rowHeaderSelector
-    };
+    this.lastHeaders = [colHeader, rowHeader];
   }
 
   selectArea($selectionCursor) {
@@ -241,13 +228,13 @@ export default class CellManager {
   };
 
   _selectArea($cell1, $cell2) {
-    const cells = this.getCellsInRange(...arguments);
+    if ($cell1 === $cell2) return false;
 
+    const cells = this.getCellsInRange($cell1, $cell2);
     if (!cells) return false;
-    this.clearSelection();
-    const $cells = cells.map(([c, r]) => this.getCell$(r, c)[0]);
 
-    $($cells).addClass('highlight');
+    this.clearSelection();
+    cells.map(index => this.getCell$(...index)).map($cell => $cell.classList.add('highlight'));
     return true;
   }
 
@@ -259,12 +246,12 @@ export default class CellManager {
     } else
     if (typeof $cell1 === 'object') {
 
-      if (!($cell1.length && $cell2.length)) {
+      if (!($cell1 && $cell2)) {
         return false;
       }
 
-      const cell1 = this.getCellAttr($cell1);
-      const cell2 = this.getCellAttr($cell2);
+      const cell1 = $.data($cell1);
+      const cell2 = $.data($cell2);
 
       colIndex1 = cell1.colIndex;
       rowIndex1 = cell1.rowIndex;
@@ -306,7 +293,9 @@ export default class CellManager {
   }
 
   clearSelection() {
-    this.bodyScrollable.find('.data-table-col.highlight').removeClass('highlight');
+    $.each('.data-table-col.highlight', this.bodyScrollable)
+      .map(cell => cell.classList.remove('highlight'));
+
     this.$selectionCursor = null;
   }
 
@@ -315,15 +304,15 @@ export default class CellManager {
   }
 
   activateEditing($cell) {
-    const { rowIndex, colIndex } = this.getCellAttr($cell);
-    const col = this.instance.getColumn(colIndex);
+    const { rowIndex, colIndex } = $.data($cell);
+    const col = this.instance.columnmanager.getColumn(colIndex);
 
     if (col && col.editable === false) {
       return;
     }
 
     if (this.$editingCell) {
-      const { _rowIndex, _colIndex } = this.getCellAttr(this.$editingCell);
+      const { _rowIndex, _colIndex } = $.data(this.$editingCell);
 
       if (rowIndex === _rowIndex && colIndex === _colIndex) {
         // editing the same cell
@@ -332,9 +321,11 @@ export default class CellManager {
     }
 
     this.$editingCell = $cell;
-    $cell.addClass('editing');
+    $cell.classList.add('editing');
 
-    const $editCell = $cell.find('.edit-cell').empty();
+    const $editCell = $('.edit-cell', $cell);
+    $editCell.innerHTML = '';
+
     const cell = this.getCell(colIndex, rowIndex);
     const editing = this.getEditingObject(colIndex, rowIndex, cell.content, $editCell);
 
@@ -347,7 +338,7 @@ export default class CellManager {
 
   deactivateEditing() {
     if (!this.$editingCell) return;
-    this.$editingCell.removeClass('editing');
+    this.$editingCell.classList.remove('editing');
     this.$editingCell = null;
   }
 
@@ -357,26 +348,27 @@ export default class CellManager {
     }
 
     // editing fallback
-    const $input = $('<input type="text" />');
-
-    parent.append($input);
+    const $input = $.create('input', {
+      type: 'text',
+      inside: parent
+    });
 
     return {
       initValue(value) {
         $input.focus();
-        return $input.val(value);
+        $input.value = value;
       },
       getValue() {
-        return $input.val();
+        return $input.value;
       },
       setValue(value) {
-        return $input.val(value);
+        $input.value = value;
       }
     };
   }
 
   submitEditing($cell) {
-    const { rowIndex, colIndex } = this.getCellAttr($cell);
+    const { rowIndex, colIndex } = $.data($cell);
 
     if ($cell) {
       const editing = this.currentCellEditing;
@@ -400,7 +392,7 @@ export default class CellManager {
   }
 
   copyCellContents($cell1, $cell2) {
-    const cells = this.getCellsInRange(...arguments);
+    const cells = this.getCellsInRange($cell1, $cell2);
 
     if (!cells) return;
 
@@ -433,56 +425,56 @@ export default class CellManager {
 
   refreshCell(cell) {
     const selector = `.data-table-col[data-row-index="${cell.rowIndex}"][data-col-index="${cell.colIndex}"]`;
-    const $cell = this.bodyScrollable.find(selector);
+    const $cell = $(selector, this.bodyScrollable);
 
-    $cell.html(getCellContent(cell));
+    $cell.innerHTML = getCellContent(cell);
   }
 
   isStandardCell(colIndex) {
     // Standard cells are in Sr. No and Checkbox column
-    return colIndex < this.instance.getFirstColumnIndex();
+    return colIndex < this.columnmanager.getFirstColumnIndex();
   }
 
-  getCell$(rowIndex, colIndex) {
-    return this.bodyScrollable.find(`.data-table-col[data-row-index="${rowIndex}"][data-col-index="${colIndex}"]`);
+  getCell$(colIndex, rowIndex) {
+    return $(`.data-table-col[data-row-index="${rowIndex}"][data-col-index="${colIndex}"]`, this.bodyScrollable);
   }
 
   getAboveCell$($cell) {
-    const { colIndex } = this.getCellAttr($cell);
-    const $aboveRow = $cell.parent().prev();
+    const { colIndex } = $.data($cell);
+    const $aboveRow = $cell.parentElement.previousElementSibling;
 
-    return $aboveRow.find(`[data-col-index="${colIndex}"]`);
+    return $(`[data-col-index="${colIndex}"]`, $aboveRow);
   }
 
   getBelowCell$($cell) {
-    const { colIndex } = this.getCellAttr($cell);
-    const $belowRow = $cell.parent().next();
+    const { colIndex } = $.data($cell);
+    const $belowRow = $cell.parentElement.nextElementSibling;
 
-    return $belowRow.find(`[data-col-index="${colIndex}"]`);
+    return $(`[data-col-index="${colIndex}"]`, $belowRow);
   }
 
   getLeftCell$($cell) {
-    return $cell.prev();
+    return $cell.previousElementSibling;
   }
 
   getRightCell$($cell) {
-    return $cell.next();
+    return $cell.nextElementSibling;
   }
 
   getLeftMostCell$(rowIndex) {
-    return this.getCell$(rowIndex, this.instance.getFirstColumnIndex());
+    return this.getCell$(rowIndex, this.columnmanager.getFirstColumnIndex());
   }
 
   getRightMostCell$(rowIndex) {
-    return this.getCell$(rowIndex, this.instance.getLastColumnIndex());
+    return this.getCell$(rowIndex, this.columnmanager.getLastColumnIndex());
   }
 
   getTopMostCell$(colIndex) {
-    return this.getCell$(0, colIndex);
+    return this.getCell$(this.rowmanager.getFirstRowIndex(), colIndex);
   }
 
   getBottomMostCell$(colIndex) {
-    return this.getCell$(this.instance.getLastRowIndex(), colIndex);
+    return this.getCell$(this.rowmanager.getLastRowIndex(), colIndex);
   }
 
   getCell(colIndex, rowIndex) {
@@ -490,20 +482,20 @@ export default class CellManager {
   }
 
   getCellAttr($cell) {
-    return $cell.data();
+    return this.instance.getCellAttr($cell);
   }
 
   getRowHeight() {
-    return this.bodyScrollable.find('.data-table-row:first').height();
+    return $.style($('.data-table-row', this.bodyScrollable), 'height');
   }
 
   inViewport($cell) {
-    let colIndex, rowIndex;
+    let colIndex, rowIndex; // eslint-disable-line
 
     if (typeof $cell === 'number') {
       [colIndex, rowIndex] = arguments;
     } else {
-      let cell = this.getCellAttr($cell);
+      let cell = $.data($cell);
 
       colIndex = cell.colIndex;
       rowIndex = cell.rowIndex;
@@ -513,7 +505,7 @@ export default class CellManager {
     const rowHeight = this.getRowHeight();
     const rowOffset = rowIndex * rowHeight;
 
-    const scrollTopOffset = this.bodyScrollable[0].scrollTop;
+    const scrollTopOffset = this.bodyScrollable.scrollTop;
 
     if (rowOffset - scrollTopOffset + rowHeight < viewportHeight) {
       return true;
@@ -523,7 +515,7 @@ export default class CellManager {
   }
 
   scrollToCell($cell) {
-    const { rowIndex } = this.getCellAttr($cell);
+    const { rowIndex } = $.data($cell);
 
     this.scrollToRow(rowIndex);
   }
@@ -535,7 +527,7 @@ export default class CellManager {
   scrollToRow(rowIndex) {
     const offset = rowIndex * this.getRowHeight();
 
-    this.bodyScrollable[0].scrollTop = offset;
+    this.bodyScrollable.scrollTop = offset;
   }
 }
 

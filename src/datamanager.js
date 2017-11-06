@@ -1,3 +1,4 @@
+import { isNumeric } from './utils';
 
 export default class DataManager {
   constructor(options) {
@@ -14,6 +15,8 @@ export default class DataManager {
 
     this.columns = this.prepareColumns(columns);
     this.rows = this.prepareRows(rows);
+
+    this.prepareNumericColumns();
   }
 
   prepareColumns(columns) {
@@ -25,7 +28,8 @@ export default class DataManager {
       const val = {
         content: 'Sr. No',
         editable: false,
-        resizable: false
+        resizable: false,
+        align: 'center'
       };
 
       columns = [val].concat(columns);
@@ -36,7 +40,8 @@ export default class DataManager {
       const val = {
         content: '<input type="checkbox" />',
         editable: false,
-        resizable: false
+        resizable: false,
+        sortable: false
       };
 
       columns = [val].concat(columns);
@@ -56,6 +61,19 @@ export default class DataManager {
 
     return prepareColumns(columns, {
       isHeader: 1
+    });
+  }
+
+  prepareNumericColumns() {
+    const row0 = this.getRow(0);
+    this.columns = this.columns.map((column, i) => {
+
+      const cellValue = row0[i].content;
+      if (!column.align && cellValue && isNumeric(cellValue)) {
+        column.align = 'right';
+      }
+
+      return column;
     });
   }
 
@@ -163,12 +181,36 @@ export default class DataManager {
     return this.rows.slice(start, end);
   }
 
-  getColumns() {
-    return this.columns;
+  getColumns(skipStandardColumns) {
+    let columns = this.columns;
+
+    if (skipStandardColumns) {
+      columns = columns.slice(this.getStandardColumnCount());
+    }
+
+    return columns;
   }
 
-  getColumnCount() {
-    return this.columns.length;
+  getStandardColumnCount() {
+    if (this.options.addCheckboxColumn && this.options.addSerialNoColumn) {
+      return 2;
+    }
+
+    if (this.options.addCheckboxColumn || this.options.addSerialNoColumn) {
+      return 1;
+    }
+
+    return 0;
+  }
+
+  getColumnCount(skipStandardColumns) {
+    let val = this.columns.length;
+
+    if (skipStandardColumns) {
+      val = val - this.getStandardColumnCount();
+    }
+
+    return val;
   }
 
   getColumn(colIndex) {

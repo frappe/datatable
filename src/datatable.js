@@ -1,15 +1,15 @@
-/* globals $, Clusterize */
 import {
-  getHeaderHTML,
   getBodyHTML,
-  getRowHTML,
-  buildCSSRule,
-  removeCSSRule,
-  getDefault
+  getRowHTML
 } from './utils';
+
+import $ from './dom';
 
 import DataManager from './datamanager';
 import CellManager from './cellmanager';
+import ColumnManager from './columnmanager';
+import RowManager from './rowmanager';
+import Style from './style';
 
 import './style.scss';
 
@@ -24,27 +24,27 @@ const DEFAULT_OPTIONS = {
   addCheckboxColumn: true,
   enableClusterize: true,
   enableLogs: false,
-  takeAvailableSpace: false
+  takeAvailableSpace: true
 };
 
 export default class DataTable {
   constructor(wrapper, options) {
 
-    this.wrapper = $(wrapper);
-    if (this.wrapper.length === 0) {
+    this.wrapper = wrapper;
+    if (!this.wrapper) {
       throw new Error('Invalid argument given for `wrapper`');
     }
 
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
     // custom user events
     this.events = this.options.events;
-    // map of checked rows
-    this.checkMap = [];
 
-    // make dom, make style, bind events
-    this.make();
+    this.prepare();
 
+    this.style = new Style(this.wrapper);
     this.datamanager = new DataManager(this.options);
+    this.rowmanager = new RowManager(this);
+    this.columnmanager = new ColumnManager(this);
     this.cellmanager = new CellManager(this);
 
     if (this.options.data) {
@@ -52,16 +52,12 @@ export default class DataTable {
     }
   }
 
-  make() {
-    if (this.wrapper.find('.data-table').length === 0) {
-      this.makeDom();
-      this.makeStyle();
-      this.bindEvents();
-    }
+  prepare() {
+    this.prepareDom();
   }
 
-  makeDom() {
-    this.wrapper.html(`
+  prepareDom() {
+    this.wrapper.innerHTML = `
       <div class="data-table">
         <table class="data-table-header">
         </table>
@@ -74,13 +70,11 @@ export default class DataTable {
           <div class="border-background"></div>
         </div>
       </div>
-    `);
+    `;
 
-    this.header = this.wrapper.find('.data-table-header');
-    this.bodyScrollable = this.wrapper.find('.body-scrollable');
-    // this.body = this.wrapper.find('.data-table-body');
-    this.footer = this.wrapper.find('.data-table-footer');
-    this.$borders = this.wrapper.find('.data-table-borders');
+    this.datatableWrapper = $('.data-table', this.wrapper);
+    this.header = $('.data-table-header', this.wrapper);
+    this.bodyScrollable = $('.body-scrollable', this.wrapper);
   }
 
   refresh(data) {
@@ -90,7 +84,7 @@ export default class DataTable {
 
   appendRows(rows) {
     this.datamanager.appendRows(rows);
-    this.render();
+    this.rowmanager.refreshRows();
   }
 
   render() {
@@ -100,9 +94,7 @@ export default class DataTable {
   }
 
   renderHeader() {
-    const columns = this.datamanager.getColumns();
-
-    this.header.html(getHeaderHTML(columns));
+    this.columnmanager.renderHeader();
   }
 
   renderBody() {
@@ -116,22 +108,20 @@ export default class DataTable {
   renderBodyHTML() {
     const rows = this.datamanager.getRows();
 
-    this.bodyScrollable.html(`
-      <table class="data-table-body table table-bordered">
+    this.bodyScrollable.innerHTML = `
+      <table class="data-table-body">
         ${getBodyHTML(rows)}
       </table>
-    `);
+    `;
   }
 
   renderBodyWithClusterize() {
-    const self = this;
-
     // empty body
-    this.bodyScrollable.html(`
-      <table class="data-table-body table table-bordered">
+    this.bodyScrollable.innerHTML = `
+      <table class="data-table-body">
         ${getBodyHTML([])}
       </table>
-    `);
+    `;
 
     this.start = 0;
     this.pageLength = 1000;
@@ -144,11 +134,11 @@ export default class DataTable {
 
     this.clusterize = new Clusterize({
       rows: initialData,
-      scrollElem: this.bodyScrollable.get(0),
-      contentElem: this.bodyScrollable.find('tbody').get(0),
+      scrollElem: this.bodyScrollable,
+      contentElem: $('tbody', this.bodyScrollable),
       callbacks: {
-        clusterChanged() {
-          self.highlightCheckedRows();
+        clusterChanged: () => {
+          this.rowmanager.highlightCheckedRows();
         }
       }
     });
@@ -197,396 +187,33 @@ export default class DataTable {
     return rows.map((row) => getRowHTML(row, { rowIndex: row[0].rowIndex }));
   }
 
-  refreshRows() {
-    this.renderBody();
-    this.setDimensions();
-  }
-
-  bindEvents() {
-    this.bindResizeColumn();
-    this.bindSortColumn();
-    this.bindCheckbox();
-  }
-
   setDimensions() {
-    const self = this;
+    this.columnmanager.setDimensions();
 
-    if (!this.options.takeAvailableSpace) {
-      // setting width as 0 will ensure that the
-      // header doesn't take the available space
-      this.header.css({
-        width: 0
-      });
-    }
+    this.setBodyWidth();
 
-    this.header.css({
+    $.style(this.bodyScrollable, {
+      marginTop: $.style(this.header, 'height') + 'px'
+    });
+
+    $.style($('table', this.bodyScrollable), {
       margin: 0
     });
-
-    // cache minWidth for each column
-    this.minWidthMap = getDefault(this.minWidthMap, []);
-    this.header.find('.data-table-col').each(function () {
-      const col = $(this);
-      const width = parseInt(col.find('.content').css('width'), 10);
-      const colIndex = col.attr('data-col-index');
-
-      if (!self.minWidthMap[colIndex]) {
-        // only set this once
-        self.minWidthMap[colIndex] = width;
-      }
-    });
-
-    // set initial width as naturally calculated by table's first row
-    this.bodyScrollable.find('.data-table-row[data-row-index="0"] .data-table-col').each(function () {
-      const $cell = $(this);
-      let width = parseInt($cell.find('.content').css('width'), 10);
-      const height = parseInt($cell.find('.content').css('height'), 10);
-      const { colIndex } = self.getCellAttr($cell);
-      const minWidth = self.getColumnMinWidth(colIndex);
-
-      if (width < minWidth) {
-        width = minWidth;
-      }
-      self.setColumnWidth(colIndex, width);
-      self.setDefaultCellHeight(height);
-    });
-
-    this.setBodyWidth();
-
-    this.setStyle('.data-table .body-scrollable', {
-      'margin-top': this.header.height() + 'px'
-    });
-
-    // center align Sr. No column
-    if (this.options.addSerialNoColumn) {
-      const index = this.getSerialColumnIndex();
-
-      this.setStyle(`.data-table [data-col-index="${index}"]`, {
-        'text-align': 'center'
-      });
-    }
-
-    this.bodyScrollable.find('.table').css('margin', 0);
-  }
-
-  bindResizeColumn() {
-    const self = this;
-    let isDragging = false;
-    let $currCell, startWidth, startX;
-
-    this.header.on('mousedown', '.data-table-col', function (e) {
-      $currCell = $(this);
-      const colIndex = $currCell.attr('data-col-index');
-      const col = self.getColumn(colIndex);
-
-      if (col && col.resizable === false) {
-        return;
-      }
-
-      isDragging = true;
-      startWidth = $currCell.find('.content').width();
-      startX = e.pageX;
-    });
-
-    $('body').on('mouseup', function (e) {
-      if (!$currCell) return;
-      isDragging = false;
-      const colIndex = $currCell.attr('data-col-index');
-
-      if ($currCell) {
-        const width = parseInt($currCell.find('.content').css('width'), 10);
-
-        self.setColumnWidth(colIndex, width);
-        self.setBodyWidth();
-        $currCell = null;
-      }
-    });
-
-    $('body').on('mousemove', function (e) {
-      if (!isDragging) return;
-      const finalWidth = startWidth + (e.pageX - startX);
-      const colIndex = $currCell.attr('data-col-index');
-
-      if (self.getColumnMinWidth(colIndex) > finalWidth) {
-        // don't resize past minWidth
-        return;
-      }
-
-      self.setColumnHeaderWidth(colIndex, finalWidth);
-    });
-  }
-
-  bindSortColumn() {
-    const self = this;
-
-    this.header.on('click', '.data-table-col .content span', function () {
-      const $cell = $(this).closest('.data-table-col');
-      let sortOrder = getDefault($cell.attr('data-sort-order'), 'none');
-      const colIndex = $cell.attr('data-col-index');
-      const col = self.getColumn(colIndex);
-
-      if (col && col.sortable === false) {
-        return;
-      }
-
-      // reset sort indicator
-      self.header.find('.sort-indicator').text('');
-      self.header.find('.data-table-col').attr('data-sort-order', 'none');
-
-      if (sortOrder === 'none') {
-        $cell.attr('data-sort-order', 'asc');
-        $cell.find('.sort-indicator').text('▲');
-      } else if (sortOrder === 'asc') {
-        $cell.attr('data-sort-order', 'desc');
-        $cell.find('.sort-indicator').text('▼');
-      } else if (sortOrder === 'desc') {
-        $cell.attr('data-sort-order', 'none');
-        $cell.find('.sort-indicator').text('');
-      }
-
-      // sortWith this action
-      sortOrder = $cell.attr('data-sort-order');
-
-      if (self.events && self.events.onSort) {
-        self.events.onSort(colIndex, sortOrder);
-      } else {
-        self.sortRows(colIndex, sortOrder);
-        self.refreshRows();
-      }
-    });
-  }
-
-  sortRows(colIndex, sortOrder) {
-    this.datamanager.sortRows(colIndex, sortOrder);
-  }
-
-  bindCheckbox() {
-    if (!this.options.addCheckboxColumn) return;
-    const self = this;
-
-    this.wrapper.on('click', '.data-table-col[data-col-index="0"] [type="checkbox"]', function () {
-      const $checkbox = $(this);
-      const $cell = $checkbox.closest('.data-table-col');
-      const { rowIndex, isHeader } = self.getCellAttr($cell);
-      const checked = $checkbox.is(':checked');
-
-      if (isHeader) {
-        self.checkAll(checked);
-      } else {
-        self.checkRow(rowIndex, checked);
-      }
-    });
-  }
-
-  getCheckedRows() {
-
-    return this.checkMap
-      .map((c, rowIndex) => {
-        if (c) {
-          return rowIndex;
-        }
-        return null;
-      })
-      .filter(c => {
-        return c !== null || c !== undefined;
-      });
-  }
-
-  highlightCheckedRows() {
-    this.getCheckedRows()
-      .map(rowIndex => this.checkRow(rowIndex, true));
-  }
-
-  checkRow(rowIndex, toggle) {
-    const value = toggle ? 1 : 0;
-
-    // update internal map
-    this.checkMap[rowIndex] = value;
-    // set checkbox value explicitly
-    this.bodyScrollable
-      .find(`.data-table-col[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`)
-      .prop('checked', toggle);
-    // highlight row
-    this.highlightRow(rowIndex, toggle);
-  }
-
-  checkAll(toggle) {
-    const value = toggle ? 1 : 0;
-
-    // update internal map
-    if (toggle) {
-      this.checkMap = Array.from(Array(this.getTotalRows())).map(c => value);
-    } else {
-      this.checkMap = [];
-    }
-    // set checkbox value
-    this.bodyScrollable
-      .find('.data-table-col[data-col-index="0"] [type="checkbox"]')
-      .prop('checked', toggle);
-    // highlight all
-    this.highlightAll(toggle);
-  }
-
-  highlightRow(rowIndex, toggle = true) {
-    const $row = this.bodyScrollable
-      .find(`.data-table-row[data-row-index="${rowIndex}"]`);
-
-    if (toggle) {
-      $row.addClass('row-highlight');
-    } else {
-      $row.removeClass('row-highlight');
-    }
-  }
-
-  highlightAll(toggle = true) {
-    this.bodyScrollable
-      .find('.data-table-row')
-      .toggleClass('row-highlight', toggle);
-  }
-
-  setColumnWidth(colIndex, width) {
-    // set width for content
-    this.setStyle(`[data-col-index="${colIndex}"] .content`, {
-      width: width + 'px'
-    });
-    // set width for edit cell
-    this.setStyle(`[data-col-index="${colIndex}"] .edit-cell`, {
-      width: width + 'px'
-    });
-  }
-
-  setColumnHeaderWidth(colIndex, width) {
-    this.setStyle(`[data-col-index="${colIndex}"][data-is-header] .content`, {
-      width: width + 'px'
-    });
-  }
-
-  setDefaultCellHeight(height) {
-    this.setStyle('.data-table-col .content', {
-      height: height + 'px'
-    });
-  }
-
-  setRowHeight(rowIndex, height) {
-    this.setStyle(`[data-row-index="${rowIndex}"] .content`, {
-      height: height + 'px'
-    });
-  }
-
-  setColumnWidths() {
-    const availableWidth = this.wrapper.width();
-    const headerWidth = this.header.width();
-
-    if (headerWidth > availableWidth) {
-      // don't resize, horizontal scroll takes place
-      return;
-    }
-
-    const columns = this.datamanager.getColumns();
-    const deltaWidth = (availableWidth - headerWidth) / this.datamanager.getColumnCount();
-
-    columns.map(col => {
-      const width = this.getColumnHeaderElement(col.colIndex).width();
-      let finalWidth = width + deltaWidth - 16;
-
-      if (this.options.addSerialNoColumn && col.colIndex === 0) {
-        return;
-      }
-
-      this.setColumnHeaderWidth(col.colIndex, finalWidth);
-      this.setColumnWidth(col.colIndex, finalWidth);
-    });
-    this.setBodyWidth();
   }
 
   setBodyWidth() {
-    this.bodyScrollable.css(
-      'width',
-      parseInt(this.header.css('width'), 10)
-    );
-  }
+    const width = $.style(this.header, 'width');
 
-  setStyle(rule, styleMap) {
-    let styles = this.$style.text();
-
-    styles = buildCSSRule(rule, styleMap, styles);
-    this.$style.html(styles);
-  }
-
-  removeStyle(rule) {
-    let styles = this.$style.text();
-
-    styles = removeCSSRule(rule, styles);
-    this.$style.html(styles);
-  }
-
-  makeStyle() {
-    this.$style = $('<style data-id="datatable"></style>')
-      .prependTo(this.wrapper);
-  }
-
-  getColumn(colIndex) {
-    return this.datamanager.getColumn(colIndex);
-  }
-
-  getRow(rowIndex) {
-    return this.datamanager.getRow(rowIndex);
-  }
-
-  getCell(colIndex, rowIndex) {
-    return this.datamanager.getCell(colIndex, rowIndex);
+    $.style(this.bodyScrollable, { width: width + 'px' });
   }
 
   getColumnHeaderElement(colIndex) {
-    colIndex = +colIndex;
-    if (colIndex < 0) return null;
-    return this.wrapper.find(
-      `.data-table-col[data-is-header][data-col-index="${colIndex}"]`
-    );
-  }
-
-  getColumnMinWidth(colIndex) {
-    colIndex = +colIndex;
-    return this.minWidthMap && this.minWidthMap[colIndex];
-  }
-
-  getCellAttr($cell) {
-    return $cell.data();
-  }
-
-  getTotalRows() {
-    return this.datamanager.getRowCount();
-  }
-
-  getFirstColumnIndex() {
-    if (this.options.addCheckboxColumn && this.options.addSerialNoColumn) {
-      return 2;
-    }
-
-    if (this.options.addCheckboxColumn || this.options.addSerialNoColumn) {
-      return 1;
-    }
-
-    return 0;
-  }
-
-  getLastColumnIndex() {
-    return this.datamanager.getColumnCount() - 1;
-  }
-
-  getLastRowIndex() {
-    return this.datamanager.getRowCount() - 1;
-  }
-
-  getSerialColumnIndex() {
-    const columns = this.datamanager.getColumns();
-
-    return columns.findIndex(column => column.content.includes('Sr. No'));
+    return this.columnmanager.getColumnHeaderElement(colIndex);
   }
 
   getViewportHeight() {
     if (!this.viewportHeight) {
-      this.viewportHeight = this.bodyScrollable.height();
+      this.viewportHeight = $.style(this.bodyScrollable, 'height');
     }
 
     return this.viewportHeight;

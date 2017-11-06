@@ -1,3 +1,5 @@
+import $ from './dom';
+
 const KEYCODES = {
   13: 'enter',
   91: 'meta',
@@ -16,7 +18,7 @@ const KEYCODES = {
 const handlers = {};
 
 function bind() {
-  $(document).on('keydown', handler);
+  $.on(document, 'keydown', handler);
 }
 
 function handler(e) {
@@ -37,12 +39,9 @@ function handler(e) {
       const preventBubbling = handler();
 
       if (preventBubbling === undefined || preventBubbling === true) {
-        if (!e.isDefaultPrevented()) {
-          e.preventDefault();
-        }
+        e.preventDefault();
       }
     });
-
   }
 }
 
