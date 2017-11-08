@@ -24,7 +24,7 @@ const DEFAULT_OPTIONS = {
   addCheckboxColumn: true,
   enableClusterize: true,
   enableLogs: false,
-  takeAvailableSpace: true
+  takeAvailableSpace: false
 };
 
 export default class DataTable {
@@ -205,6 +205,14 @@ export default class DataTable {
     const width = $.style(this.header, 'width');
 
     $.style(this.bodyScrollable, { width: width + 'px' });
+  }
+
+  getColumn(colIndex) {
+    return this.datamanager.getColumn(colIndex);
+  }
+
+  getCell(colIndex, rowIndex) {
+    return this.datamanager.getCell(colIndex, rowIndex);
   }
 
   getColumnHeaderElement(colIndex) {

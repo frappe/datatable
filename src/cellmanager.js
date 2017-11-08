@@ -175,6 +175,9 @@ export default class CellManager {
   focusCell($cell) {
     if (!$cell) return;
 
+    // don't focus if already editing cell
+    if ($cell === this.$editingCell) return;
+
     const { colIndex, isHeader } = $.data($cell);
 
     if (this.isStandardCell(colIndex) || isHeader) {

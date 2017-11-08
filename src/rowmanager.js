@@ -5,6 +5,7 @@ export default class RowManager {
     this.instance = instance;
     this.options = this.instance.options;
     this.wrapper = this.instance.wrapper;
+    this.bodyScrollable = this.instance.bodyScrollable;
     this.datamanager = this.instance.datamanager;
 
     this.bindEvents();
