@@ -1,8 +1,8 @@
-function camelCaseToDash(str) {
+export function camelCaseToDash(str) {
   return str.replace(/([A-Z])/g, (g) => `-${g[0].toLowerCase()}`);
 }
 
-function makeDataAttributeString(props) {
+export function makeDataAttributeString(props) {
   const keys = Object.keys(props);
 
   return keys
@@ -17,123 +17,16 @@ function makeDataAttributeString(props) {
     .trim();
 }
 
-function getEditCellHTML() {
-  return `
-    <div class="edit-cell"></div>
-  `;
-}
-
-function getColumnHTML(column) {
-  const { rowIndex, colIndex, isHeader } = column;
-  const dataAttr = makeDataAttributeString({
-    rowIndex,
-    colIndex,
-    isHeader
-  });
-
-  return `
-    <td class="data-table-col noselect" ${dataAttr}>
-      ${getCellContent(column)}
-    </td>
-  `;
-}
-
-function getCellContent(column) {
-  const { isHeader } = column;
-  const editCellHTML = isHeader ? '' : getEditCellHTML();
-  const sortIndicator = isHeader ? '<span class="sort-indicator"></span>' : '';
-
-  return `
-    <div class="content ellipsis">
-      ${column.format ? column.format(column.content) : column.content}
-      ${sortIndicator}
-    </div>
-    ${editCellHTML}
-  `;
-}
-
-function getRowHTML(columns, props) {
-  const dataAttr = makeDataAttributeString(props);
-
-  return `
-    <tr class="data-table-row" ${dataAttr}>
-      ${columns.map(getColumnHTML).join('')}
-    </tr>
-  `;
-}
-
-function getHeaderHTML(columns) {
-  const $header = `
-    <thead>
-      ${getRowHTML(columns, { isHeader: 1, rowIndex: -1 })}
-    </thead>
-  `;
-
-  // columns.map(col => {
-  //   if (!col.width) return;
-  //   const $cellContent = $header.find(
-  //     `.data-table-col[data-col-index="${col.colIndex}"] .content`
-  //   );
-
-  //   $cellContent.width(col.width);
-  // });
-
-  return $header;
-}
-
-function getBodyHTML(rows) {
-  return `
-    <tbody>
-      ${rows.map(row => getRowHTML(row, { rowIndex: row[0].rowIndex })).join('')}
-    </tbody>
-  `;
-}
-
-function prepareColumn(col, i) {
-  if (typeof col === 'string') {
-    col = {
-      content: col
-    };
-  }
-  return Object.assign(col, {
-    colIndex: i
-  });
-}
-
-function prepareColumns(columns, props = {}) {
-  const _columns = columns.map(prepareColumn);
-
-  return _columns.map(col => Object.assign({}, col, props));
-}
-
-function prepareRowHeader(columns) {
-  return prepareColumns(columns, {
-    rowIndex: -1,
-    isHeader: 1,
-    format: (content) => `<span>${content}</span>`
-  });
-}
-
-function prepareRow(row, i) {
-  return prepareColumns(row, {
-    rowIndex: i
-  });
-}
-
-function prepareRows(rows) {
-  return rows.map(prepareRow);
-}
-
-function getDefault(a, b) {
+export function getDefault(a, b) {
   return a !== undefined ? a : b;
 }
 
-function escapeRegExp(str) {
+export function escapeRegExp(str) {
   // https://stackoverflow.com/a/6969486
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
 }
 
-function getCSSString(styleMap) {
+export function getCSSString(styleMap) {
   let style = '';
 
   for (const prop in styleMap) {
@@ -145,15 +38,11 @@ function getCSSString(styleMap) {
   return style.trim();
 }
 
-function getCSSRuleBlock(rule, styleMap) {
+export function getCSSRuleBlock(rule, styleMap) {
   return `${rule} { ${getCSSString(styleMap)} }`;
 }
 
-function namespaceSelector(selector) {
-  return '.data-table ' + selector;
-}
-
-function buildCSSRule(rule, styleMap, cssRulesString = '') {
+export function buildCSSRule(rule, styleMap, cssRulesString = '') {
   // build css rules efficiently,
   // append new rule if doesnt exist,
   // update existing ones
@@ -188,7 +77,7 @@ function buildCSSRule(rule, styleMap, cssRulesString = '') {
   return `${cssRulesString}${getCSSRuleBlock(rule, styleMap)}`;
 }
 
-function removeCSSRule(rule, cssRulesString = '') {
+export function removeCSSRule(rule, cssRulesString = '') {
   const rulePatternStr = `${escapeRegExp(rule)} {([^}]*)}`;
   const rulePattern = new RegExp(rulePatternStr, 'g');
   let output = cssRulesString;
@@ -200,7 +89,7 @@ function removeCSSRule(rule, cssRulesString = '') {
   return output.trim();
 }
 
-function copyTextToClipboard(text) {
+export function copyTextToClipboard(text) {
   // https://stackoverflow.com/a/30810322/5353542
   var textArea = document.createElement('textarea');
 
@@ -255,27 +144,6 @@ function copyTextToClipboard(text) {
   document.body.removeChild(textArea);
 }
 
-function isNumeric(val) {
+export function isNumeric(val) {
   return !isNaN(val);
 }
-
-export default {
-  getHeaderHTML,
-  getBodyHTML,
-  getRowHTML,
-  getColumnHTML,
-  getEditCellHTML,
-  prepareRowHeader,
-  prepareRows,
-  namespaceSelector,
-  getCSSString,
-  buildCSSRule,
-  removeCSSRule,
-  makeDataAttributeString,
-  getDefault,
-  escapeRegExp,
-  getCellContent,
-  copyTextToClipboard,
-  camelCaseToDash,
-  isNumeric
-};

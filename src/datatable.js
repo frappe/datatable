@@ -1,8 +1,3 @@
-import {
-  getBodyHTML,
-  getRowHTML
-} from './utils';
-
 import $ from './dom';
 
 import DataManager from './datamanager';
@@ -10,6 +5,8 @@ import CellManager from './cellmanager';
 import ColumnManager from './columnmanager';
 import RowManager from './rowmanager';
 import Style from './style';
+
+import { getRowHTML } from './rowmanager';
 
 import './style.scss';
 
@@ -234,3 +231,10 @@ export default class DataTable {
   }
 }
 
+export function getBodyHTML(rows) {
+  return `
+    <tbody>
+      ${rows.map(row => getRowHTML(row, { rowIndex: row[0].rowIndex })).join('')}
+    </tbody>
+  `;
+}

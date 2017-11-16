@@ -1,5 +1,6 @@
 import $ from './dom';
-import { getDefault, getHeaderHTML } from './utils';
+import { getRowHTML } from './rowmanager';
+import { getDefault } from './utils';
 
 export default class ColumnManager {
   constructor(instance) {
@@ -17,7 +18,11 @@ export default class ColumnManager {
   renderHeader() {
     const columns = this.datamanager.getColumns();
 
-    this.header.innerHTML = getHeaderHTML(columns);
+    this.header.innerHTML = `
+      <thead>
+        ${getRowHTML(columns, { isHeader: 1 })}
+      </thead>
+    `;
   }
 
   bindEvents() {

@@ -1,4 +1,6 @@
 import $ from './dom';
+import { makeDataAttributeString } from './utils';
+import { getCellHTML } from './cellmanager';
 
 export default class RowManager {
   constructor(instance) {
@@ -6,9 +8,12 @@ export default class RowManager {
     this.options = this.instance.options;
     this.wrapper = this.instance.wrapper;
     this.bodyScrollable = this.instance.bodyScrollable;
-    this.datamanager = this.instance.datamanager;
 
     this.bindEvents();
+  }
+
+  get datamanager() {
+    return this.instance.datamanager;
   }
 
   bindEvents() {
@@ -118,4 +123,14 @@ export default class RowManager {
   getLastRowIndex() {
     return this.datamanager.getRowCount() - 1;
   }
+}
+
+export function getRowHTML(columns, props) {
+  const dataAttr = makeDataAttributeString(props);
+
+  return `
+    <tr class="data-table-row" ${dataAttr}>
+      ${columns.map(getCellHTML).join('')}
+    </tr>
+  `;
 }

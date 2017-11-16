@@ -1,5 +1,8 @@
-import { getCellContent, copyTextToClipboard } from './utils';
-import keyboard from 'keyboard';
+import {
+  copyTextToClipboard,
+  makeDataAttributeString
+} from './utils';
+import keyboard from './keyboard';
 import $ from './dom';
 
 export default class CellManager {
@@ -534,3 +537,37 @@ export default class CellManager {
   }
 }
 
+export function getCellHTML(column) {
+  const { rowIndex, colIndex, isHeader } = column;
+  const dataAttr = makeDataAttributeString({
+    rowIndex,
+    colIndex,
+    isHeader
+  });
+
+  return `
+    <td class="data-table-col noselect" ${dataAttr}>
+      ${getCellContent(column)}
+    </td>
+  `;
+}
+
+export function getCellContent(column) {
+  const { isHeader } = column;
+  const editCellHTML = isHeader ? '' : getEditCellHTML();
+  const sortIndicator = isHeader ? '<span class="sort-indicator"></span>' : '';
+
+  return `
+    <div class="content ellipsis">
+      ${column.format ? column.format(column.content) : column.content}
+      ${sortIndicator}
+    </div>
+    ${editCellHTML}
+  `;
+}
+
+export function getEditCellHTML() {
+  return `
+    <div class="edit-cell"></div>
+  `;
+}
