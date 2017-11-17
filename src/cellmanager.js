@@ -175,11 +175,16 @@ export default class CellManager {
     });
   }
 
-  focusCell($cell) {
+  focusCell($cell, { skipClearSelection = 0 } = {}) {
     if (!$cell) return;
 
     // don't focus if already editing cell
     if ($cell === this.$editingCell) return;
+
+    // don't focus checkbox cell
+    if (this.options.addCheckboxColumn && colIndex === 0) {
+      return;
+    }
 
     const { colIndex, isHeader } = $.data($cell);
 
@@ -188,10 +193,8 @@ export default class CellManager {
     }
 
     this.deactivateEditing();
-    this.clearSelection();
-
-    if (this.options.addCheckboxColumn && colIndex === 0) {
-      return;
+    if (!skipClearSelection) {
+      this.clearSelection();
     }
 
     if (this.$focusedCell) {
@@ -222,6 +225,33 @@ export default class CellManager {
     });
 
     this.lastHeaders = [colHeader, rowHeader];
+  }
+
+  selectAreaOnClusterChanged() {
+    if (!(this.$focusedCell && this.$selectionCursor)) return;
+    const { colIndex, rowIndex } = $.data(this.$selectionCursor);
+    const $cell = this.getCell$(colIndex, rowIndex);
+
+    if (!$cell || $cell === this.$selectionCursor) return;
+
+    // selectArea needs $focusedCell
+    const fCell = $.data(this.$focusedCell);
+    this.$focusedCell = this.getCell$(fCell.colIndex, fCell.rowIndex);
+
+    this.selectArea($cell);
+  }
+
+  focusCellOnClusterChanged() {
+    if (!this.$focusedCell) return;
+
+    const { colIndex, rowIndex } = $.data(this.$focusedCell);
+    const $cell = this.getCell$(colIndex, rowIndex);
+
+    if (!$cell) return;
+    // this function is called after selectAreaOnClusterChanged,
+    // focusCell calls clearSelection which resets the area selection
+    // so a flag to skip it
+    this.focusCell($cell, { skipClearSelection: 1 });
   }
 
   selectArea($selectionCursor) {
@@ -442,7 +472,7 @@ export default class CellManager {
   }
 
   getCell$(colIndex, rowIndex) {
-    return $(`.data-table-col[data-row-index="${rowIndex}"][data-col-index="${colIndex}"]`, this.bodyScrollable);
+    return $(cellSelector(colIndex, rowIndex), this.bodyScrollable);
   }
 
   getAboveCell$($cell) {
@@ -570,4 +600,8 @@ export function getEditCellHTML() {
   return `
     <div class="edit-cell"></div>
   `;
+}
+
+function cellSelector(colIndex, rowIndex) {
+  return `.data-table-col[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
 }

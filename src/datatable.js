@@ -136,6 +136,8 @@ export default class DataTable {
       callbacks: {
         clusterChanged: () => {
           this.rowmanager.highlightCheckedRows();
+          this.cellmanager.selectAreaOnClusterChanged();
+          this.cellmanager.focusCellOnClusterChanged();
         }
       }
     });

@@ -95,7 +95,8 @@ export default class RowManager {
   }
 
   highlightRow(rowIndex, toggle = true) {
-    const $row = $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
+    const $row = this.getRow$(rowIndex);
+    if (!$row) return;
 
     if (toggle) {
       $row.classList.add('row-highlight');
@@ -110,6 +111,10 @@ export default class RowManager {
     } else {
       this.bodyScrollable.classList.remove('row-highlight-all');
     }
+  }
+
+  getRow$(rowIndex) {
+    return $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
   }
 
   getTotalRows() {
