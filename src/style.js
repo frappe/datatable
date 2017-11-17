@@ -9,7 +9,7 @@ export default class Style {
     this.styleSheet = styleEl.sheet;
   }
 
-  setStyle(rule, styleMap) {
+  setStyle(rule, styleMap, index = -1) {
     const styles = Object.keys(styleMap)
       .map(prop => {
         if (!prop.includes('-')) {
@@ -20,6 +20,13 @@ export default class Style {
       .join('');
     let ruleString = `${rule} { ${styles} }`;
 
-    this.styleSheet.insertRule(ruleString, this.styleSheet.cssRules.length);
+    let _index = this.styleSheet.cssRules.length;
+    if (index !== -1) {
+      this.styleSheet.removeRule(index);
+      _index = index;
+    }
+
+    this.styleSheet.insertRule(ruleString, _index);
+    return _index;
   }
 }

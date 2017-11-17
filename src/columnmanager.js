@@ -207,7 +207,7 @@ export default class ColumnManager {
     // align columns
     this.getColumns()
       .map(column => {
-        if (column.align && ['left', 'center', 'right'].includes(column.align)) {
+        if (['left', 'center', 'right'].includes(column.align)) {
           this.style.setStyle(`.data-table [data-col-index="${column.colIndex}"]`, {
             'text-align': column.align
           });
@@ -228,17 +228,29 @@ export default class ColumnManager {
   }
 
   setColumnWidth(colIndex, width) {
-    const selector = `[data-col-index="${colIndex}"] .content, [data-col-index="${colIndex}"] .edit-cell`;
+    this._columnWidthMap = this._columnWidthMap || [];
 
-    this.style.setStyle(selector, {
+    let index = this._columnWidthMap[colIndex];
+    const selector = `[data-col-index="${colIndex}"] .content, [data-col-index="${colIndex}"] .edit-cell`;
+    const styles = {
       width: width + 'px'
-    });
+    };
+
+    index = this.style.setStyle(selector, styles, index);
+    this._columnWidthMap[colIndex] = index;
   }
 
   setColumnHeaderWidth(colIndex, width) {
-    this.style.setStyle(`[data-col-index="${colIndex}"][data-is-header] .content`, {
-      width: width + 'px'
-    });
+    this.$columnMap = this.$columnMap || [];
+    const selector = `[data-col-index="${colIndex}"][data-is-header] .content`;
+
+    let $column = this.$columnMap[colIndex];
+    if (!$column) {
+      $column = this.header.querySelector(selector);
+      this.$columnMap[colIndex] = $column;
+    }
+
+    $column.style.width = width + 'px';
   }
 
   getColumnMinWidth(colIndex) {
