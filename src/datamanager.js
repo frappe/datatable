@@ -3,7 +3,6 @@ import { isNumeric } from './utils';
 export default class DataManager {
   constructor(options) {
     this.options = options;
-    this.rowCount = 0;
     this.currentSort = {
       sortBy: -1, // colIndex
       sortOrder: 'none' // asc, desc, none
@@ -12,6 +11,10 @@ export default class DataManager {
 
   init(data) {
     let { columns, rows } = data;
+
+    this.rowCount = 0;
+    this.columns = [];
+    this.rows = [];
 
     this.columns = this.prepareColumns(columns);
     this.rows = this.prepareRows(rows);

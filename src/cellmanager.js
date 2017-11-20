@@ -412,14 +412,17 @@ export default class CellManager {
       if (editing) {
         const value = editing.getValue();
         const done = editing.setValue(value);
+        const oldValue = this.getCell(colIndex, rowIndex).content;
+
+        // update cell immediately
+        this.updateCell(rowIndex, colIndex, value);
 
         if (done && done.then) {
-          // wait for promise then update internal state
-          done.then(
-            () => this.updateCell(rowIndex, colIndex, value)
-          );
-        } else {
-          this.updateCell(rowIndex, colIndex, value);
+          // revert to oldValue if promise fails
+          done.catch((e) => {
+            console.log(e);
+            this.updateCell(rowIndex, colIndex, oldValue);
+          });
         }
       }
     }
