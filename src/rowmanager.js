@@ -98,10 +98,23 @@ export default class RowManager {
     const $row = this.getRow$(rowIndex);
     if (!$row) return;
 
+    if (!toggle && this.bodyScrollable.classList.contains('row-highlight-all')) {
+      $row.classList.add('row-unhighlight');
+      return;
+    }
+
+    if (toggle && $row.classList.contains('row-unhighlight')) {
+      $row.classList.remove('row-unhighlight');
+    }
+
+    this._highlightedRows = this._highlightedRows || {};
+
     if (toggle) {
       $row.classList.add('row-highlight');
+      this._highlightedRows[rowIndex] = $row;
     } else {
       $row.classList.remove('row-highlight');
+      delete this._highlightedRows[rowIndex];
     }
   }
 
@@ -110,6 +123,11 @@ export default class RowManager {
       this.bodyScrollable.classList.add('row-highlight-all');
     } else {
       this.bodyScrollable.classList.remove('row-highlight-all');
+      for (const rowIndex in this._highlightedRows) {
+        const $row = this._highlightedRows[rowIndex];
+        $row.classList.remove('row-highlight');
+      }
+      this._highlightedRows = {};
     }
   }
 

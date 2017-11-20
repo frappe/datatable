@@ -22,7 +22,7 @@ export default class Style {
 
     let _index = this.styleSheet.cssRules.length;
     if (index !== -1) {
-      this.styleSheet.removeRule(index);
+      this.styleSheet.deleteRule(index);
       _index = index;
     }
 

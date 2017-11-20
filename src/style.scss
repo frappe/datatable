@@ -1,6 +1,6 @@
 /* variables */
 
-:root {
+.data-table {
 	--border-color: #d1d8dd;
 	--primary-color: rgb(82, 146, 247);
 	--light-bg: #f5f7fa;
@@ -49,7 +49,7 @@ button, input {
 	overflow: auto;
 	border-bottom: 1px solid var(--border-color);
 
-	&.row-highlight-all .data-table-row {
+	&.row-highlight-all .data-table-row:not(.row-unhighlight) {
 		background-color: var(--light-bg);
 	}
 }
