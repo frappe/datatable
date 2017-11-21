@@ -1,6 +1,7 @@
 import {
   copyTextToClipboard,
-  makeDataAttributeString
+  makeDataAttributeString,
+  throttle
 } from './utils';
 import keyboard from './keyboard';
 import $ from './dom';
@@ -169,10 +170,12 @@ export default class CellManager {
       mouseDown = false;
     });
 
-    $.on(this.bodyScrollable, 'mousemove', '.data-table-col', (e) => {
+    const selectArea = (e) => {
       if (!mouseDown) return;
       this.selectArea($(e.delegatedTarget));
-    });
+    };
+
+    $.on(this.bodyScrollable, 'mousemove', '.data-table-col', throttle(selectArea, 100));
   }
 
   focusCell($cell, { skipClearSelection = 0 } = {}) {
