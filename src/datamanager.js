@@ -32,7 +32,8 @@ export default class DataManager {
         content: 'Sr. No',
         editable: false,
         resizable: false,
-        align: 'center'
+        align: 'center',
+        focusable: false
       };
 
       columns = [val].concat(columns);
@@ -44,7 +45,8 @@ export default class DataManager {
         content: '<input type="checkbox" />',
         editable: false,
         resizable: false,
-        sortable: false
+        sortable: false,
+        focusable: false
       };
 
       columns = [val].concat(columns);

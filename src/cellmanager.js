@@ -184,14 +184,13 @@ export default class CellManager {
     // don't focus if already editing cell
     if ($cell === this.$editingCell) return;
 
-    // don't focus checkbox cell
-    if (this.options.addCheckboxColumn && colIndex === 0) {
+    const { colIndex, isHeader } = $.data($cell);
+    if (isHeader) {
       return;
     }
 
-    const { colIndex, isHeader } = $.data($cell);
-
-    if (this.isStandardCell(colIndex) || isHeader) {
+    const column = this.columnmanager.getColumn(colIndex);
+    if (column.focusable === false) {
       return;
     }
 
@@ -344,7 +343,7 @@ export default class CellManager {
 
   activateEditing($cell) {
     const { rowIndex, colIndex } = $.data($cell);
-    const col = this.instance.columnmanager.getColumn(colIndex);
+    const col = this.columnmanager.getColumn(colIndex);
 
     if (col && col.editable === false) {
       return;

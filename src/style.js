@@ -2,11 +2,19 @@ import { camelCaseToDash } from './utils';
 
 export default class Style {
 
-  constructor(wrapper) {
-    const styleEl = document.createElement('style');
+  constructor(datatable) {
+    this.datatable = datatable;
+    this.scopeClass = 'datatable-instance-' + datatable.constructor.instances;
+    datatable.datatableWrapper.classList.add(this.scopeClass);
 
-    document.head.appendChild(styleEl);
+    const styleEl = document.createElement('style');
+    datatable.wrapper.insertBefore(styleEl, datatable.datatableWrapper);
+    this.styleEl = styleEl;
     this.styleSheet = styleEl.sheet;
+  }
+
+  destroy() {
+    this.datatable.wrapper.removeChild(this.styleEl);
   }
 
   setStyle(rule, styleMap, index = -1) {
@@ -18,7 +26,7 @@ export default class Style {
         return `${prop}:${styleMap[prop]};`;
       })
       .join('');
-    let ruleString = `${rule} { ${styles} }`;
+    let ruleString = `.${this.scopeClass} ${rule} { ${styles} }`;
 
     let _index = this.styleSheet.cssRules.length;
     if (index !== -1) {

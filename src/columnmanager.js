@@ -140,6 +140,17 @@ export default class ColumnManager {
     $.style(this.header, {
       margin: 0
     });
+
+    // don't show resize cursor on nonResizable columns
+    const nonResizableColumnsSelector = this.datamanager.getColumns()
+      .filter(col => col.resizable !== undefined && !col.resizable)
+      .map(col => col.colIndex)
+      .map(i => `.data-table-header [data-col-index="${i}"]`)
+      .join();
+
+    this.style.setStyle(nonResizableColumnsSelector, {
+      cursor: 'pointer'
+    });
   }
 
   setupMinWidth() {
@@ -185,9 +196,13 @@ export default class ColumnManager {
       return;
     }
 
-    const deltaWidth = (wrapperWidth - headerWidth) / this.datamanager.getColumnCount(true);
+    const resizableColumns = this.datamanager.getColumns().filter(
+      col => col.resizable === undefined || col.resizable
+    );
 
-    this.datamanager.getColumns(true).map(col => {
+    const deltaWidth = (wrapperWidth - headerWidth) / resizableColumns.length;
+
+    resizableColumns.map(col => {
       const width = $.style(this.getColumnHeaderElement(col.colIndex), 'width');
       let finalWidth = Math.min(width + deltaWidth) - 2;
 

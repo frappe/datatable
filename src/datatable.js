@@ -24,9 +24,14 @@ const DEFAULT_OPTIONS = {
   takeAvailableSpace: false
 };
 
-export default class DataTable {
+class DataTable {
   constructor(wrapper, options) {
+    DataTable.instances++;
 
+    if (typeof wrapper === 'string') {
+      // css selector
+      wrapper = document.querySelector(wrapper);
+    }
     this.wrapper = wrapper;
     if (!this.wrapper) {
       throw new Error('Invalid argument given for `wrapper`');
@@ -38,7 +43,7 @@ export default class DataTable {
 
     this.prepare();
 
-    this.style = new Style(this.wrapper);
+    this.style = new Style(this);
     this.datamanager = new DataManager(this.options);
     this.rowmanager = new RowManager(this);
     this.columnmanager = new ColumnManager(this);
@@ -77,6 +82,11 @@ export default class DataTable {
   refresh(data) {
     this.datamanager.init(data);
     this.render();
+  }
+
+  destroy() {
+    this.wrapper.innerHTML = '';
+    this.style.destroy();
   }
 
   appendRows(rows) {
@@ -226,12 +236,20 @@ export default class DataTable {
     return this.viewportHeight;
   }
 
+  scrollToLastColumn() {
+    this.datatableWrapper.scrollLeft = 9999;
+  }
+
   log() {
     if (this.options.enableLogs) {
       console.log.apply(console, arguments);
     }
   }
 }
+
+DataTable.instances = 0;
+
+export default DataTable;
 
 export function getBodyHTML(rows) {
   return `
