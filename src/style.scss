@@ -42,6 +42,26 @@ button, input {
 	thead td {
 		border-bottom-width: 2px;
 	}
+
+	.freeze-container {
+		display: flex;
+		justify-content: center;
+		align-content: center;
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		background-color: var(--light-bg);
+		opacity: 0.5;
+		font-size: 2em;
+
+		span {
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+		}
+	}
 }
 
 .body-scrollable {
@@ -60,9 +80,8 @@ button, input {
 	left: 0;
 	background-color: white;
 	font-weight: bold;
-	cursor: col-resize;
 
-	.content span {
+	.content span:not(.column-resizer) {
 		cursor: pointer;
 	}
 
@@ -70,6 +89,17 @@ button, input {
 		position: absolute;
 		right: 8px;
 		top: 9px;
+	}
+
+	.column-resizer {
+		display: none;
+		position: absolute;
+		right: 0;
+		top: 0;
+		width: 4px;
+		height: 100%;
+		background-color: var(--primary-color);
+		cursor: col-resize;
 	}
 }
 
@@ -120,6 +150,10 @@ button, input {
 
 	&.highlight {
 		background-color: var(--light-bg);
+	}
+
+	&:hover .column-resizer {
+		display: inline-block;
 	}
 }
 

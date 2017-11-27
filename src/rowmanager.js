@@ -1,5 +1,5 @@
 import $ from './dom';
-import { makeDataAttributeString } from './utils';
+import { makeDataAttributeString, promisify } from './utils';
 import { getCellHTML } from './cellmanager';
 
 export default class RowManager {
@@ -10,6 +10,7 @@ export default class RowManager {
     this.bodyScrollable = this.instance.bodyScrollable;
 
     this.bindEvents();
+    this.refreshRows = promisify(this.refreshRows, this);
   }
 
   get datamanager() {

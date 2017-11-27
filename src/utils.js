@@ -182,3 +182,14 @@ export function throttle(func, wait, options) {
     return result;
   };
 };
+
+export function promisify(fn, context = null) {
+  return (...args) => {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        fn.apply(context, args);
+        resolve('done', fn.name);
+      }, 0);
+    });
+  };
+};

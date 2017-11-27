@@ -1,4 +1,4 @@
-import { isNumeric } from './utils';
+import { isNumeric, promisify } from './utils';
 
 export default class DataManager {
   constructor(options) {
@@ -7,6 +7,7 @@ export default class DataManager {
       sortBy: -1, // colIndex
       sortOrder: 'none' // asc, desc, none
     };
+    this.sortRows = promisify(this.sortRows, this);
   }
 
   init(data) {

@@ -34,7 +34,8 @@ export default class ColumnManager {
     let isDragging = false;
     let $currCell, startWidth, startX;
 
-    $.on(this.header, 'mousedown', '.data-table-col', (e, $cell) => {
+    $.on(this.header, 'mousedown', '.data-table-col .column-resizer', (e, $handle) => {
+      const $cell = $handle.parentNode.parentNode;
       $currCell = $cell;
       const { colIndex } = $.data($currCell);
       const col = this.getColumn(colIndex);
@@ -76,7 +77,7 @@ export default class ColumnManager {
 
   bindSortColumn() {
 
-    $.on(this.header, 'click', '.data-table-col .content span', (e, span) => {
+    $.on(this.header, 'click', '.data-table-col .content span:first-child', (e, span) => {
       const $cell = span.closest('.data-table-col');
       let { colIndex, sortOrder } = $.data($cell);
       sortOrder = getDefault(sortOrder, 'none');
@@ -114,8 +115,10 @@ export default class ColumnManager {
       if (this.events && this.events.onSort) {
         this.events.onSort(colIndex, nextSortOrder);
       } else {
-        this.sortRows(colIndex, nextSortOrder);
-        this.rowmanager.refreshRows();
+        this.instance.freeze();
+        this.sortRows(colIndex, nextSortOrder)
+          .then(() => this.rowmanager.refreshRows())
+          .then(() => this.instance.unfreeze());
       }
     });
   }
@@ -231,7 +234,7 @@ export default class ColumnManager {
   }
 
   sortRows(colIndex, sortOrder) {
-    this.datamanager.sortRows(colIndex, sortOrder);
+    return this.datamanager.sortRows(colIndex, sortOrder);
   }
 
   getColumn(colIndex) {

@@ -591,11 +591,13 @@ export function getCellContent(column) {
   const { isHeader } = column;
   const editCellHTML = isHeader ? '' : getEditCellHTML();
   const sortIndicator = isHeader ? '<span class="sort-indicator"></span>' : '';
+  const resizeColumn = isHeader ? '<span class="column-resizer"></span>' : '';
 
   return `
     <div class="content ellipsis">
       ${column.format ? column.format(column.content) : column.content}
       ${sortIndicator}
+      ${resizeColumn}
     </div>
     ${editCellHTML}
   `;

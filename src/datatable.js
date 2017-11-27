@@ -16,6 +16,7 @@ const DEFAULT_OPTIONS = {
     columns: [],
     rows: []
   },
+  freezeMessage: 'Loading...',
   editing: null,
   addSerialNoColumn: true,
   addCheckboxColumn: true,
@@ -65,11 +66,10 @@ class DataTable {
         </table>
         <div class="body-scrollable">
         </div>
-        <div class="data-table-footer">
+        <div class="freeze-container">
+          <span>${this.options.freezeMessage}</span>
         </div>
-        <div class="data-table-borders">
-          <div class="border-outline"></div>
-          <div class="border-background"></div>
+        <div class="data-table-footer">
         </div>
       </div>
     `;
@@ -77,6 +77,8 @@ class DataTable {
     this.datatableWrapper = $('.data-table', this.wrapper);
     this.header = $('.data-table-header', this.wrapper);
     this.bodyScrollable = $('.body-scrollable', this.wrapper);
+    this.freezeContainer = $('.freeze-container', this.wrapper);
+    this.unfreeze();
   }
 
   refresh(data) {
@@ -238,6 +240,18 @@ class DataTable {
 
   scrollToLastColumn() {
     this.datatableWrapper.scrollLeft = 9999;
+  }
+
+  freeze() {
+    $.style(this.freezeContainer, {
+      display: ''
+    });
+  }
+
+  unfreeze() {
+    $.style(this.freezeContainer, {
+      display: 'none'
+    });
   }
 
   log() {
