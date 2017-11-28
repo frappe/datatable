@@ -147,3 +147,13 @@ $.getStyle = (element, prop) => {
 
   return val;
 };
+
+$.closest = (selector, element) => {
+  if (!element) return null;
+
+  if (element.matches(selector)) {
+    return element;
+  }
+
+  return $.closest(selector, element.parentNode);
+};

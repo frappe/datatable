@@ -36,7 +36,8 @@ export default class DataManager {
         editable: false,
         resizable: false,
         align: 'center',
-        focusable: false
+        focusable: false,
+        dropdown: false
       };
 
       columns = [val].concat(columns);
@@ -49,7 +50,8 @@ export default class DataManager {
         editable: false,
         resizable: false,
         sortable: false,
-        focusable: false
+        focusable: false,
+        dropdown: false
       };
 
       columns = [val].concat(columns);

@@ -14,6 +14,7 @@ export default class ColumnManager {
     this.rowmanager = this.instance.rowmanager;
 
     this.bindEvents();
+    getDropdownHTML = getDropdownHTML.bind(this, this.options.dropdownButton);
   }
 
   renderHeader() {
@@ -30,7 +31,6 @@ export default class ColumnManager {
     } else {
 
       const $cols = $.each('.data-table-col', this.header);
-
       if (columns.length < $cols.length) {
         // deleted column
         $('thead', this.header).innerHTML = getRowHTML(columns, { isHeader: 1 });
@@ -49,9 +49,45 @@ export default class ColumnManager {
   }
 
   bindEvents() {
+    this.bindDropdown();
     this.bindResizeColumn();
-    this.bindSortColumn();
     this.bindMoveColumn();
+  }
+
+  bindDropdown() {
+    let $activeDropdown;
+    $.on(this.header, 'click', '.data-table-dropdown-toggle', (e, $button) => {
+      const $dropdown = $button.parentNode;
+
+      if (!$dropdown.classList.contains('is-active')) {
+        deactivateDropdown();
+        $dropdown.classList.add('is-active');
+        $activeDropdown = $dropdown;
+      } else {
+        deactivateDropdown();
+      }
+    });
+
+    $.on(document.body, 'click', (e) => {
+      if (e.target.matches('.data-table-dropdown-toggle')) return;
+      deactivateDropdown();
+    });
+
+    const dropdownItems = this.options.headerDropdown;
+
+    $.on(this.header, 'click', '.data-table-dropdown-list > div', (e, $item) => {
+      const $col = $.closest('.data-table-col', $item);
+      const { index } = $.data($item);
+      const { colIndex } = $.data($col);
+      let callback = dropdownItems[index].action;
+
+      callback && callback.call(this.instance, this.getColumn(colIndex));
+    });
+
+    function deactivateDropdown(e) {
+      $activeDropdown && $activeDropdown.classList.remove('is-active');
+      $activeDropdown = null;
+    }
   }
 
   bindResizeColumn() {
@@ -204,12 +240,26 @@ export default class ColumnManager {
       if (this.events && this.events.onSort) {
         this.events.onSort(colIndex, nextSortOrder);
       } else {
-        this.instance.freeze();
-        this.sortRows(colIndex, nextSortOrder)
-          .then(() => this.rowmanager.refreshRows())
-          .then(() => this.instance.unfreeze());
+        this.sortColumn(colIndex, nextSortOrder);
       }
     });
+  }
+
+  sortColumn(colIndex, nextSortOrder) {
+    this.instance.freeze();
+    this.sortRows(colIndex, nextSortOrder)
+      .then(() => this.rowmanager.refreshRows())
+      .then(() => this.instance.unfreeze());
+  }
+
+  removeColumn(colIndex) {
+    this.instance.freeze();
+    this.datamanager.removeColumn(colIndex)
+      .then(() => {
+        this.refreshHeader();
+        return this.rowmanager.refreshRows();
+      })
+      .then(() => this.instance.unfreeze());
   }
 
   setDimensions() {
@@ -402,3 +452,19 @@ export default class ColumnManager {
     return columns.findIndex(column => column.content.includes('Sr. No'));
   }
 }
+
+// eslint-disable-next-line
+var getDropdownHTML = function getDropdownHTML(dropdownButton = 'v') {
+  // add dropdown buttons
+  const dropdownItems = this.options.headerDropdown;
+
+  return `<div class="data-table-dropdown-toggle">${dropdownButton}</div>
+    <div class="data-table-dropdown-list">
+      ${dropdownItems.map((d, i) => `<div data-index="${i}">${d.label}</div>`).join('')}
+    </div>
+  `;
+};
+
+export {
+  getDropdownHTML
+};

@@ -5,6 +5,7 @@ import {
 } from './utils';
 import keyboard from './keyboard';
 import $ from './dom';
+import { getDropdownHTML } from './columnmanager';
 
 export default class CellManager {
   constructor(instance) {
@@ -589,15 +590,21 @@ export function getCellHTML(column) {
 
 export function getCellContent(column) {
   const { isHeader } = column;
-  const editCellHTML = isHeader ? '' : getEditCellHTML();
-  const sortIndicator = isHeader ? '<span class="sort-indicator"></span>' : '';
-  const resizeColumn = isHeader ? '<span class="column-resizer"></span>' : '';
+
+  const editable = !isHeader && column.editable;
+  const editCellHTML = editable ? getEditCellHTML() : '';
+
+  const resizable = isHeader && column.resizable !== false;
+  const resizeColumn = resizable ? '<span class="column-resizer"></span>' : '';
+
+  const hasDropdown = isHeader && column.dropdown !== false;
+  const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
 
   return `
     <div class="content ellipsis">
       ${column.format ? column.format(column.content) : column.content}
-      ${sortIndicator}
       ${resizeColumn}
+      ${dropdown}
     </div>
     ${editCellHTML}
   `;

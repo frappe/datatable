@@ -113,9 +113,61 @@ button, input {
 		cursor: col-resize;
 	}
 
+	.data-table-dropdown {
+		position: absolute;
+		right: 10px;
+		display: inline-flex;
+		vertical-align: top;
+		text-align: left;
+
+		&.is-active {
+			.data-table-dropdown-list {
+				display: block;
+			}
+
+			.data-table-dropdown-toggle {
+				display: block;
+			}
+		}
+	}
+
+	.data-table-dropdown-toggle {
+		display: none;
+		background-color: transparent;
+		border: none;
+	}
+
+	.data-table-dropdown-list {
+		display: none;
+		font-weight: normal;
+
+		position: absolute;
+		min-width: 8rem;
+		top: 100%;
+		right: 0;
+		z-index: 1;
+		background-color: white;
+		border-radius: 3px;
+		box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
+		padding-bottom: 0.5rem;
+		padding-top: 0.5rem;
+
+		&> div {
+			padding: 5px 10px;
+
+			&:hover {
+				background-color: var(--light-bg);
+			}
+		}
+	}
+
 	.data-table-col.remove-column {
 		background-color: var(--light-red);
 		transition: 300ms background-color ease-in-out;
+	}
+
+	.data-table-col.sortable-chosen {
+		background-color: var(--light-bg);
 	}
 }
 
@@ -170,6 +222,10 @@ button, input {
 
 	&:hover .column-resizer {
 		display: inline-block;
+	}
+
+	&:hover .data-table-dropdown-toggle {
+		display: block;
 	}
 }
 

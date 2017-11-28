@@ -16,6 +16,33 @@ const DEFAULT_OPTIONS = {
     columns: [],
     rows: []
   },
+  dropdownButton: '▼',
+  headerDropdown: [
+    {
+      label: 'Sort Ascending',
+      action: function (column) {
+        this.sortColumn(column.colIndex, 'asc');
+      }
+    },
+    {
+      label: 'Sort Descending',
+      action: function (column) {
+        this.sortColumn(column.colIndex, 'desc');
+      }
+    },
+    {
+      label: 'Reset sorting',
+      action: function (column) {
+        this.sortColumn(column.colIndex, 'none');
+      }
+    },
+    {
+      label: 'Remove column',
+      action: function (column) {
+        this.removeColumn(column.colIndex);
+      }
+    }
+  ],
   freezeMessage: 'Loading...',
   editing: null,
   addSerialNoColumn: true,
@@ -39,6 +66,9 @@ class DataTable {
     }
 
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
+    this.options.headerDropdown =
+      DEFAULT_OPTIONS.headerDropdown
+        .concat(options.headerDropdown || []);
     // custom user events
     this.events = this.options.events;
 
@@ -236,6 +266,14 @@ class DataTable {
     }
 
     return this.viewportHeight;
+  }
+
+  sortColumn(colIndex, sortOrder) {
+    this.columnmanager.sortColumn(colIndex, sortOrder);
+  }
+
+  removeColumn(colIndex) {
+    this.columnmanager.removeColumn(colIndex);
   }
 
   scrollToLastColumn() {
