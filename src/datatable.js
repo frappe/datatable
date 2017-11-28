@@ -43,6 +43,11 @@ const DEFAULT_OPTIONS = {
       }
     }
   ],
+  sortIndicator: {
+    asc: '↑',
+    desc: '↓',
+    none: ''
+  },
   freezeMessage: 'Loading...',
   editing: null,
   addSerialNoColumn: true,

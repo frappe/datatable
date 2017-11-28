@@ -29,20 +29,27 @@ export default class ColumnManager {
       // insert html
       $('thead', this.header).innerHTML = getRowHTML(columns, { isHeader: 1 });
     } else {
-
+      // refresh dom state
       const $cols = $.each('.data-table-col', this.header);
       if (columns.length < $cols.length) {
         // deleted column
         $('thead', this.header).innerHTML = getRowHTML(columns, { isHeader: 1 });
         return;
       }
-
+      // column sorted or order changed
       // update colIndex of each header cell
       $cols.map(($col, i) => {
         $.data($col, {
           colIndex: columns[i].colIndex
         });
       });
+
+      // show sort indicator
+      const sortColIndex = this.datamanager.currentSort.colIndex;
+      if (sortColIndex !== -1) {
+        const order = this.datamanager.currentSort.sortOrder;
+        $('.sort-indicator', $cols[sortColIndex]).innerHTML = this.options.sortIndicator[order];
+      }
     }
     // reset columnMap
     this.$columnMap = [];
@@ -57,7 +64,7 @@ export default class ColumnManager {
   bindDropdown() {
     let $activeDropdown;
     $.on(this.header, 'click', '.data-table-dropdown-toggle', (e, $button) => {
-      const $dropdown = $button.parentNode;
+      const $dropdown = $.closest('.data-table-dropdown', $button);
 
       if (!$dropdown.classList.contains('is-active')) {
         deactivateDropdown();
@@ -192,7 +199,7 @@ export default class ColumnManager {
             .then(() => this.instance.unfreeze());
         },
         preventOnFilter: false,
-        filter: '.column-resizer, .sort-indicator',
+        filter: '.column-resizer, .data-table-dropdown',
         animation: 150
       });
     };
@@ -248,7 +255,10 @@ export default class ColumnManager {
   sortColumn(colIndex, nextSortOrder) {
     this.instance.freeze();
     this.sortRows(colIndex, nextSortOrder)
-      .then(() => this.rowmanager.refreshRows())
+      .then(() => {
+        this.refreshHeader();
+        return this.rowmanager.refreshRows();
+      })
       .then(() => this.instance.unfreeze());
   }
 

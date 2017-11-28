@@ -4,7 +4,7 @@ export default class DataManager {
   constructor(options) {
     this.options = options;
     this.currentSort = {
-      sortBy: -1, // colIndex
+      colIndex: -1,
       sortOrder: 'none' // asc, desc, none
     };
     this.sortRows = promisify(this.sortRows, this);

@@ -591,8 +591,11 @@ export function getCellHTML(column) {
 export function getCellContent(column) {
   const { isHeader } = column;
 
-  const editable = !isHeader && column.editable;
+  const editable = !isHeader && column.editable !== false;
   const editCellHTML = editable ? getEditCellHTML() : '';
+
+  const sortable = isHeader && column.sortable !== false;
+  const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
 
   const resizable = isHeader && column.resizable !== false;
   const resizeColumn = resizable ? '<span class="column-resizer"></span>' : '';
@@ -603,6 +606,7 @@ export function getCellContent(column) {
   return `
     <div class="content ellipsis">
       ${column.format ? column.format(column.content) : column.content}
+      ${sortIndicator}
       ${resizeColumn}
       ${dropdown}
     </div>
