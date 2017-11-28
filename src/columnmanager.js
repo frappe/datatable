@@ -1,6 +1,7 @@
 import $ from './dom';
+import Sortable from 'sortablejs';
 import { getRowHTML } from './rowmanager';
-import { getDefault } from './utils';
+import { getDefault, throttle } from './utils';
 
 export default class ColumnManager {
   constructor(instance) {
@@ -16,28 +17,51 @@ export default class ColumnManager {
   }
 
   renderHeader() {
+    this.header.innerHTML = '<thead></thead>';
+    this.refreshHeader();
+  }
+
+  refreshHeader() {
     const columns = this.datamanager.getColumns();
 
-    this.header.innerHTML = `
-      <thead>
-        ${getRowHTML(columns, { isHeader: 1 })}
-      </thead>
-    `;
+    if (!$('.data-table-col', this.header)) {
+      // insert html
+      $('thead', this.header).innerHTML = getRowHTML(columns, { isHeader: 1 });
+    } else {
+
+      const $cols = $.each('.data-table-col', this.header);
+
+      if (columns.length < $cols.length) {
+        // deleted column
+        $('thead', this.header).innerHTML = getRowHTML(columns, { isHeader: 1 });
+        return;
+      }
+
+      // update colIndex of each header cell
+      $cols.map(($col, i) => {
+        $.data($col, {
+          colIndex: columns[i].colIndex
+        });
+      });
+    }
+    // reset columnMap
+    this.$columnMap = [];
   }
 
   bindEvents() {
     this.bindResizeColumn();
     this.bindSortColumn();
+    this.bindMoveColumn();
   }
 
   bindResizeColumn() {
     let isDragging = false;
-    let $currCell, startWidth, startX;
+    let $resizingCell, startWidth, startX;
 
     $.on(this.header, 'mousedown', '.data-table-col .column-resizer', (e, $handle) => {
       const $cell = $handle.parentNode.parentNode;
-      $currCell = $cell;
-      const { colIndex } = $.data($currCell);
+      $resizingCell = $cell;
+      const { colIndex } = $.data($resizingCell);
       const col = this.getColumn(colIndex);
 
       if (col && col.resizable === false) {
@@ -45,26 +69,26 @@ export default class ColumnManager {
       }
 
       isDragging = true;
-      startWidth = $.style($('.content', $currCell), 'width');
+      startWidth = $.style($('.content', $resizingCell), 'width');
       startX = e.pageX;
     });
 
     $.on(document.body, 'mouseup', (e) => {
-      if (!$currCell) return;
+      if (!$resizingCell) return;
       isDragging = false;
 
-      const { colIndex } = $.data($currCell);
-      const width = $.style($('.content', $currCell), 'width');
+      const { colIndex } = $.data($resizingCell);
+      const width = $.style($('.content', $resizingCell), 'width');
 
       this.setColumnWidth(colIndex, width);
       this.instance.setBodyWidth();
-      $currCell = null;
+      $resizingCell = null;
     });
 
     $.on(document.body, 'mousemove', (e) => {
       if (!isDragging) return;
       const finalWidth = startWidth + (e.pageX - startX);
-      const { colIndex } = $.data($currCell);
+      const { colIndex } = $.data($resizingCell);
 
       if (this.getColumnMinWidth(colIndex) > finalWidth) {
         // don't resize past minWidth
@@ -75,9 +99,74 @@ export default class ColumnManager {
     });
   }
 
+  bindMoveColumn() {
+    let initialized;
+
+    const initialize = () => {
+      if (initialized) {
+        $.off(document.body, 'mousemove', initialize);
+        return;
+      }
+      const ready = $('.data-table-col', this.header);
+      if (!ready) return;
+
+      const $parent = $('.data-table-row', this.header);
+
+      $.on(document, 'drag', '.data-table-col', throttle((e, $target) => {
+        if (e.offsetY > 200) {
+          $target.classList.add('remove-column');
+        } else {
+          setTimeout(() => {
+            $target.classList.remove('remove-column');
+          }, 10);
+        }
+      }));
+
+      this.sortable = Sortable.create($parent, {
+        onEnd: (e) => {
+          const { oldIndex, newIndex } = e;
+          const $draggedCell = e.item;
+          const { colIndex } = $.data($draggedCell);
+
+          // debugger;
+
+          if ($draggedCell.classList.contains('remove-column')) {
+            this.instance.freeze();
+            this.datamanager.removeColumn(colIndex)
+              .then(() => {
+                this.refreshHeader();
+                return this.rowmanager.refreshRows();
+              })
+              .then(() => this.instance.unfreeze());
+            return;
+          }
+
+          if (+colIndex === newIndex) return;
+
+          this.instance.freeze();
+          this.datamanager.switchColumn(oldIndex, newIndex)
+            .then(() => {
+              this.refreshHeader();
+              return this.rowmanager.refreshRows();
+            })
+            .then(() => {
+              this.setColumnWidth(oldIndex);
+              this.setColumnWidth(newIndex);
+            })
+            .then(() => this.instance.unfreeze());
+        },
+        preventOnFilter: false,
+        filter: '.column-resizer, .sort-indicator',
+        animation: 150
+      });
+    };
+
+    $.on(document.body, 'mousemove', initialize);
+  }
+
   bindSortColumn() {
 
-    $.on(this.header, 'click', '.data-table-col .content span:first-child', (e, span) => {
+    $.on(this.header, 'click', '.data-table-col .column-title', (e, span) => {
       const $cell = span.closest('.data-table-col');
       let { colIndex, sortOrder } = $.data($cell);
       sortOrder = getDefault(sortOrder, 'none');
@@ -226,7 +315,7 @@ export default class ColumnManager {
     this.getColumns()
       .map(column => {
         if (['left', 'center', 'right'].includes(column.align)) {
-          this.style.setStyle(`.data-table [data-col-index="${column.colIndex}"]`, {
+          this.style.setStyle(`[data-col-index="${column.colIndex}"]`, {
             'text-align': column.align
           });
         }
@@ -247,6 +336,11 @@ export default class ColumnManager {
 
   setColumnWidth(colIndex, width) {
     this._columnWidthMap = this._columnWidthMap || [];
+
+    if (!width) {
+      const $headerContent = $(`.data-table-col[data-col-index="${colIndex}"] .content`, this.header);
+      width = $.style($headerContent, 'width');
+    }
 
     let index = this._columnWidthMap[colIndex];
     const selector = `[data-col-index="${colIndex}"] .content, [data-col-index="${colIndex}"] .edit-cell`;
@@ -286,6 +380,10 @@ export default class ColumnManager {
     }
 
     return 0;
+  }
+
+  getHeaderCell$(colIndex) {
+    return $(`.data-table-col[data-col-index="${colIndex}"]`, this.header);
   }
 
   getLastColumnIndex() {

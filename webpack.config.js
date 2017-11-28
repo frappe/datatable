@@ -56,7 +56,16 @@ const config = {
   },
   plugins: plugins,
   externals: {
-    jquery: 'jQuery'
+    'clusterize.js': {
+      commonjs: 'clusterize.js',
+      commonjs2: 'clusterize.js',
+      root: 'Clusterize'
+    },
+    sortablejs: {
+      commonjs: 'sortablejs',
+      commonjs2: 'sortablejs',
+      root: 'Sortable'
+    }
   }
 };
 

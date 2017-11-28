@@ -4,6 +4,7 @@
 	--border-color: #d1d8dd;
 	--primary-color: rgb(82, 146, 247);
 	--light-bg: #f5f7fa;
+	--light-red: #FD8B8B;
 }
 
 /* resets */
@@ -62,6 +63,16 @@ button, input {
 			transform: translateY(-50%);
 		}
 	}
+
+	.trash-container {
+		position: absolute;
+		bottom: 0;
+		left: 30%;
+		right: 30%;
+		height: 70px;
+		background: palevioletred;
+		opacity: 0.5;
+	}
 }
 
 .body-scrollable {
@@ -100,6 +111,11 @@ button, input {
 		height: 100%;
 		background-color: var(--primary-color);
 		cursor: col-resize;
+	}
+
+	.data-table-col.remove-column {
+		background-color: var(--light-red);
+		transition: 300ms background-color ease-in-out;
 	}
 }
 

@@ -1,5 +1,5 @@
 import $ from './dom';
-
+import Clusterize from 'clusterize.js';
 import DataManager from './datamanager';
 import CellManager from './cellmanager';
 import ColumnManager from './columnmanager';

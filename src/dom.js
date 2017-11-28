@@ -20,23 +20,23 @@ $.create = (tag, o) => {
     if (i === 'inside') {
       $(val).appendChild(element);
     } else
-    if (i === 'around') {
-      let ref = $(val);
-      ref.parentNode.insertBefore(element, ref);
-      element.appendChild(ref);
-    } else
-    if (i === 'styles') {
-      if (typeof val === 'object') {
-        Object.keys(val).map(prop => {
-          element.style[prop] = val[prop];
-        });
-      }
-    } else
-    if (i in element) {
-      element[i] = val;
-    } else {
-      element.setAttribute(i, val);
-    }
+      if (i === 'around') {
+        let ref = $(val);
+        ref.parentNode.insertBefore(element, ref);
+        element.appendChild(ref);
+      } else
+        if (i === 'styles') {
+          if (typeof val === 'object') {
+            Object.keys(val).map(prop => {
+              element.style[prop] = val[prop];
+            });
+          }
+        } else
+          if (i in element) {
+            element[i] = val;
+          } else {
+            element.setAttribute(i, val);
+          }
   }
 
   return element;
@@ -49,6 +49,10 @@ $.on = (element, event, selector, callback) => {
   } else {
     $.delegate(element, event, selector, callback);
   }
+};
+
+$.off = (element, event, handler) => {
+  element.removeEventListener(event, handler);
 };
 
 $.bind = (element, event, callback) => {

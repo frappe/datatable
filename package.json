@@ -47,6 +47,7 @@
   },
   "homepage": "https://frappe.github.io/datatable",
   "dependencies": {
-    "clusterize.js": "^0.18.0"
+    "clusterize.js": "^0.18.0",
+    "sortablejs": "^1.7.0"
   }
 }

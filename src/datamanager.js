@@ -8,6 +8,8 @@ export default class DataManager {
       sortOrder: 'none' // asc, desc, none
     };
     this.sortRows = promisify(this.sortRows, this);
+    this.switchColumn = promisify(this.switchColumn, this);
+    this.removeColumn = promisify(this.removeColumn, this);
   }
 
   init(data) {
@@ -54,19 +56,9 @@ export default class DataManager {
       this._checkboxColumnAdded = true;
     }
 
-    // wrap the title in span
-    columns = columns.map(column => {
-      if (typeof column === 'string') {
-        column = `<span>${column}</span>`;
-      } else if (typeof column === 'object') {
-        column.content = `<span>${column.content}</span>`;
-      }
-
-      return column;
-    });
-
     return prepareColumns(columns, {
-      isHeader: 1
+      isHeader: 1,
+      format: value => `<span class="column-title">${value}</span>`
     });
   }
 
@@ -170,6 +162,51 @@ export default class DataManager {
       array[left] = array[right];
       array[right] = temporary;
     }
+  }
+
+  switchColumn(index1, index2) {
+    // update columns
+    const temp = this.columns[index1];
+    this.columns[index1] = this.columns[index2];
+    this.columns[index2] = temp;
+
+    this.columns[index1].colIndex = index1;
+    this.columns[index2].colIndex = index2;
+
+    // update rows
+    this.rows = this.rows.map(row => {
+      const newCell1 = Object.assign({}, row[index1], { colIndex: index2 });
+      const newCell2 = Object.assign({}, row[index2], { colIndex: index1 });
+
+      let newRow = row.map(cell => {
+        // make object copy
+        return Object.assign({}, cell);
+      });
+
+      newRow[index2] = newCell1;
+      newRow[index1] = newCell2;
+
+      return newRow;
+    });
+  }
+
+  removeColumn(index) {
+    index = +index;
+    const filter = cell => cell.colIndex !== index;
+    const map = (cell, i) => Object.assign({}, cell, { colIndex: i });
+    // update columns
+    this.columns = this.columns
+      .filter(filter)
+      .map(map);
+
+    // update rows
+    this.rows = this.rows.map(row => {
+      const newRow = row
+        .filter(filter)
+        .map(map);
+
+      return newRow;
+    });
   }
 
   getRowCount() {
