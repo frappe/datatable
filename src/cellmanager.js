@@ -434,6 +434,13 @@ export default class CellManager {
   }
 
   copyCellContents($cell1, $cell2) {
+    if (!$cell2 && $cell1) {
+      // copy only focusedCell
+      const { colIndex, rowIndex } = $.data($cell1);
+      const cell = this.getCell(colIndex, rowIndex);
+      copyTextToClipboard(cell.content);
+      return;
+    }
     const cells = this.getCellsInRange($cell1, $cell2);
 
     if (!cells) return;

@@ -14,7 +14,7 @@ export default class Style {
   }
 
   destroy() {
-    this.datatable.wrapper.removeChild(this.styleEl);
+    this.styleEl.remove();
   }
 
   setStyle(rule, styleMap, index = -1) {
