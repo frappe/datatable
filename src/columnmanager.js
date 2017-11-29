@@ -7,6 +7,7 @@ export default class ColumnManager {
   constructor(instance) {
     this.instance = instance;
     this.options = this.instance.options;
+    this.fireEvent = this.instance.fireEvent;
     this.header = this.instance.header;
     this.datamanager = this.instance.datamanager;
     this.style = this.instance.style;
@@ -170,33 +171,9 @@ export default class ColumnManager {
           const { oldIndex, newIndex } = e;
           const $draggedCell = e.item;
           const { colIndex } = $.data($draggedCell);
-
-          // debugger;
-
-          if ($draggedCell.classList.contains('remove-column')) {
-            this.instance.freeze();
-            this.datamanager.removeColumn(colIndex)
-              .then(() => {
-                this.refreshHeader();
-                return this.rowmanager.refreshRows();
-              })
-              .then(() => this.instance.unfreeze());
-            return;
-          }
-
           if (+colIndex === newIndex) return;
 
-          this.instance.freeze();
-          this.datamanager.switchColumn(oldIndex, newIndex)
-            .then(() => {
-              this.refreshHeader();
-              return this.rowmanager.refreshRows();
-            })
-            .then(() => {
-              this.setColumnWidth(oldIndex);
-              this.setColumnWidth(newIndex);
-            })
-            .then(() => this.instance.unfreeze());
+          this.switchColumn(oldIndex, newIndex);
         },
         preventOnFilter: false,
         filter: '.column-resizer, .data-table-dropdown',
@@ -244,11 +221,7 @@ export default class ColumnManager {
       });
       $('.sort-indicator', $cell).textContent = textContent;
 
-      if (this.events && this.events.onSort) {
-        this.events.onSort(colIndex, nextSortOrder);
-      } else {
-        this.sortColumn(colIndex, nextSortOrder);
-      }
+      this.sortColumn(colIndex, nextSortOrder);
     });
   }
 
@@ -259,17 +232,43 @@ export default class ColumnManager {
         this.refreshHeader();
         return this.rowmanager.refreshRows();
       })
-      .then(() => this.instance.unfreeze());
+      .then(() => this.instance.unfreeze())
+      .then(() => {
+        this.fireEvent('onSortColumn', this.getColumn(colIndex));
+      });
   }
 
   removeColumn(colIndex) {
+    const removedCol = this.getColumn(colIndex);
     this.instance.freeze();
     this.datamanager.removeColumn(colIndex)
       .then(() => {
         this.refreshHeader();
         return this.rowmanager.refreshRows();
       })
-      .then(() => this.instance.unfreeze());
+      .then(() => this.instance.unfreeze())
+      .then(() => {
+        this.fireEvent('onRemoveColumn', removedCol);
+      });
+  }
+
+  switchColumn(oldIndex, newIndex) {
+    this.instance.freeze();
+    this.datamanager.switchColumn(oldIndex, newIndex)
+      .then(() => {
+        this.refreshHeader();
+        return this.rowmanager.refreshRows();
+      })
+      .then(() => {
+        this.setColumnWidth(oldIndex);
+        this.setColumnWidth(newIndex);
+        this.instance.unfreeze();
+      })
+      .then(() => {
+        this.fireEvent('onSwitchColumn',
+          this.getColumn(oldIndex), this.getColumn(newIndex)
+        );
+      });
   }
 
   setDimensions() {

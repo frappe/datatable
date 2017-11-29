@@ -11,7 +11,6 @@ import { getRowHTML } from './rowmanager';
 import './style.scss';
 
 const DEFAULT_OPTIONS = {
-  events: null,
   data: {
     columns: [],
     rows: []
@@ -43,6 +42,11 @@ const DEFAULT_OPTIONS = {
       }
     }
   ],
+  events: {
+    onRemoveColumn(column) {},
+    onSwitchColumn(column1, column2) {},
+    onSortColumn(column) {}
+  },
   sortIndicator: {
     asc: '↑',
     desc: '↓',
@@ -75,7 +79,10 @@ class DataTable {
       DEFAULT_OPTIONS.headerDropdown
         .concat(options.headerDropdown || []);
     // custom user events
-    this.events = this.options.events;
+    this.events = Object.assign(
+      {}, DEFAULT_OPTIONS.events, options.events || {}
+    );
+    this.fireEvent = this.fireEvent.bind(this);
 
     this.prepare();
 
@@ -295,6 +302,10 @@ class DataTable {
     $.style(this.freezeContainer, {
       display: 'none'
     });
+  }
+
+  fireEvent(eventName, ...args) {
+    this.events[eventName].apply(this, args);
   }
 
   log() {
