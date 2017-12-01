@@ -37,20 +37,21 @@ export default class ColumnManager {
         $('thead', this.header).innerHTML = getRowHTML(columns, { isHeader: 1 });
         return;
       }
-      // column sorted or order changed
-      // update colIndex of each header cell
-      $cols.map(($col, i) => {
-        $.data($col, {
-          colIndex: columns[i].colIndex
-        });
-      });
 
-      // show sort indicator
-      const sortColIndex = this.datamanager.currentSort.colIndex;
-      if (sortColIndex !== -1) {
-        const order = this.datamanager.currentSort.sortOrder;
-        $('.sort-indicator', $cols[sortColIndex]).innerHTML = this.options.sortIndicator[order];
-      }
+      $cols.map(($col, i) => {
+        const column = columns[i];
+        // column sorted or order changed
+        // update colIndex of each header cell
+        $.data($col, {
+          colIndex: column.colIndex
+        });
+
+        // refresh sort indicator
+        const sortIndicator = $('.sort-indicator', $col);
+        if (sortIndicator) {
+          sortIndicator.innerHTML = this.options.sortIndicator[column.sortOrder];
+        }
+      });
     }
     // reset columnMap
     this.$columnMap = [];

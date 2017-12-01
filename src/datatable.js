@@ -1,13 +1,10 @@
 import $ from './dom';
-import Clusterize from 'clusterize.js';
 import DataManager from './datamanager';
 import CellManager from './cellmanager';
 import ColumnManager from './columnmanager';
 import RowManager from './rowmanager';
+import BodyRenderer from './body-renderer';
 import Style from './style';
-
-import { getRowHTML } from './rowmanager';
-
 import './style.scss';
 
 const DEFAULT_OPTIONS = {
@@ -91,6 +88,7 @@ class DataTable {
     this.rowmanager = new RowManager(this);
     this.columnmanager = new ColumnManager(this);
     this.cellmanager = new CellManager(this);
+    this.bodyRenderer = new BodyRenderer(this);
 
     if (this.options.data) {
       this.refresh(this.options.data);
@@ -99,6 +97,7 @@ class DataTable {
 
   prepare() {
     this.prepareDom();
+    this.unfreeze();
   }
 
   prepareDom() {
@@ -120,7 +119,6 @@ class DataTable {
     this.header = $('.data-table-header', this.wrapper);
     this.bodyScrollable = $('.body-scrollable', this.wrapper);
     this.freezeContainer = $('.freeze-container', this.wrapper);
-    this.unfreeze();
   }
 
   refresh(data) {
@@ -149,95 +147,7 @@ class DataTable {
   }
 
   renderBody() {
-    if (this.options.enableClusterize) {
-      this.renderBodyWithClusterize();
-    } else {
-      this.renderBodyHTML();
-    }
-  }
-
-  renderBodyHTML() {
-    const rows = this.datamanager.getRows();
-
-    this.bodyScrollable.innerHTML = `
-      <table class="data-table-body">
-        ${getBodyHTML(rows)}
-      </table>
-    `;
-  }
-
-  renderBodyWithClusterize() {
-    // empty body
-    this.bodyScrollable.innerHTML = `
-      <table class="data-table-body">
-        ${getBodyHTML([])}
-      </table>
-    `;
-
-    this.start = 0;
-    this.pageLength = 1000;
-    this.end = this.start + this.pageLength;
-
-    // only append ${this.pageLength} rows in the beginning,
-    // defer remaining
-    const rows = this.datamanager.getRows(this.start, this.end);
-    const initialData = this.getDataForClusterize(rows);
-
-    this.clusterize = new Clusterize({
-      rows: initialData,
-      scrollElem: this.bodyScrollable,
-      contentElem: $('tbody', this.bodyScrollable),
-      callbacks: {
-        clusterChanged: () => {
-          this.rowmanager.highlightCheckedRows();
-          this.cellmanager.selectAreaOnClusterChanged();
-          this.cellmanager.focusCellOnClusterChanged();
-        }
-      }
-    });
-    this.log('dataAppended', this.pageLength);
-    this.appendRemainingData();
-  }
-
-  appendRemainingData() {
-    let dataAppended = this.pageLength;
-    const promises = [];
-    const rowCount = this.datamanager.getRowCount();
-
-    while (dataAppended + this.pageLength < rowCount) {
-      this.start = this.end;
-      this.end = this.start + this.pageLength;
-      promises.push(this.appendNextPagePromise(this.start, this.end));
-      dataAppended += this.pageLength;
-    }
-
-    if (rowCount % this.pageLength > 0) {
-      // last page
-      this.start = this.end;
-      this.end = this.start + this.pageLength;
-      promises.push(this.appendNextPagePromise(this.start, this.end));
-    }
-
-    return promises.reduce(
-      (prev, cur) => prev.then(cur), Promise.resolve()
-    );
-  }
-
-  appendNextPagePromise(start, end) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const rows = this.datamanager.getRows(start, end);
-        const data = this.getDataForClusterize(rows);
-
-        this.clusterize.append(data);
-        this.log('dataAppended', rows.length);
-        resolve();
-      }, 0);
-    });
-  }
-
-  getDataForClusterize(rows) {
-    return rows.map((row) => getRowHTML(row, { rowIndex: row[0].rowIndex }));
+    this.bodyRenderer.render();
   }
 
   setDimensions() {
@@ -318,11 +228,3 @@ class DataTable {
 DataTable.instances = 0;
 
 export default DataTable;
-
-export function getBodyHTML(rows) {
-  return `
-    <tbody>
-      ${rows.map(row => getRowHTML(row, { rowIndex: row[0].rowIndex })).join('')}
-    </tbody>
-  `;
-}
