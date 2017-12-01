@@ -18,14 +18,6 @@ export default class DataManager {
     this.rowCount = 0;
     this.columns = [];
     this.rows = [];
-    this._serialNoColumnAdded = false;
-    this._checkboxColumnAdded = false;
-
-    // initialize sort state
-    this.currentSort = {
-      colIndex: -1,
-      sortOrder: 'none' // asc, desc, none
-    };
 
     this.columns = this.prepareColumns(columns);
     this.rows = this.prepareRows(rows);
@@ -33,48 +25,46 @@ export default class DataManager {
     this.prepareNumericColumns();
   }
 
-  prepareColumns(columns) {
-    if (!Array.isArray(columns)) {
-      throw new DataError('`columns` must be an array');
-    }
-    for (const column of columns) {
-      if (typeof column !== 'string' && typeof column !== 'object') {
-        throw new DataError('`column` must be a string or an object');
-      }
-    }
+  // computed property
+  get currentSort() {
+    const col = this.columns.find(col => col.sortOrder !== 'none');
+    return col || {
+      colIndex: -1,
+      sortOrder: 'none'
+    };
+  }
 
-    if (this.options.addSerialNoColumn && !this._serialNoColumnAdded) {
-      const val = {
+  prepareColumns(columns) {
+    this.validateColumns(columns);
+
+    if (this.options.addSerialNoColumn && !this.hasColumn('Sr. No')) {
+      let val = {
         content: 'Sr. No',
+        align: 'center',
         editable: false,
         resizable: false,
-        align: 'center',
         focusable: false,
         dropdown: false
       };
 
       columns = [val].concat(columns);
-      this._serialNoColumnAdded = true;
     }
 
-    if (this.options.addCheckboxColumn && !this._checkboxColumnAdded) {
+    if (this.options.addCheckboxColumn && !this.hasColumn('Checkbox')) {
       const val = {
-        content: '<input type="checkbox" />',
+        content: 'Checkbox',
         editable: false,
         resizable: false,
         sortable: false,
         focusable: false,
-        dropdown: false
+        dropdown: false,
+        format: val => '<input type="checkbox" />'
       };
 
       columns = [val].concat(columns);
-      this._checkboxColumnAdded = true;
     }
 
-    return prepareColumns(columns, {
-      isHeader: 1,
-      format: value => `<span class="column-title">${value}</span>`
-    });
+    return prepareColumns(columns);
   }
 
   prepareNumericColumns() {
@@ -91,31 +81,19 @@ export default class DataManager {
   }
 
   prepareRows(rows) {
-    if (!Array.isArray(rows)) {
-      throw new DataError('`rows` must be an array');
-    }
-
-    rows.forEach((row, i) => {
-      if (!Array.isArray(row)) {
-        throw new DataError('`row` must be an array');
-      }
-
-      if (row.length !== this.getColumnCount()) {
-        throw new DataError(`Row index "${i}" doesn't match column length`);
-      }
-    });
+    this.validateRows(rows);
 
     rows = rows.map((row, i) => {
       const index = this._getNextRowCount();
 
       if (row.length < this.columns.length) {
-        if (this._serialNoColumnAdded) {
+        if (this.hasColumn('Sr. No')) {
           const val = (index + 1) + '';
 
           row = [val].concat(row);
         }
 
-        if (this._checkboxColumnAdded) {
+        if (this.hasColumn('Checkbox')) {
           const val = '<input type="checkbox" />';
 
           row = [val].concat(row);
@@ -128,17 +106,57 @@ export default class DataManager {
     return rows;
   }
 
-  appendRows(rows) {
-    if (Array.isArray(rows) && !Array.isArray(rows[0])) {
-      rows = [rows];
+  validateColumns(columns) {
+    if (!Array.isArray(columns)) {
+      throw new DataError('`columns` must be an array');
     }
-    const _rows = this.prepareRows(rows);
 
-    this.rows = this.rows.concat(_rows);
+    columns.forEach((column, i) => {
+      if (typeof column !== 'string' && typeof column !== 'object') {
+        throw new DataError(`column "${i}" must be a string or an object`);
+      }
+    });
+  }
+
+  validateRows(rows) {
+    if (!Array.isArray(rows)) {
+      throw new DataError('`rows` must be an array');
+    }
+
+    rows.forEach((row, i) => {
+      if (!Array.isArray(row)) {
+        throw new DataError('`row` must be an array');
+      }
+
+      if (row.length !== this.getColumnCount(true)) {
+        throw new DataError(`Row index "${i}" doesn't match column length`);
+      }
+    });
+  }
+
+  appendRows(rows) {
+    this.validateRows(rows);
+
+    this.rows = this.rows.concat(this.prepareRows(rows));
   }
 
   sortRows(colIndex, sortOrder = 'none') {
     colIndex = +colIndex;
+
+    // reset sortOrder and update for colIndex
+    this.getColumns()
+      .map(col => {
+        if (col.colIndex === colIndex) {
+          col.sortOrder = sortOrder;
+        } else {
+          col.sortOrder = 'none';
+        }
+      });
+
+    this._sortRows(colIndex, sortOrder);
+  }
+
+  _sortRows(colIndex, sortOrder) {
 
     if (this.currentSort.colIndex === colIndex) {
       // reverse the array if only sortOrder changed
@@ -171,9 +189,6 @@ export default class DataManager {
       }
       return 0;
     });
-
-    this.currentSort.colIndex = colIndex;
-    this.currentSort.sortOrder = sortOrder;
   }
 
   reverseArray(array) {
@@ -303,33 +318,57 @@ export default class DataManager {
       rows: this.rows
     };
   }
-}
 
-function prepareColumns(columns, props = {}) {
-  const _columns = columns.map(prepareCell);
-
-  return _columns.map(col => Object.assign({}, col, props));
+  hasColumn(name) {
+    return Boolean(this.columns.find(col => col.content === name));
+  }
 }
 
 function prepareRow(row, i) {
-  return prepareColumns(row, {
+  const baseRowCell = {
     rowIndex: i
-  });
+  };
+
+  return row
+    .map(prepareCell)
+    .map(cell => Object.assign({}, baseRowCell, cell));
+}
+
+function prepareColumns(columns, props = {}) {
+  const baseColumn = {
+    isHeader: 1,
+    editable: true,
+    sortable: true,
+    resizable: true,
+    focusable: true,
+    dropdown: true,
+    format: value => `<span class="column-title">${value}</span>`
+  };
+
+  return columns
+    .map(prepareCell)
+    .map(col => Object.assign({}, baseColumn, col));
 }
 
 function prepareCell(col, i) {
+  const baseCell = {
+    content: '',
+    align: 'left',
+    sortOrder: 'none',
+    colIndex: 0,
+    width: 40
+  };
+
   if (typeof col === 'string') {
     col = {
       content: col
     };
   }
-  return Object.assign(col, {
+
+  return Object.assign({}, baseCell, col, {
     colIndex: i
   });
 }
 
-class DataError extends TypeError {};
-
-export {
-  DataError
-};
+// Custom Errors
+export class DataError extends TypeError {};
