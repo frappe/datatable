@@ -15,6 +15,7 @@
     "babel-eslint": "7.2.3",
     "babel-loader": "7.0.0",
     "babel-plugin-add-module-exports": "0.2.1",
+    "babel-plugin-transform-builtin-extend": "^1.1.2",
     "babel-preset-env": "^1.6.1",
     "chai": "3.5.0",
     "css-loader": "^0.28.7",

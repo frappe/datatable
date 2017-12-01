@@ -2,11 +2,7 @@
 
 import chai from 'chai';
 import DataManager, {
-  ColumnTypeError,
-  RowTypeError,
-  ColumnsTypeError,
-  RowsTypeError,
-  RowLengthError
+  DataError
 } from '../src/datamanager';
 
 chai.expect();
@@ -51,21 +47,21 @@ describe.only('DataManager instance', () => {
       expect(() => datamanager.init({
         columns: ['Name'],
         rows: 2
-      })).to.throw(RowsTypeError);
+      })).to.throw(DataError, '`rows` must be an array');
     });
 
     it('should throw when any of the row is not an Array', () => {
       expect(() => datamanager.init({
         columns: ['Name'],
         rows: [2]
-      })).to.throw(RowTypeError);
+      })).to.throw(DataError, '`row` must be an array');
     });
 
     it('should throw when any of the row\'s length doesn\'t match column length', () => {
       expect(() => datamanager.init({
         columns: ['Name'],
         rows: [[]]
-      })).to.throw(RowLengthError);
+      })).to.throw(DataError, 'column length');
     });
 
     it('should not throw given valid data', () => {
@@ -90,13 +86,13 @@ describe.only('DataManager instance', () => {
     it('should throw when columns parameter is not an Array', () => {
       expect(() => datamanager.init({
         columns: 2
-      })).to.throw(ColumnsTypeError);
+      })).to.throw(DataError, 'must be an array');
     });
 
     it('should throw when any of the column is not a string or object', () => {
       expect(() => datamanager.init({
         columns: [2]
-      })).to.throw(ColumnTypeError);
+      })).to.throw(DataError, 'must be a string or an object');
     });
 
     it('should not throw given valid params', () => {

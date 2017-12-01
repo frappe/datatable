@@ -35,11 +35,11 @@ export default class DataManager {
 
   prepareColumns(columns) {
     if (!Array.isArray(columns)) {
-      throw ColumnsTypeError;
+      throw new DataError('`columns` must be an array');
     }
     for (const column of columns) {
       if (typeof column !== 'string' && typeof column !== 'object') {
-        throw ColumnTypeError;
+        throw new DataError('`column` must be a string or an object');
       }
     }
 
@@ -92,19 +92,18 @@ export default class DataManager {
 
   prepareRows(rows) {
     if (!Array.isArray(rows)) {
-      throw RowsTypeError;
+      throw new DataError('`rows` must be an array');
     }
 
-    for (const row of rows) {
-
+    rows.forEach((row, i) => {
       if (!Array.isArray(row)) {
-        throw RowTypeError;
+        throw new DataError('`row` must be an array');
       }
 
       if (row.length !== this.getColumnCount()) {
-        throw RowLengthError;
+        throw new DataError(`Row index "${i}" doesn't match column length`);
       }
-    }
+    });
 
     rows = rows.map((row, i) => {
       const index = this._getNextRowCount();
@@ -329,16 +328,8 @@ function prepareCell(col, i) {
   });
 }
 
-const ColumnsTypeError = new TypeError('`columns` must be an array');
-const RowsTypeError = new TypeError('`rows` must be an array');
-const RowTypeError = new TypeError('`row` must be an array');
-const ColumnTypeError = new TypeError('`column` must be a string or an object');
-const RowLengthError = new RangeError('A Row length doesn\'t match column length');
+class DataError extends TypeError {};
 
 export {
-  ColumnsTypeError,
-  RowsTypeError,
-  ColumnTypeError,
-  RowTypeError,
-  RowLengthError
+  DataError
 };

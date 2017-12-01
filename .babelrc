@@ -1,4 +1,9 @@
 {
   "presets": ["env"],
-  "plugins": ["babel-plugin-add-module-exports"]
+  "plugins": [
+    "babel-plugin-add-module-exports",
+    ["babel-plugin-transform-builtin-extend", {
+      "globals": ["TypeError", "RangeError", "Error"]
+    }]
+  ]
 }
