@@ -3,21 +3,29 @@ import { isNumeric, promisify } from './utils';
 export default class DataManager {
   constructor(options) {
     this.options = options;
-    this.currentSort = {
-      colIndex: -1,
-      sortOrder: 'none' // asc, desc, none
-    };
     this.sortRows = promisify(this.sortRows, this);
     this.switchColumn = promisify(this.switchColumn, this);
     this.removeColumn = promisify(this.removeColumn, this);
   }
 
   init(data) {
+    if (!data) {
+      data = this.options.data;
+    }
+
     let { columns, rows } = data;
 
     this.rowCount = 0;
     this.columns = [];
     this.rows = [];
+    this._serialNoColumnAdded = false;
+    this._checkboxColumnAdded = false;
+
+    // initialize sort state
+    this.currentSort = {
+      colIndex: -1,
+      sortOrder: 'none' // asc, desc, none
+    };
 
     this.columns = this.prepareColumns(columns);
     this.rows = this.prepareRows(rows);
@@ -27,7 +35,12 @@ export default class DataManager {
 
   prepareColumns(columns) {
     if (!Array.isArray(columns)) {
-      throw new TypeError('`columns` must be an array');
+      throw ColumnsTypeError;
+    }
+    for (const column of columns) {
+      if (typeof column !== 'string' && typeof column !== 'object') {
+        throw ColumnTypeError;
+      }
     }
 
     if (this.options.addSerialNoColumn && !this._serialNoColumnAdded) {
@@ -78,8 +91,19 @@ export default class DataManager {
   }
 
   prepareRows(rows) {
-    if (!Array.isArray(rows) || !Array.isArray(rows[0])) {
-      throw new TypeError('`rows` must be an array of arrays');
+    if (!Array.isArray(rows)) {
+      throw RowsTypeError;
+    }
+
+    for (const row of rows) {
+
+      if (!Array.isArray(row)) {
+        throw RowTypeError;
+      }
+
+      if (row.length !== this.getColumnCount()) {
+        throw RowLengthError;
+      }
     }
 
     rows = rows.map((row, i) => {
@@ -304,3 +328,17 @@ function prepareCell(col, i) {
     colIndex: i
   });
 }
+
+const ColumnsTypeError = new TypeError('`columns` must be an array');
+const RowsTypeError = new TypeError('`rows` must be an array');
+const RowTypeError = new TypeError('`row` must be an array');
+const ColumnTypeError = new TypeError('`column` must be a string or an object');
+const RowLengthError = new RangeError('A Row length doesn\'t match column length');
+
+export {
+  ColumnsTypeError,
+  RowsTypeError,
+  ColumnTypeError,
+  RowTypeError,
+  RowLengthError
+};
