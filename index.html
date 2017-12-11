@@ -51,7 +51,7 @@
 			const smallData = false;
 
 			if (!smallData) {
-				for (let i = 0; i < 5; i++) {
+				for (let i = 0; i < 10; i++) {
 					data.rows = data.rows.concat(data.rows);
 				}
 			} else {
@@ -60,24 +60,14 @@
 
 			console.log('No of Rows:', data.rows.length)
 
-			performance.mark("DataTable-start");
+			const start = performance.now();
 			var datatable = new DataTable('section', {
 				addSerialNoColumn: true,
 				enableClusterize: true,
 				takeAvailableSpace: true,
 				data
 			});
-			performance.mark("DataTable-end");
-
-			performance.measure(
-				"DataTable",
-				"DataTable-start",
-				"DataTable-end"
-			);
-
-			var measures = performance.getEntriesByName("DataTable");
-			var measure = measures[0];
-			console.log(measure.duration);
+			console.log(performance.now() - start);
 
 			window.datatable = datatable;
 		})

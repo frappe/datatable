@@ -1,11 +1,9 @@
 /* variables */
 
-.data-table {
-	--border-color: #d1d8dd;
-	--primary-color: rgb(82, 146, 247);
-	--light-bg: #f5f7fa;
-	--light-red: #FD8B8B;
-}
+$border-color: #d1d8dd;
+$primary-color: rgb(82, 146, 247);
+$light-bg: #f5f7fa;
+$light-red: #FD8B8B;
 
 /* resets */
 *, *::after, *::before {
@@ -37,7 +35,7 @@ button, input {
 
 	table td {
 		padding: 0;
-		border: 1px solid var(--border-color);
+		border: 1px solid $border-color;
 	}
 
 	thead td {
@@ -53,7 +51,7 @@ button, input {
 		right: 0;
 		top: 0;
 		bottom: 0;
-		background-color: var(--light-bg);
+		background-color: $light-bg;
 		opacity: 0.5;
 		font-size: 2em;
 
@@ -78,10 +76,10 @@ button, input {
 .body-scrollable {
 	max-height: 500px;
 	overflow: auto;
-	border-bottom: 1px solid var(--border-color);
+	border-bottom: 1px solid $border-color;
 
 	&.row-highlight-all .data-table-row:not(.row-unhighlight) {
-		background-color: var(--light-bg);
+		background-color: $light-bg;
 	}
 }
 
@@ -103,7 +101,7 @@ button, input {
 		top: 0;
 		width: 4px;
 		height: 100%;
-		background-color: var(--primary-color);
+		background-color: $primary-color;
 		cursor: col-resize;
 	}
 
@@ -150,18 +148,18 @@ button, input {
 			padding: 5px 10px;
 
 			&:hover {
-				background-color: var(--light-bg);
+				background-color: $light-bg;
 			}
 		}
 	}
 
 	.data-table-col.remove-column {
-		background-color: var(--light-red);
+		background-color: $light-red;
 		transition: 300ms background-color ease-in-out;
 	}
 
 	.data-table-col.sortable-chosen {
-		background-color: var(--light-bg);
+		background-color: $light-bg;
 	}
 }
 
@@ -196,7 +194,7 @@ button, input {
 	}
 
 	&.selected .content {
-		border: 2px solid var(--primary-color);
+		border: 2px solid $primary-color;
 	}
 
 	&.editing {
@@ -205,13 +203,13 @@ button, input {
 		}
 
 		.edit-cell {
-			border: 2px solid var(--primary-color);
+			border: 2px solid $primary-color;
 			display: block;
 		}
 	}
 
 	&.highlight {
-		background-color: var(--light-bg);
+		background-color: $light-bg;
 	}
 
 	&:hover .column-resizer {
@@ -225,7 +223,7 @@ button, input {
 
 .data-table-row {
   &.row-highlight {
-    background-color: var(--light-bg);
+    background-color: $light-bg;
   }
 }
 

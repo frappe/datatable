@@ -224,7 +224,7 @@ export default class CellManager {
     const rowHeader = $(rowHeaderSelector, this.wrapper);
 
     $.style([colHeader, rowHeader], {
-      backgroundColor: 'var(--light-bg)'
+      backgroundColor: '#f5f7fa' // light-bg
     });
 
     this.lastHeaders = [colHeader, rowHeader];
