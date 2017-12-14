@@ -157,3 +157,23 @@ $.closest = (selector, element) => {
 
   return $.closest(selector, element.parentNode);
 };
+
+$.inViewport = (el, parentEl) => {
+  const { top, left, bottom, right } = el.getBoundingClientRect();
+  const { top: pTop, left: pLeft, bottom: pBottom, right: pRight } = parentEl.getBoundingClientRect();
+
+  return top >= pTop && left >= pLeft && bottom <= pBottom && right <= pRight;
+};
+
+$.scrollTop = function scrollTop(element, offset) {
+  let c = 0;
+  scroll();
+
+  function scroll() {
+    if (c <= offset) {
+      c = c + offset / 8;
+      requestAnimationFrame(scroll);
+      element.scrollTop = c;
+    }
+  }
+};

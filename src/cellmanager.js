@@ -100,19 +100,6 @@ export default class CellManager {
       return true;
     };
 
-    const scrollToCell = (direction) => {
-      if (!this.$focusedCell) return false;
-
-      if (!this.inViewport(this.$focusedCell)) {
-        const { rowIndex } = $.data(this.$focusedCell);
-
-        this.scrollToRow(rowIndex - this.getRowCountPerPage() + 2);
-        return true;
-      }
-
-      return false;
-    };
-
     ['left', 'right', 'up', 'down'].map(
       direction => keyboard.on(direction, () => focusCell(direction))
     );
@@ -122,7 +109,7 @@ export default class CellManager {
     );
 
     ['left', 'right', 'up', 'down'].map(
-      direction => keyboard.on(direction, () => scrollToCell(direction))
+      direction => keyboard.on(direction, () => this.scrollToCell(this.$focusedCell))
     );
 
     keyboard.on('esc', () => {
@@ -538,45 +525,16 @@ export default class CellManager {
     return $.style($('.data-table-row', this.bodyScrollable), 'height');
   }
 
-  inViewport($cell) {
-    let colIndex, rowIndex; // eslint-disable-line
-
-    if (typeof $cell === 'number') {
-      [colIndex, rowIndex] = arguments;
-    } else {
-      let cell = $.data($cell);
-
-      colIndex = cell.colIndex;
-      rowIndex = cell.rowIndex;
-    }
-
-    const viewportHeight = this.instance.getViewportHeight();
-    const rowHeight = this.getRowHeight();
-    const rowOffset = rowIndex * rowHeight;
-
-    const scrollTopOffset = this.bodyScrollable.scrollTop;
-
-    if (rowOffset - scrollTopOffset + rowHeight < viewportHeight) {
-      return true;
-    }
-
-    return false;
-  }
-
   scrollToCell($cell) {
+    if ($.inViewport($cell, this.bodyScrollable)) return;
+
     const { rowIndex } = $.data($cell);
 
-    this.scrollToRow(rowIndex);
+    this.rowmanager.scrollToRow(rowIndex);
   }
 
   getRowCountPerPage() {
     return Math.ceil(this.instance.getViewportHeight() / this.getRowHeight());
-  }
-
-  scrollToRow(rowIndex) {
-    const offset = rowIndex * this.getRowHeight();
-
-    this.bodyScrollable.scrollTop = offset;
   }
 }
 

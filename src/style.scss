@@ -235,3 +235,7 @@ button, input {
 	-ms-user-select: none;
 	user-select: none;
 }
+
+body.data-table-resize {
+	cursor: col-resize;
+}

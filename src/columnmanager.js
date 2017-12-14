@@ -104,6 +104,7 @@ export default class ColumnManager {
     let $resizingCell, startWidth, startX;
 
     $.on(this.header, 'mousedown', '.data-table-col .column-resizer', (e, $handle) => {
+      document.body.classList.add('data-table-resize');
       const $cell = $handle.parentNode.parentNode;
       $resizingCell = $cell;
       const { colIndex } = $.data($resizingCell);
@@ -119,6 +120,7 @@ export default class ColumnManager {
     });
 
     $.on(document.body, 'mouseup', (e) => {
+      document.body.classList.remove('data-table-resize');
       if (!$resizingCell) return;
       isDragging = false;
 

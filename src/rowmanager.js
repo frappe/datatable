@@ -147,6 +147,26 @@ export default class RowManager {
   getLastRowIndex() {
     return this.datamanager.getRowCount() - 1;
   }
+
+  scrollToRow(rowIndex) {
+    const $row = this.getRow$(rowIndex);
+    if ($.inViewport($row, this.bodyScrollable)) return;
+
+    const { top, height } = $row.getBoundingClientRect();
+    const { top: pTop } = this.bodyScrollable.getBoundingClientRect();
+
+    let offset;
+    if (top < pTop) {
+      offset = this.bodyScrollable.scrollTop - (pTop - top) - height;
+      if (offset < 0) offset = 0;
+    } else {
+      offset = this.bodyScrollable.scrollTop + (top - this.bodyScrollable.clientHeight);
+    }
+
+    console.log(rowIndex, offset);
+
+    $.scrollTop(this.bodyScrollable, offset);
+  }
 }
 
 export function getRowHTML(columns, props) {
