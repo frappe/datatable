@@ -193,3 +193,9 @@ export function promisify(fn, context = null) {
     });
   };
 };
+
+export function chainPromises(promises) {
+  return promises.reduce(
+    (prev, cur) => prev.then(cur), Promise.resolve()
+  );
+};

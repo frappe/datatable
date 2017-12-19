@@ -139,7 +139,6 @@ class DataTable {
   render() {
     this.renderHeader();
     this.renderBody();
-    this.setDimensions();
   }
 
   renderHeader() {
