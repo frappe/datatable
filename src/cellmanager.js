@@ -16,6 +16,7 @@ export default class CellManager {
     this.bodyScrollable = this.instance.bodyScrollable;
     this.columnmanager = this.instance.columnmanager;
     this.rowmanager = this.instance.rowmanager;
+    this.datamanager = this.instance.datamanager;
 
     this.bindEvents();
   }
@@ -163,7 +164,7 @@ export default class CellManager {
       this.selectArea($(e.delegatedTarget));
     };
 
-    $.on(this.bodyScrollable, 'mousemove', '.data-table-col', throttle(selectArea, 100));
+    $.on(this.bodyScrollable, 'mousemove', '.data-table-col', throttle(selectArea, 50));
   }
 
   focusCell($cell, { skipClearSelection = 0 } = {}) {
@@ -331,9 +332,14 @@ export default class CellManager {
 
   activateEditing($cell) {
     const { rowIndex, colIndex } = $.data($cell);
-    const col = this.columnmanager.getColumn(colIndex);
 
+    const col = this.columnmanager.getColumn(colIndex);
     if (col && col.editable === false) {
+      return;
+    }
+
+    const cell = this.getCell(colIndex, rowIndex);
+    if (cell && cell.editable === false) {
       return;
     }
 
@@ -352,7 +358,6 @@ export default class CellManager {
     const $editCell = $('.edit-cell', $cell);
     $editCell.innerHTML = '';
 
-    const cell = this.getCell(colIndex, rowIndex);
     const editing = this.getEditingObject(colIndex, rowIndex, cell.content, $editCell);
 
     if (editing) {
@@ -405,13 +410,13 @@ export default class CellManager {
         const oldValue = this.getCell(colIndex, rowIndex).content;
 
         // update cell immediately
-        this.updateCell(rowIndex, colIndex, value);
+        this.updateCell(colIndex, rowIndex, value);
 
         if (done && done.then) {
           // revert to oldValue if promise fails
           done.catch((e) => {
             console.log(e);
-            this.updateCell(rowIndex, colIndex, oldValue);
+            this.updateCell(colIndex, rowIndex, oldValue);
           });
         }
       }
@@ -452,17 +457,13 @@ export default class CellManager {
     copyTextToClipboard(values);
   }
 
-  updateCell(rowIndex, colIndex, value) {
-    const cell = this.getCell(colIndex, rowIndex);
-
-    cell.content = value;
+  updateCell(colIndex, rowIndex, value) {
+    const cell = this.datamanager.updateCell(colIndex, rowIndex, value);
     this.refreshCell(cell);
   }
 
   refreshCell(cell) {
-    const selector = `.data-table-col[data-row-index="${cell.rowIndex}"][data-col-index="${cell.colIndex}"]`;
-    const $cell = $(selector, this.bodyScrollable);
-
+    const $cell = $(cellSelector(cell.colIndex, cell.rowIndex), this.bodyScrollable);
     $cell.innerHTML = getCellContent(cell);
   }
 

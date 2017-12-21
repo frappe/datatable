@@ -136,6 +136,10 @@ class DataTable {
     this.rowmanager.refreshRows();
   }
 
+  refreshRow(row, rowIndex) {
+    this.rowmanager.refreshRow(row, rowIndex);
+  }
+
   render() {
     this.renderHeader();
     this.renderBody();

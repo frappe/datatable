@@ -249,6 +249,42 @@ export default class DataManager {
     });
   }
 
+  updateRow(row, rowIndex) {
+    if (row.length < this.columns.length) {
+      if (this.hasColumn('Sr. No')) {
+        const val = (rowIndex + 1) + '';
+
+        row = [val].concat(row);
+      }
+
+      if (this.hasColumn('Checkbox')) {
+        const val = '<input type="checkbox" />';
+
+        row = [val].concat(row);
+      }
+    }
+
+    const _row = prepareRow(row, rowIndex);
+    const index = this.rows.findIndex(row => row[0].rowIndex === rowIndex);
+    this.rows[index] = _row;
+
+    return _row;
+  }
+
+  updateCell(colIndex, rowIndex, value) {
+    let cell;
+    if (typeof colIndex === 'object') {
+      // cell object was passed
+      cell = colIndex;
+      colIndex = cell.colIndex;
+      rowIndex = cell.rowIndex;
+      value = cell.content;
+    }
+    cell = this.getCell(colIndex, rowIndex);
+    cell.content = value;
+    return cell;
+  }
+
   getRowCount() {
     return this.rowCount;
   }

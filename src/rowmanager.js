@@ -17,6 +17,10 @@ export default class RowManager {
     return this.instance.datamanager;
   }
 
+  get cellmanager() {
+    return this.instance.cellmanager;
+  }
+
   bindEvents() {
     this.bindCheckbox();
   }
@@ -43,6 +47,14 @@ export default class RowManager {
   refreshRows() {
     this.instance.renderBody();
     this.instance.setDimensions();
+  }
+
+  refreshRow(row, rowIndex) {
+    const _row = this.datamanager.updateRow(row, rowIndex);
+
+    _row.forEach(cell => {
+      this.cellmanager.refreshCell(cell);
+    });
   }
 
   getCheckedRows() {
