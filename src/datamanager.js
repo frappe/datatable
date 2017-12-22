@@ -271,18 +271,38 @@ export default class DataManager {
     return _row;
   }
 
-  updateCell(colIndex, rowIndex, value) {
+  updateCell(colIndex, rowIndex, keyValPairs) {
     let cell;
     if (typeof colIndex === 'object') {
-      // cell object was passed
+      // cell object was passed,
+      // must have colIndex, rowIndex
       cell = colIndex;
       colIndex = cell.colIndex;
       rowIndex = cell.rowIndex;
-      value = cell.content;
+      // the object passed must be merged with original cell
+      keyValPairs = cell;
     }
     cell = this.getCell(colIndex, rowIndex);
-    cell.content = value;
+
+    // mutate object directly
+    for (let key in keyValPairs) {
+      const newVal = keyValPairs[key];
+      if (newVal !== undefined) {
+        cell[key] = newVal;
+      }
+    }
     return cell;
+  }
+
+  updateColumn(colIndex, keyValPairs) {
+    const column = this.getColumn(colIndex);
+    for (let key in keyValPairs) {
+      const newVal = keyValPairs[key];
+      if (newVal !== undefined) {
+        column[key] = newVal;
+      }
+    }
+    return column;
   }
 
   getRowCount() {

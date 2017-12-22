@@ -56,10 +56,13 @@ export default class BodyRenderer {
         }
       }
     });
+
     this.appendRemainingData();
     // setDimensions will work only if there is atleast one row appended
     // so we call it as soon as the first Page is appended
-    this.firstPagePromise.then(() => this.instance.setDimensions());
+    this.firstPagePromise.then(() => {
+      this.instance.setDimensions();
+    });
   }
 
   appendRemainingData() {

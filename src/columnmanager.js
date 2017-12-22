@@ -318,6 +318,9 @@ export default class ColumnManager {
       if (!this.minWidthMap[colIndex]) {
         // only set this once
         this.minWidthMap[colIndex] = width;
+        this.datamanager.updateColumn(colIndex, {
+          minWidth: width
+        });
       }
     });
   }
@@ -334,6 +337,7 @@ export default class ColumnManager {
       if (width < minWidth) {
         width = minWidth;
       }
+      this.datamanager.updateColumn(colIndex, { width });
       this.setColumnWidth(colIndex, width);
       this.setDefaultCellHeight(height);
     });
@@ -360,6 +364,7 @@ export default class ColumnManager {
       const width = $.style(this.getColumnHeaderElement(col.colIndex), 'width');
       let finalWidth = Math.min(width + deltaWidth) - 2;
 
+      this.datamanager.updateColumn(col.colIndex, { width: finalWidth });
       this.setColumnHeaderWidth(col.colIndex, finalWidth);
       this.setColumnWidth(col.colIndex, finalWidth);
     });

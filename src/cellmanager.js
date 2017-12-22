@@ -334,7 +334,7 @@ export default class CellManager {
     const { rowIndex, colIndex } = $.data($cell);
 
     const col = this.columnmanager.getColumn(colIndex);
-    if (col && col.editable === false) {
+    if (col && (col.editable === false || col.focusable === false)) {
       return;
     }
 
@@ -458,7 +458,9 @@ export default class CellManager {
   }
 
   updateCell(colIndex, rowIndex, value) {
-    const cell = this.datamanager.updateCell(colIndex, rowIndex, value);
+    const cell = this.datamanager.updateCell(colIndex, rowIndex, {
+      content: value
+    });
     this.refreshCell(cell);
   }
 
