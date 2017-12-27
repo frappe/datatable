@@ -41,7 +41,7 @@ export default {
     none: ''
   },
   freezeMessage: 'Loading...',
-  editing: null,
+  editing: () => {},
   addSerialNoColumn: true,
   addCheckboxColumn: true,
   enableClusterize: true,

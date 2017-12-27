@@ -15,10 +15,13 @@ const KEYCODES = {
   67: 'c'
 };
 
+let initDone = false;
 const handlers = {};
 
-function bind() {
-  $.on(document, 'keydown', handler);
+function bind(dom) {
+  if (initDone) return;
+  $.on(dom, 'keydown', handler);
+  initDone = true;
 }
 
 function handler(e) {
@@ -45,9 +48,10 @@ function handler(e) {
   }
 }
 
-bind();
-
 export default {
+  init(dom) {
+    bind(dom);
+  },
   on(key, handler) {
     const keys = key.split(',').map(k => k.trim());
 

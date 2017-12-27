@@ -51,10 +51,10 @@ export default class CellManager {
       }
     });
 
-    $.on(document.body, 'click', e => {
-      if (e.target.matches('.edit-cell, .edit-cell *')) return;
-      this.deactivateEditing();
-    });
+    // $.on(document.body, 'click', e => {
+    //   if (e.target.matches('.edit-cell, .edit-cell *')) return;
+    //   this.deactivateEditing();
+    // });
   }
 
   bindKeyboardNav() {
@@ -374,9 +374,9 @@ export default class CellManager {
   }
 
   getEditingObject(colIndex, rowIndex, value, parent) {
-    if (this.options.editing) {
-      return this.options.editing(colIndex, rowIndex, value, parent);
-    }
+    // debugger;
+    const obj = this.options.editing(colIndex, rowIndex, value, parent);
+    if (obj && obj.setValue) return obj;
 
     // editing fallback
     const $input = $.create('input', {
@@ -411,6 +411,7 @@ export default class CellManager {
 
         // update cell immediately
         this.updateCell(colIndex, rowIndex, value);
+        $cell.focus();
 
         if (done && done.then) {
           // revert to oldValue if promise fails
@@ -501,19 +502,19 @@ export default class CellManager {
   }
 
   getLeftMostCell$(rowIndex) {
-    return this.getCell$(rowIndex, this.columnmanager.getFirstColumnIndex());
+    return this.getCell$(this.columnmanager.getFirstColumnIndex(), rowIndex);
   }
 
   getRightMostCell$(rowIndex) {
-    return this.getCell$(rowIndex, this.columnmanager.getLastColumnIndex());
+    return this.getCell$(this.columnmanager.getLastColumnIndex(), rowIndex);
   }
 
   getTopMostCell$(colIndex) {
-    return this.getCell$(this.rowmanager.getFirstRowIndex(), colIndex);
+    return this.getCell$(colIndex, this.rowmanager.getFirstRowIndex());
   }
 
   getBottomMostCell$(colIndex) {
-    return this.getCell$(this.rowmanager.getLastRowIndex(), colIndex);
+    return this.getCell$(colIndex, this.rowmanager.getLastRowIndex());
   }
 
   getCell(colIndex, rowIndex) {
@@ -529,11 +530,11 @@ export default class CellManager {
   }
 
   scrollToCell($cell) {
-    if ($.inViewport($cell, this.bodyScrollable)) return;
+    if ($.inViewport($cell, this.bodyScrollable)) return false;
 
     const { rowIndex } = $.data($cell);
-
     this.rowmanager.scrollToRow(rowIndex);
+    return false;
   }
 
   getRowCountPerPage() {
@@ -550,7 +551,7 @@ export function getCellHTML(column) {
   });
 
   return `
-    <td class="data-table-col noselect" ${dataAttr}>
+    <td class="data-table-col noselect" ${dataAttr} tabindex="0">
       ${getCellContent(column)}
     </td>
   `;
