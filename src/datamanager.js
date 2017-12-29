@@ -189,6 +189,19 @@ export default class DataManager {
       }
       return 0;
     });
+
+    if (this.hasColumn('Sr. No')) {
+      // update Sr. No indexes
+      const srNoColIndex = this.getColumnIndex('Sr. No');
+      this.rows = this.rows.map((row, index) => {
+        return row.map(cell => {
+          if (cell.colIndex === srNoColIndex) {
+            cell.content = (index + 1) + '';
+          }
+          return cell;
+        });
+      });
+    }
   }
 
   reverseArray(array) {
@@ -377,6 +390,10 @@ export default class DataManager {
 
   hasColumn(name) {
     return Boolean(this.columns.find(col => col.content === name));
+  }
+
+  getColumnIndex(name) {
+    return this.columns.findIndex(col => col.content === name);
   }
 }
 

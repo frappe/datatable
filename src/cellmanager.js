@@ -109,10 +109,6 @@ export default class CellManager {
       direction => keyboard.on('ctrl+' + direction, () => focusLastCell(direction))
     );
 
-    ['left', 'right', 'up', 'down'].map(
-      direction => keyboard.on(direction, () => this.scrollToCell(this.$focusedCell))
-    );
-
     keyboard.on('esc', () => {
       this.deactivateEditing();
     });
@@ -196,6 +192,7 @@ export default class CellManager {
     $cell.classList.add('selected');
 
     this.highlightRowColumnHeader($cell);
+    this.scrollToCell($cell);
   }
 
   highlightRowColumnHeader($cell) {

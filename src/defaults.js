@@ -46,5 +46,6 @@ export default {
   addCheckboxColumn: true,
   enableClusterize: true,
   enableLogs: false,
-  takeAvailableSpace: false
+  takeAvailableSpace: false,
+  loadingText: 'Loading...'
 };
