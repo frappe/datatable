@@ -1,7 +1,7 @@
 import $ from './dom';
 import Clusterize from 'clusterize.js';
 import { getRowHTML } from './rowmanager';
-import { promisify, chainPromises } from './utils';
+import { promisify } from './utils';
 
 export default class BodyRenderer {
   constructor(instance) {
@@ -12,7 +12,7 @@ export default class BodyRenderer {
     this.cellmanager = instance.cellmanager;
     this.bodyScrollable = instance.bodyScrollable;
     this.log = instance.log;
-    this.appendNextPage = promisify(this.appendNextPage, this);
+    this.appendRemainingData = promisify(this.appendRemainingData, this);
   }
 
   render() {
@@ -34,6 +34,9 @@ export default class BodyRenderer {
   }
 
   renderBodyWithClusterize() {
+    // first page
+    const rows = this.datamanager.getRows(0, 20);
+    const initialData = this.getDataForClusterize(rows);
 
     if (!this.clusterize) {
       // empty body
@@ -43,10 +46,10 @@ export default class BodyRenderer {
         </table>
       `;
 
-      // Rows will be appended as promises, so we don't block
-      // even for the first page render
+      // first 20 rows will appended
+      // rest of them in nextTick
       this.clusterize = new Clusterize({
-        rows: [],
+        rows: initialData,
         scrollElem: this.bodyScrollable,
         contentElem: $('tbody', this.bodyScrollable),
         callbacks: {
@@ -57,56 +60,23 @@ export default class BodyRenderer {
           }
         },
         /* eslint-disable */
-        no_data_text: 'Loading..',
+        no_data_text: this.options.loadingText,
         no_data_class: 'empty-state'
         /* eslint-enable */
       });
+
+      // setDimensions requires atleast 1 row to exist in dom
+      this.instance.setDimensions();
     } else {
-      this.clusterize.update([]);
+      this.clusterize.update(initialData);
     }
 
     this.appendRemainingData();
-    // setDimensions will work only if there is atleast one row appended
-    // so we call it as soon as the first Page is appended
-    this.firstPagePromise.then(() => {
-      this.instance.setDimensions();
-    });
   }
 
   appendRemainingData() {
-    const chunkSize = 1000;
-    let start = 0, end = chunkSize;
-    let dataAppended = 0;
-    this.firstPagePromise = null;
-
-    const promises = [];
-    const rowCount = this.datamanager.getRowCount();
-
-    while (dataAppended + chunkSize < rowCount) {
-      const promise = this.appendNextPage(start, end);
-      if (!this.firstPagePromise) this.firstPagePromise = promise;
-      promises.push(promise);
-      dataAppended += chunkSize;
-      start = end;
-      end += chunkSize;
-    }
-
-    if (rowCount % chunkSize > 0) {
-      // last page
-      const promise = this.appendNextPage(start, end);
-      if (!this.firstPagePromise) this.firstPagePromise = promise;
-      promises.push(promise);
-      dataAppended += rowCount % chunkSize;
-    }
-
-    return chainPromises(promises);
-  }
-
-  // promisified
-  appendNextPage(start, end) {
-    const rows = this.datamanager.getRows(start, end);
+    const rows = this.datamanager.getRows(20);
     const data = this.getDataForClusterize(rows);
-
     this.clusterize.append(data);
   }
 
