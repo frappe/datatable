@@ -165,15 +165,8 @@ $.inViewport = (el, parentEl) => {
   return top >= pTop && left >= pLeft && bottom <= pBottom && right <= pRight;
 };
 
-$.scrollTop = function scrollTop(element, offset) {
-  let c = 0;
-  scroll();
-
-  function scroll() {
-    if (c <= offset) {
-      c = c + offset / 8;
-      requestAnimationFrame(scroll);
-      element.scrollTop = c;
-    }
-  }
+$.scrollTop = function scrollTop(element, pixels) {
+  requestAnimationFrame(() => {
+    element.scrollTop = pixels;
+  });
 };

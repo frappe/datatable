@@ -161,22 +161,23 @@ export default class RowManager {
   }
 
   scrollToRow(rowIndex) {
+    rowIndex = +rowIndex;
+    this._lastScrollTo = this._lastScrollTo || 0;
     const $row = this.getRow$(rowIndex);
     if ($.inViewport($row, this.bodyScrollable)) return;
 
-    const { top, height } = $row.getBoundingClientRect();
-    const { top: pTop } = this.bodyScrollable.getBoundingClientRect();
+    const { height } = $row.getBoundingClientRect();
+    const { top, bottom } = this.bodyScrollable.getBoundingClientRect();
+    const rowsInView = Math.floor((bottom - top) / height);
 
-    let offset;
-    if (top < pTop) {
-      offset = this.bodyScrollable.scrollTop - (pTop - top) - height;
-      if (offset < 0) offset = 0;
+    let offset = 0;
+    if (rowIndex > this._lastScrollTo) {
+      offset = height * ((rowIndex + 1) - rowsInView);
     } else {
-      offset = this.bodyScrollable.scrollTop + (top - this.bodyScrollable.clientHeight);
+      offset = height * ((rowIndex + 1) - 1);
     }
 
-    console.log(rowIndex, offset);
-
+    this._lastScrollTo = rowIndex;
     $.scrollTop(this.bodyScrollable, offset);
   }
 }

@@ -35,27 +35,35 @@ export default class BodyRenderer {
 
   renderBodyWithClusterize() {
 
-    // empty body
-    this.bodyScrollable.innerHTML = `
-      <table class="data-table-body">
-        ${getBodyHTML([])}
-      </table>
-    `;
+    if (!this.clusterize) {
+      // empty body
+      this.bodyScrollable.innerHTML = `
+        <table class="data-table-body">
+          ${getBodyHTML([])}
+        </table>
+      `;
 
-    // Rows will be appended as promises, so we don't block
-    // even for the first page render
-    this.clusterize = new Clusterize({
-      rows: [],
-      scrollElem: this.bodyScrollable,
-      contentElem: $('tbody', this.bodyScrollable),
-      callbacks: {
-        clusterChanged: () => {
-          this.rowmanager.highlightCheckedRows();
-          this.cellmanager.selectAreaOnClusterChanged();
-          this.cellmanager.focusCellOnClusterChanged();
-        }
-      }
-    });
+      // Rows will be appended as promises, so we don't block
+      // even for the first page render
+      this.clusterize = new Clusterize({
+        rows: [],
+        scrollElem: this.bodyScrollable,
+        contentElem: $('tbody', this.bodyScrollable),
+        callbacks: {
+          clusterChanged: () => {
+            this.rowmanager.highlightCheckedRows();
+            this.cellmanager.selectAreaOnClusterChanged();
+            this.cellmanager.focusCellOnClusterChanged();
+          }
+        },
+        /* eslint-disable */
+        no_data_text: 'Loading..',
+        no_data_class: 'empty-state'
+        /* eslint-enable */
+      });
+    } else {
+      this.clusterize.update([]);
+    }
 
     this.appendRemainingData();
     // setDimensions will work only if there is atleast one row appended

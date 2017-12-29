@@ -46,7 +46,7 @@ export default class CellManager {
         this.activateEditing(this.$focusedCell);
       } else if (this.$editingCell) {
         // enter keypress on editing cell
-        this.submitEditing(this.$editingCell);
+        this.submitEditing();
         this.deactivateEditing();
       }
     });
@@ -398,7 +398,9 @@ export default class CellManager {
     };
   }
 
-  submitEditing($cell) {
+  submitEditing() {
+    if (!this.$editingCell) return;
+    const $cell = this.$editingCell;
     const { rowIndex, colIndex } = $.data($cell);
 
     if ($cell) {
