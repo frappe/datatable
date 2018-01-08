@@ -18,7 +18,7 @@ class DataTable {
       wrapper = document.querySelector(wrapper);
     }
     this.wrapper = wrapper;
-    if (!this.wrapper) {
+    if (!(this.wrapper instanceof HTMLElement)) {
       throw new Error('Invalid argument given for `wrapper`');
     }
 

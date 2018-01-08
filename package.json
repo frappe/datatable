@@ -4,6 +4,7 @@
   "description": "A modern datatable library for the web",
   "main": "lib/frappe-datatable.js",
   "scripts": {
+    "start": "npm run dev",
     "build": "webpack --env build",
     "dev": "webpack --progress --colors --watch --env dev",
     "test": "mocha --compilers js:babel-core/register --colors ./test/*.spec.js",

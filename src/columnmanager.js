@@ -1,7 +1,7 @@
 import $ from './dom';
 import Sortable from 'sortablejs';
 import { getRowHTML } from './rowmanager';
-import { getDefault, throttle } from './utils';
+import { getDefault } from './utils';
 
 export default class ColumnManager {
   constructor(instance) {
@@ -125,9 +125,7 @@ export default class ColumnManager {
       isDragging = false;
 
       const { colIndex } = $.data($resizingCell);
-      const width = $.style($('.content', $resizingCell), 'width');
-
-      this.setColumnWidth(colIndex, width);
+      this.setColumnWidth(colIndex);
       this.instance.setBodyWidth();
       $resizingCell = null;
     });
@@ -141,8 +139,8 @@ export default class ColumnManager {
         // don't resize past minWidth
         return;
       }
-
-      this.setColumnHeaderWidth(colIndex, finalWidth);
+      this.datamanager.updateColumn(colIndex, { width: finalWidth });
+      this.setColumnHeaderWidth(colIndex);
     });
   }
 
@@ -158,16 +156,6 @@ export default class ColumnManager {
       if (!ready) return;
 
       const $parent = $('.data-table-row', this.header);
-
-      $.on(document, 'drag', '.data-table-col', throttle((e, $target) => {
-        if (e.offsetY > 200) {
-          $target.classList.add('remove-column');
-        } else {
-          setTimeout(() => {
-            $target.classList.remove('remove-column');
-          }, 10);
-        }
-      }));
 
       this.sortable = Sortable.create($parent, {
         onEnd: (e) => {
@@ -277,9 +265,9 @@ export default class ColumnManager {
   setDimensions() {
     this.setHeaderStyle();
     this.setupMinWidth();
-    this.setNaturalColumnWidth();
+    this.setupNaturalColumnWidth();
     this.distributeRemainingWidth();
-    this.setColumnAlignments();
+    this.setColumnStyle();
   }
 
   setHeaderStyle() {
@@ -297,7 +285,7 @@ export default class ColumnManager {
 
     // don't show resize cursor on nonResizable columns
     const nonResizableColumnsSelector = this.datamanager.getColumns()
-      .filter(col => col.resizable !== undefined && !col.resizable)
+      .filter(col => col.resizable === false)
       .map(col => col.colIndex)
       .map(i => `.data-table-header [data-col-index="${i}"]`)
       .join();
@@ -308,38 +296,35 @@ export default class ColumnManager {
   }
 
   setupMinWidth() {
-    // cache minWidth for each column
-    this.minWidthMap = getDefault(this.minWidthMap, []);
-
     $.each('.data-table-col', this.header).map(col => {
       const width = $.style($('.content', col), 'width');
       const { colIndex } = $.data(col);
+      const column = this.getColumn(colIndex);
 
-      if (!this.minWidthMap[colIndex]) {
+      if (!column.minWidth) {
         // only set this once
-        this.minWidthMap[colIndex] = width;
-        this.datamanager.updateColumn(colIndex, {
-          minWidth: width
-        });
+        this.datamanager.updateColumn(colIndex, { minWidth: width });
       }
     });
   }
 
-  setNaturalColumnWidth() {
+  setupNaturalColumnWidth() {
     // set initial width as naturally calculated by table's first row
     $.each('.data-table-row[data-row-index="0"] .data-table-col', this.bodyScrollable).map($cell => {
 
-      let width = $.style($('.content', $cell), 'width');
-      const height = $.style($('.content', $cell), 'height');
       const { colIndex } = $.data($cell);
+      if (this.getColumn(colIndex).width > 0) {
+        // already set
+        return;
+      }
+
+      let width = $.style($('.content', $cell), 'width');
       const minWidth = this.getColumnMinWidth(colIndex);
 
       if (width < minWidth) {
         width = minWidth;
       }
       this.datamanager.updateColumn(colIndex, { width });
-      this.setColumnWidth(colIndex, width);
-      this.setDefaultCellHeight(height);
     });
   }
 
@@ -365,10 +350,7 @@ export default class ColumnManager {
       let finalWidth = Math.min(width + deltaWidth) - 2;
 
       this.datamanager.updateColumn(col.colIndex, { width: finalWidth });
-      this.setColumnHeaderWidth(col.colIndex, finalWidth);
-      this.setColumnWidth(col.colIndex, finalWidth);
     });
-    this.instance.setBodyWidth();
   }
 
   setDefaultCellHeight(height) {
@@ -377,16 +359,21 @@ export default class ColumnManager {
     });
   }
 
-  setColumnAlignments() {
+  setColumnStyle() {
     // align columns
     this.getColumns()
       .map(column => {
+        // alignment
         if (['left', 'center', 'right'].includes(column.align)) {
           this.style.setStyle(`[data-col-index="${column.colIndex}"]`, {
             'text-align': column.align
           });
         }
+        // width
+        this.setColumnHeaderWidth(column.colIndex);
+        this.setColumnWidth(column.colIndex);
       });
+    this.instance.setBodyWidth();
   }
 
   sortRows(colIndex, sortOrder) {
@@ -401,13 +388,11 @@ export default class ColumnManager {
     return this.datamanager.getColumns();
   }
 
-  setColumnWidth(colIndex, width) {
+  setColumnWidth(colIndex) {
+    colIndex = +colIndex;
     this._columnWidthMap = this._columnWidthMap || [];
 
-    if (!width) {
-      const $headerContent = $(`.data-table-col[data-col-index="${colIndex}"] .content`, this.header);
-      width = $.style($headerContent, 'width');
-    }
+    const { width } = this.getColumn(colIndex);
 
     let index = this._columnWidthMap[colIndex];
     const selector = `[data-col-index="${colIndex}"] .content, [data-col-index="${colIndex}"] .edit-cell`;
@@ -419,9 +404,11 @@ export default class ColumnManager {
     this._columnWidthMap[colIndex] = index;
   }
 
-  setColumnHeaderWidth(colIndex, width) {
+  setColumnHeaderWidth(colIndex) {
+    colIndex = +colIndex;
     this.$columnMap = this.$columnMap || [];
     const selector = `[data-col-index="${colIndex}"][data-is-header] .content`;
+    const { width } = this.getColumn(colIndex);
 
     let $column = this.$columnMap[colIndex];
     if (!$column) {
@@ -434,7 +421,7 @@ export default class ColumnManager {
 
   getColumnMinWidth(colIndex) {
     colIndex = +colIndex;
-    return this.minWidthMap && this.minWidthMap[colIndex];
+    return this.getColumn(colIndex).minWidth || 24;
   }
 
   getFirstColumnIndex() {

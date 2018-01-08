@@ -429,7 +429,7 @@ function prepareCell(col, i) {
     align: 'left',
     sortOrder: 'none',
     colIndex: 0,
-    width: 40
+    width: 0
   };
 
   if (typeof col === 'string') {
