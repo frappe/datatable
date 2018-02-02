@@ -31,6 +31,8 @@ export default class BodyRenderer {
         ${getBodyHTML(rows)}
       </table>
     `;
+    this.instance.setDimensions();
+
   }
 
   renderBodyWithClusterize() {

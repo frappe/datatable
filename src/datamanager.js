@@ -69,6 +69,7 @@ export default class DataManager {
 
   prepareNumericColumns() {
     const row0 = this.getRow(0);
+    if (!row0) return;
     this.columns = this.columns.map((column, i) => {
 
       const cellValue = row0[i].content;
