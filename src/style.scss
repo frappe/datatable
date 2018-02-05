@@ -14,12 +14,13 @@ $spacer-3: 1rem;
 	box-sizing: border-box;
 }
 
-button, input {
+.data-table button, .data-table input {
 	overflow: visible;
 	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
 	margin: 0;
+	padding: 0;
 }
 
 /* styling */
@@ -193,7 +194,6 @@ button, input {
 			outline: none;
 			width: 100%;
 			border: none;
-			height: 1em;
 		}
 	}
 

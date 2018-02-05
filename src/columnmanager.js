@@ -357,6 +357,9 @@ export default class ColumnManager {
     this.style.setStyle('.data-table-col .content', {
       height: height + 'px'
     });
+    this.style.setStyle('.data-table-col .edit-cell', {
+      height: height + 'px'
+    });
   }
 
   setColumnStyle() {
@@ -374,6 +377,7 @@ export default class ColumnManager {
         this.setColumnWidth(column.colIndex);
       });
     this.instance.setBodyWidth();
+    this.setDefaultCellHeight($.style(this.instance.datatableWrapper.querySelector('.data-table-col'), 'height'));
   }
 
   sortRows(colIndex, sortOrder) {

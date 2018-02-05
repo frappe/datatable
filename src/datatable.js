@@ -77,6 +77,7 @@ class DataTable {
   refresh(data) {
     this.datamanager.init(data);
     this.render();
+    this.setDimensions();
   }
 
   destroy() {

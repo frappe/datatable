@@ -197,7 +197,7 @@ export default class CellManager {
 
   highlightRowColumnHeader($cell) {
     const { colIndex, rowIndex } = $.data($cell);
-    const _colIndex = this.columnmanager.getSerialColumnIndex();
+    const _colIndex = this.datamanager.getColumnIndexById('_rowIndex');
     const colHeaderSelector = `.data-table-header .data-table-col[data-col-index="${colIndex}"]`;
     const rowHeaderSelector = `.data-table-col[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
 

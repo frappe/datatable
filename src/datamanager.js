@@ -37,12 +37,13 @@ export default class DataManager {
   prepareColumns(columns) {
     this.validateColumns(columns);
 
-    if (this.options.addSerialNoColumn && !this.hasColumn('Sr. No')) {
+    if (this.options.addSerialNoColumn && !this.hasColumnById('_rowIndex')) {
       let val = {
-        content: 'Sr. No',
+        id: '_rowIndex',
+        content: '',
         align: 'center',
         editable: false,
-        resizable: false,
+        resizable: true,
         focusable: false,
         dropdown: false
       };
@@ -50,8 +51,9 @@ export default class DataManager {
       columns = [val].concat(columns);
     }
 
-    if (this.options.addCheckboxColumn && !this.hasColumn('Checkbox')) {
+    if (this.options.addCheckboxColumn && !this.hasColumnById('_checkbox')) {
       const val = {
+        id: '_checkbox',
         content: 'Checkbox',
         editable: false,
         resizable: false,
@@ -88,13 +90,13 @@ export default class DataManager {
       const index = this._getNextRowCount();
 
       if (row.length < this.columns.length) {
-        if (this.hasColumn('Sr. No')) {
+        if (this.hasColumnById('_rowIndex')) {
           const val = (index + 1) + '';
 
           row = [val].concat(row);
         }
 
-        if (this.hasColumn('Checkbox')) {
+        if (this.hasColumnById('_checkbox')) {
           const val = '<input type="checkbox" />';
 
           row = [val].concat(row);
@@ -191,9 +193,9 @@ export default class DataManager {
       return 0;
     });
 
-    if (this.hasColumn('Sr. No')) {
-      // update Sr. No indexes
-      const srNoColIndex = this.getColumnIndex('Sr. No');
+    if (this.hasColumnById('_rowIndex')) {
+      // update row index
+      const srNoColIndex = this.getColumnIndexById('_rowIndex');
       this.rows = this.rows.map((row, index) => {
         return row.map(cell => {
           if (cell.colIndex === srNoColIndex) {
@@ -265,13 +267,13 @@ export default class DataManager {
 
   updateRow(row, rowIndex) {
     if (row.length < this.columns.length) {
-      if (this.hasColumn('Sr. No')) {
+      if (this.hasColumnById('_rowIndex')) {
         const val = (rowIndex + 1) + '';
 
         row = [val].concat(row);
       }
 
-      if (this.hasColumn('Checkbox')) {
+      if (this.hasColumnById('_checkbox')) {
         const val = '<input type="checkbox" />';
 
         row = [val].concat(row);
@@ -393,8 +395,16 @@ export default class DataManager {
     return Boolean(this.columns.find(col => col.content === name));
   }
 
+  hasColumnById(id) {
+    return Boolean(this.columns.find(col => col.id === id));
+  }
+
   getColumnIndex(name) {
     return this.columns.findIndex(col => col.content === name);
+  }
+
+  getColumnIndexById(id) {
+    return this.columns.findIndex(col => col.id === id);
   }
 }
 
