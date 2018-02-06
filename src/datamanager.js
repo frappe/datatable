@@ -44,7 +44,7 @@ export default class DataManager {
         content: '',
         align: 'center',
         editable: false,
-        resizable: true,
+        resizable: false,
         focusable: false,
         dropdown: false
       };
@@ -55,13 +55,12 @@ export default class DataManager {
     if (this.options.addCheckboxColumn && !this.hasColumnById('_checkbox')) {
       const val = {
         id: '_checkbox',
-        content: 'Checkbox',
+        content: this.getCheckboxHTML(),
         editable: false,
         resizable: false,
         sortable: false,
         focusable: false,
-        dropdown: false,
-        format: val => '<input type="checkbox" />'
+        dropdown: false
       };
 
       columns = [val].concat(columns);
@@ -85,7 +84,7 @@ export default class DataManager {
   }
 
   prepareRows() {
-    this.validateRows(this.data);
+    this.validateData(this.data);
 
     this.rows = this.data.map((d, i) => {
       const index = this._getNextRowCount();
@@ -94,22 +93,21 @@ export default class DataManager {
 
       if (Array.isArray(d)) {
         // row is an array
-        if (this.options.addSerialNoColumn) {
-          row.push((index + 1) + '');
-        }
-
         if (this.options.addCheckboxColumn) {
           row.push(this.getCheckboxHTML());
+        }
+        if (this.options.addSerialNoColumn) {
+          row.push((index + 1) + '');
         }
         row = row.concat(d);
 
       } else {
         // row is a dict
         for (let col of this.columns) {
-          if (col.id === '_rowIndex') {
-            row.push((index + 1) + '');
-          } else if (col.id === '_checkbox') {
+          if (col.id === '_checkbox') {
             row.push(this.getCheckboxHTML());
+          } else if (col.id === '_rowIndex') {
+            row.push((index + 1) + '');
           } else {
             row.push(col.format(d[col.id]));
           }
@@ -132,14 +130,15 @@ export default class DataManager {
     });
   }
 
-  validateRows(rows) {
-    if (!Array.isArray(rows)) {
-      throw new DataError('`rows` must be an array');
+  validateData(data) {
+    if (Array.isArray(data) && (Array.isArray(data[0]) || typeof data[0] === 'object')) {
+      return true;
     }
+    throw new DataError('`data` must be an array of arrays or objects');
   }
 
   appendRows(rows) {
-    this.validateRows(rows);
+    this.validateData(rows);
 
     this.rows = this.rows.concat(this.prepareRows(rows));
   }
@@ -443,7 +442,11 @@ function prepareColumns(columns, props = {}) {
 
   return columns
     .map(prepareCell)
-    .map(col => Object.assign({}, baseColumn, col));
+    .map(col => Object.assign({}, baseColumn, col))
+    .map(col => {
+      col.id = col.id || col.content;
+      return col;
+    });
 }
 
 function prepareCell(col, i) {
