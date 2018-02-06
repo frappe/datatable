@@ -268,6 +268,7 @@ export default class ColumnManager {
     this.setupNaturalColumnWidth();
     this.distributeRemainingWidth();
     this.setColumnStyle();
+    this.setDefaultCellHeight();
   }
 
   setHeaderStyle() {
@@ -353,7 +354,14 @@ export default class ColumnManager {
     });
   }
 
-  setDefaultCellHeight(height) {
+  setDefaultCellHeight() {
+    if (this.__cellHeightSet) return;
+    const height = $.style($('.data-table-col', this.instance.datatableWrapper), 'height');
+    this.setCellHeight(height);
+    this.__cellHeightSet = true;
+  }
+
+  setCellHeight(height) {
     this.style.setStyle('.data-table-col .content', {
       height: height + 'px'
     });
@@ -377,7 +385,7 @@ export default class ColumnManager {
         this.setColumnWidth(column.colIndex);
       });
     this.instance.setBodyWidth();
-    this.setDefaultCellHeight($.style(this.instance.datatableWrapper.querySelector('.data-table-col'), 'height'));
+
   }
 
   sortRows(colIndex, sortOrder) {

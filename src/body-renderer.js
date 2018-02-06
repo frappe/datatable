@@ -32,7 +32,6 @@ export default class BodyRenderer {
       </table>
     `;
     this.instance.setDimensions();
-
   }
 
   renderBodyWithClusterize() {

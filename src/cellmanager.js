@@ -50,19 +50,6 @@ export default class CellManager {
         this.deactivateEditing();
       }
     });
-
-    $.on(this.bodyScrollable, 'blur', 'input', (e, input) => {
-      const cell = input.closest('.data-table-col');
-      if (this.$editingCell === cell) {
-        this.submitEditing();
-        this.deactivateEditing();
-      }
-    });
-
-    // $.on(document.body, 'click', e => {
-    //   if (e.target.matches('.edit-cell, .edit-cell *')) return;
-    //   this.deactivateEditing();
-    // });
   }
 
   bindKeyboardNav() {
@@ -118,6 +105,8 @@ export default class CellManager {
     );
 
     keyboard.on('esc', () => {
+      // keep focus on the cell so that keyboard navigation works
+      this.$editingCell.focus();
       this.deactivateEditing();
     });
   }
