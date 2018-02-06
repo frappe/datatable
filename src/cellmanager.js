@@ -50,11 +50,6 @@ export default class CellManager {
         this.deactivateEditing();
       }
     });
-
-    // $.on(document.body, 'click', e => {
-    //   if (e.target.matches('.edit-cell, .edit-cell *')) return;
-    //   this.deactivateEditing();
-    // });
   }
 
   bindKeyboardNav() {
@@ -110,6 +105,8 @@ export default class CellManager {
     );
 
     keyboard.on('esc', () => {
+      // keep focus on the cell so that keyboard navigation works
+      this.$editingCell.focus();
       this.deactivateEditing();
     });
   }
@@ -197,7 +194,7 @@ export default class CellManager {
 
   highlightRowColumnHeader($cell) {
     const { colIndex, rowIndex } = $.data($cell);
-    const _colIndex = this.columnmanager.getSerialColumnIndex();
+    const _colIndex = this.datamanager.getColumnIndexById('_rowIndex');
     const colHeaderSelector = `.data-table-header .data-table-col[data-col-index="${colIndex}"]`;
     const rowHeaderSelector = `.data-table-col[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
 
@@ -360,7 +357,7 @@ export default class CellManager {
     if (editing) {
       this.currentCellEditing = editing;
       // initialize editing input with cell value
-      editing.initValue(cell.content);
+      editing.initValue(cell.content, rowIndex, col);
     }
   }
 
@@ -399,13 +396,14 @@ export default class CellManager {
     if (!this.$editingCell) return;
     const $cell = this.$editingCell;
     const { rowIndex, colIndex } = $.data($cell);
+    const col = this.datamanager.getColumn(colIndex);
 
     if ($cell) {
       const editing = this.currentCellEditing;
 
       if (editing) {
         const value = editing.getValue();
-        const done = editing.setValue(value);
+        const done = editing.setValue(value, rowIndex, col);
         const oldValue = this.getCell(colIndex, rowIndex).content;
 
         // update cell immediately
@@ -573,7 +571,7 @@ export function getCellContent(column) {
 
   return `
     <div class="content ellipsis">
-      ${column.format ? column.format(column.content) : column.content}
+      ${(!column.isHeader && column.format) ? column.format(column.content) : column.content}
       ${sortIndicator}
       ${resizeColumn}
       ${dropdown}

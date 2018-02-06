@@ -44,7 +44,7 @@ class DataTable {
     keyboard.init(this.wrapper);
 
     if (this.options.data) {
-      this.refresh(this.options.data);
+      this.refresh();
     }
   }
 
@@ -77,6 +77,7 @@ class DataTable {
   refresh(data) {
     this.datamanager.init(data);
     this.render();
+    this.setDimensions();
   }
 
   destroy() {

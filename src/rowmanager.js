@@ -58,6 +58,10 @@ export default class RowManager {
   }
 
   getCheckedRows() {
+    if (!this.checkMap) {
+      return [];
+    }
+
     return this.checkMap
       .map((c, rowIndex) => {
         if (c) {

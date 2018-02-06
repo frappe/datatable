@@ -13,14 +13,14 @@ export default class DataManager {
       data = this.options.data;
     }
 
-    let { columns, rows } = data;
+    this.data = data;
 
     this.rowCount = 0;
     this.columns = [];
     this.rows = [];
 
-    this.columns = this.prepareColumns(columns);
-    this.rows = this.prepareRows(rows);
+    this.prepareColumns();
+    this.prepareRows();
 
     this.prepareNumericColumns();
   }
@@ -34,12 +34,14 @@ export default class DataManager {
     };
   }
 
-  prepareColumns(columns) {
+  prepareColumns() {
+    let columns = this.options.columns;
     this.validateColumns(columns);
 
-    if (this.options.addSerialNoColumn && !this.hasColumn('Sr. No')) {
+    if (this.options.addSerialNoColumn && !this.hasColumnById('_rowIndex')) {
       let val = {
-        content: 'Sr. No',
+        id: '_rowIndex',
+        content: '',
         align: 'center',
         editable: false,
         resizable: false,
@@ -50,25 +52,26 @@ export default class DataManager {
       columns = [val].concat(columns);
     }
 
-    if (this.options.addCheckboxColumn && !this.hasColumn('Checkbox')) {
+    if (this.options.addCheckboxColumn && !this.hasColumnById('_checkbox')) {
       const val = {
-        content: 'Checkbox',
+        id: '_checkbox',
+        content: this.getCheckboxHTML(),
         editable: false,
         resizable: false,
         sortable: false,
         focusable: false,
-        dropdown: false,
-        format: val => '<input type="checkbox" />'
+        dropdown: false
       };
 
       columns = [val].concat(columns);
     }
 
-    return prepareColumns(columns);
+    this.columns = prepareColumns(columns);
   }
 
   prepareNumericColumns() {
     const row0 = this.getRow(0);
+    if (!row0) return;
     this.columns = this.columns.map((column, i) => {
 
       const cellValue = row0[i].content;
@@ -80,30 +83,39 @@ export default class DataManager {
     });
   }
 
-  prepareRows(rows) {
-    this.validateRows(rows);
+  prepareRows() {
+    this.validateData(this.data);
 
-    rows = rows.map((row, i) => {
+    this.rows = this.data.map((d, i) => {
       const index = this._getNextRowCount();
 
-      if (row.length < this.columns.length) {
-        if (this.hasColumn('Sr. No')) {
-          const val = (index + 1) + '';
+      let row = [];
 
-          row = [val].concat(row);
+      if (Array.isArray(d)) {
+        // row is an array
+        if (this.options.addCheckboxColumn) {
+          row.push(this.getCheckboxHTML());
         }
+        if (this.options.addSerialNoColumn) {
+          row.push((index + 1) + '');
+        }
+        row = row.concat(d);
 
-        if (this.hasColumn('Checkbox')) {
-          const val = '<input type="checkbox" />';
-
-          row = [val].concat(row);
+      } else {
+        // row is a dict
+        for (let col of this.columns) {
+          if (col.id === '_checkbox') {
+            row.push(this.getCheckboxHTML());
+          } else if (col.id === '_rowIndex') {
+            row.push((index + 1) + '');
+          } else {
+            row.push(col.format(d[col.id]));
+          }
         }
       }
 
       return prepareRow(row, index);
     });
-
-    return rows;
   }
 
   validateColumns(columns) {
@@ -118,24 +130,15 @@ export default class DataManager {
     });
   }
 
-  validateRows(rows) {
-    if (!Array.isArray(rows)) {
-      throw new DataError('`rows` must be an array');
+  validateData(data) {
+    if (Array.isArray(data) && (Array.isArray(data[0]) || typeof data[0] === 'object')) {
+      return true;
     }
-
-    rows.forEach((row, i) => {
-      if (!Array.isArray(row)) {
-        throw new DataError('`row` must be an array');
-      }
-
-      if (row.length !== this.getColumnCount(true)) {
-        throw new DataError(`Row index "${i}" doesn't match column length`);
-      }
-    });
+    throw new DataError('`data` must be an array of arrays or objects');
   }
 
   appendRows(rows) {
-    this.validateRows(rows);
+    this.validateData(rows);
 
     this.rows = this.rows.concat(this.prepareRows(rows));
   }
@@ -190,9 +193,9 @@ export default class DataManager {
       return 0;
     });
 
-    if (this.hasColumn('Sr. No')) {
-      // update Sr. No indexes
-      const srNoColIndex = this.getColumnIndex('Sr. No');
+    if (this.hasColumnById('_rowIndex')) {
+      // update row index
+      const srNoColIndex = this.getColumnIndexById('_rowIndex');
       this.rows = this.rows.map((row, index) => {
         return row.map(cell => {
           if (cell.colIndex === srNoColIndex) {
@@ -264,13 +267,13 @@ export default class DataManager {
 
   updateRow(row, rowIndex) {
     if (row.length < this.columns.length) {
-      if (this.hasColumn('Sr. No')) {
+      if (this.hasColumnById('_rowIndex')) {
         const val = (rowIndex + 1) + '';
 
         row = [val].concat(row);
       }
 
-      if (this.hasColumn('Checkbox')) {
+      if (this.hasColumnById('_checkbox')) {
         const val = '<input type="checkbox" />';
 
         row = [val].concat(row);
@@ -284,7 +287,7 @@ export default class DataManager {
     return _row;
   }
 
-  updateCell(colIndex, rowIndex, keyValPairs) {
+  updateCell(colIndex, rowIndex, options) {
     let cell;
     if (typeof colIndex === 'object') {
       // cell object was passed,
@@ -293,17 +296,24 @@ export default class DataManager {
       colIndex = cell.colIndex;
       rowIndex = cell.rowIndex;
       // the object passed must be merged with original cell
-      keyValPairs = cell;
+      options = cell;
     }
     cell = this.getCell(colIndex, rowIndex);
 
     // mutate object directly
-    for (let key in keyValPairs) {
-      const newVal = keyValPairs[key];
+    for (let key in options) {
+      const newVal = options[key];
       if (newVal !== undefined) {
         cell[key] = newVal;
       }
     }
+
+    // update model
+    if (!Array.isArray(this.data[rowIndex])) {
+      const col = this.getColumn(colIndex);
+      this.data[rowIndex][col.id] = options.content;
+    }
+
     return cell;
   }
 
@@ -392,8 +402,20 @@ export default class DataManager {
     return Boolean(this.columns.find(col => col.content === name));
   }
 
+  hasColumnById(id) {
+    return Boolean(this.columns.find(col => col.id === id));
+  }
+
   getColumnIndex(name) {
     return this.columns.findIndex(col => col.content === name);
+  }
+
+  getColumnIndexById(id) {
+    return this.columns.findIndex(col => col.id === id);
+  }
+
+  getCheckboxHTML() {
+    return '<input type="checkbox" />';
   }
 }
 
@@ -415,12 +437,16 @@ function prepareColumns(columns, props = {}) {
     resizable: true,
     focusable: true,
     dropdown: true,
-    format: value => `<span class="column-title">${value}</span>`
+    format: value => value + ''
   };
 
   return columns
     .map(prepareCell)
-    .map(col => Object.assign({}, baseColumn, col));
+    .map(col => Object.assign({}, baseColumn, col))
+    .map(col => {
+      col.id = col.id || col.content;
+      return col;
+    });
 }
 
 function prepareCell(col, i) {

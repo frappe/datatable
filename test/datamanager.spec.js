@@ -50,13 +50,6 @@ describe.only('DataManager instance', () => {
       })).to.throw(DataError, '`rows` must be an array');
     });
 
-    it('should throw when any of the row is not an Array', () => {
-      expect(() => datamanager.init({
-        columns: ['Name'],
-        rows: [2]
-      })).to.throw(DataError, '`row` must be an array');
-    });
-
     it('should throw when any of the row\'s length doesn\'t match column length', () => {
       expect(() => datamanager.init({
         columns: ['Name'],
