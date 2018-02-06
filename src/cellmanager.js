@@ -51,6 +51,14 @@ export default class CellManager {
       }
     });
 
+    $.on(this.bodyScrollable, 'blur', 'input', (e, input) => {
+      const cell = input.closest('.data-table-col');
+      if (this.$editingCell === cell) {
+        this.submitEditing();
+        this.deactivateEditing();
+      }
+    });
+
     // $.on(document.body, 'click', e => {
     //   if (e.target.matches('.edit-cell, .edit-cell *')) return;
     //   this.deactivateEditing();
@@ -360,7 +368,7 @@ export default class CellManager {
     if (editing) {
       this.currentCellEditing = editing;
       // initialize editing input with cell value
-      editing.initValue(cell.content);
+      editing.initValue(cell.content, rowIndex, col);
     }
   }
 
@@ -399,13 +407,14 @@ export default class CellManager {
     if (!this.$editingCell) return;
     const $cell = this.$editingCell;
     const { rowIndex, colIndex } = $.data($cell);
+    const col = this.datamanager.getColumn(colIndex);
 
     if ($cell) {
       const editing = this.currentCellEditing;
 
       if (editing) {
         const value = editing.getValue();
-        const done = editing.setValue(value);
+        const done = editing.setValue(value, rowIndex, col);
         const oldValue = this.getCell(colIndex, rowIndex).content;
 
         // update cell immediately
@@ -573,7 +582,7 @@ export function getCellContent(column) {
 
   return `
     <div class="content ellipsis">
-      ${column.format ? column.format(column.content) : column.content}
+      ${(!column.isHeader && column.format) ? column.format(column.content) : column.content}
       ${sortIndicator}
       ${resizeColumn}
       ${dropdown}

@@ -1,8 +1,6 @@
 export default {
-  data: {
-    columns: [],
-    rows: []
-  },
+  columns: [],
+  data: [],
   dropdownButton: '▼',
   headerDropdown: [
     {

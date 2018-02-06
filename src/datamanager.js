@@ -13,14 +13,14 @@ export default class DataManager {
       data = this.options.data;
     }
 
-    let { columns, rows } = data;
+    this.data = data;
 
     this.rowCount = 0;
     this.columns = [];
     this.rows = [];
 
-    this.columns = this.prepareColumns(columns);
-    this.rows = this.prepareRows(rows);
+    this.prepareColumns();
+    this.prepareRows();
 
     this.prepareNumericColumns();
   }
@@ -34,7 +34,8 @@ export default class DataManager {
     };
   }
 
-  prepareColumns(columns) {
+  prepareColumns() {
+    let columns = this.options.columns;
     this.validateColumns(columns);
 
     if (this.options.addSerialNoColumn && !this.hasColumnById('_rowIndex')) {
@@ -66,7 +67,7 @@ export default class DataManager {
       columns = [val].concat(columns);
     }
 
-    return prepareColumns(columns);
+    this.columns = prepareColumns(columns);
   }
 
   prepareNumericColumns() {
@@ -83,30 +84,40 @@ export default class DataManager {
     });
   }
 
-  prepareRows(rows) {
-    this.validateRows(rows);
+  prepareRows() {
+    this.validateRows(this.data);
 
-    rows = rows.map((row, i) => {
+    this.rows = this.data.map((d, i) => {
       const index = this._getNextRowCount();
 
-      if (row.length < this.columns.length) {
-        if (this.hasColumnById('_rowIndex')) {
-          const val = (index + 1) + '';
+      let row = [];
 
-          row = [val].concat(row);
+      if (Array.isArray(d)) {
+        // row is an array
+        if (this.options.addSerialNoColumn) {
+          row.push((index + 1) + '');
         }
 
-        if (this.hasColumnById('_checkbox')) {
-          const val = '<input type="checkbox" />';
+        if (this.options.addCheckboxColumn) {
+          row.push(this.getCheckboxHTML());
+        }
+        row = row.concat(d);
 
-          row = [val].concat(row);
+      } else {
+        // row is a dict
+        for (let col of this.columns) {
+          if (col.id === '_rowIndex') {
+            row.push((index + 1) + '');
+          } else if (col.id === '_checkbox') {
+            row.push(this.getCheckboxHTML());
+          } else {
+            row.push(col.format(d[col.id]));
+          }
         }
       }
 
       return prepareRow(row, index);
     });
-
-    return rows;
   }
 
   validateColumns(columns) {
@@ -125,16 +136,6 @@ export default class DataManager {
     if (!Array.isArray(rows)) {
       throw new DataError('`rows` must be an array');
     }
-
-    rows.forEach((row, i) => {
-      if (!Array.isArray(row)) {
-        throw new DataError('`row` must be an array');
-      }
-
-      if (row.length !== this.getColumnCount(true)) {
-        throw new DataError(`Row index "${i}" doesn't match column length`);
-      }
-    });
   }
 
   appendRows(rows) {
@@ -287,7 +288,7 @@ export default class DataManager {
     return _row;
   }
 
-  updateCell(colIndex, rowIndex, keyValPairs) {
+  updateCell(colIndex, rowIndex, options) {
     let cell;
     if (typeof colIndex === 'object') {
       // cell object was passed,
@@ -296,17 +297,24 @@ export default class DataManager {
       colIndex = cell.colIndex;
       rowIndex = cell.rowIndex;
       // the object passed must be merged with original cell
-      keyValPairs = cell;
+      options = cell;
     }
     cell = this.getCell(colIndex, rowIndex);
 
     // mutate object directly
-    for (let key in keyValPairs) {
-      const newVal = keyValPairs[key];
+    for (let key in options) {
+      const newVal = options[key];
       if (newVal !== undefined) {
         cell[key] = newVal;
       }
     }
+
+    // update model
+    if (!Array.isArray(this.data[rowIndex])) {
+      const col = this.getColumn(colIndex);
+      this.data[rowIndex][col.id] = options.content;
+    }
+
     return cell;
   }
 
@@ -406,6 +414,10 @@ export default class DataManager {
   getColumnIndexById(id) {
     return this.columns.findIndex(col => col.id === id);
   }
+
+  getCheckboxHTML() {
+    return '<input type="checkbox" />';
+  }
 }
 
 function prepareRow(row, i) {
@@ -426,7 +438,7 @@ function prepareColumns(columns, props = {}) {
     resizable: true,
     focusable: true,
     dropdown: true,
-    format: value => `<span class="column-title">${value}</span>`
+    format: value => value + ''
   };
 
   return columns
