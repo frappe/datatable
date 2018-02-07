@@ -105,8 +105,6 @@ export default class CellManager {
     );
 
     keyboard.on('esc', () => {
-      // keep focus on the cell so that keyboard navigation works
-      this.$editingCell.focus();
       this.deactivateEditing();
     });
   }
@@ -363,6 +361,9 @@ export default class CellManager {
 
   deactivateEditing() {
     if (!this.$editingCell) return;
+
+    // keep focus on the cell so that keyboard navigation works
+    this.$editingCell.focus();
     this.$editingCell.classList.remove('editing');
     this.$editingCell = null;
   }

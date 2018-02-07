@@ -39,10 +39,23 @@ export default class DataManager {
     this.validateColumns();
     this.prepareDefaultColumns();
     this.prepareHeader();
-    console.log(this.columns);
   }
 
   prepareDefaultColumns() {
+    if (this.options.addCheckboxColumn && !this.hasColumnById('_checkbox')) {
+      const cell = {
+        id: '_checkbox',
+        content: this.getCheckboxHTML(),
+        editable: false,
+        resizable: false,
+        sortable: false,
+        focusable: false,
+        dropdown: false,
+        width: 25
+      };
+      this.columns.push(cell);
+    }
+
     if (this.options.addSerialNoColumn && !this.hasColumnById('_rowIndex')) {
       let cell = {
         id: '_rowIndex',
@@ -55,19 +68,6 @@ export default class DataManager {
         width: 30
       };
 
-      this.columns.push(cell);
-    }
-
-    if (this.options.addCheckboxColumn && !this.hasColumnById('_checkbox')) {
-      const cell = {
-        id: '_checkbox',
-        content: this.getCheckboxHTML(),
-        editable: false,
-        resizable: false,
-        sortable: false,
-        focusable: false,
-        dropdown: false
-      };
       this.columns.push(cell);
     }
   }
@@ -91,7 +91,12 @@ export default class DataManager {
       resizable: true,
       focusable: true,
       dropdown: true,
-      format: value => value + ''
+      format: (value) => {
+        if (value === null || value === undefined) {
+          return '';
+        }
+        return value + '';
+      }
     };
 
     this.columns = columns
