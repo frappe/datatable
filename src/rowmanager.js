@@ -186,12 +186,12 @@ export default class RowManager {
   }
 }
 
-export function getRowHTML(columns, props) {
+export function getRowHTML(row, props) {
   const dataAttr = makeDataAttributeString(props);
 
   return `
     <tr class="data-table-row" ${dataAttr}>
-      ${columns.map(getCellHTML).join('')}
+      ${row.map(getCellHTML).join('')}
     </tr>
   `;
 }

@@ -539,8 +539,8 @@ export default class CellManager {
   }
 }
 
-export function getCellHTML(column) {
-  const { rowIndex, colIndex, isHeader } = column;
+export function getCellHTML(cell) {
+  const { rowIndex, colIndex, isHeader } = cell;
   const dataAttr = makeDataAttributeString({
     rowIndex,
     colIndex,
@@ -549,29 +549,29 @@ export function getCellHTML(column) {
 
   return `
     <td class="data-table-col noselect" ${dataAttr} tabindex="0">
-      ${getCellContent(column)}
+      ${getCellContent(cell)}
     </td>
   `;
 }
 
-export function getCellContent(column) {
-  const { isHeader } = column;
+export function getCellContent(cell) {
+  const { isHeader } = cell;
 
-  const editable = !isHeader && column.editable !== false;
+  const editable = !isHeader && cell.editable !== false;
   const editCellHTML = editable ? getEditCellHTML() : '';
 
-  const sortable = isHeader && column.sortable !== false;
+  const sortable = isHeader && cell.sortable !== false;
   const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
 
-  const resizable = isHeader && column.resizable !== false;
+  const resizable = isHeader && cell.resizable !== false;
   const resizeColumn = resizable ? '<span class="column-resizer"></span>' : '';
 
-  const hasDropdown = isHeader && column.dropdown !== false;
+  const hasDropdown = isHeader && cell.dropdown !== false;
   const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
 
   return `
     <div class="content ellipsis">
-      ${(!column.isHeader && column.format) ? column.format(column.content) : column.content}
+      ${(!cell.isHeader && cell.column.format) ? cell.column.format(cell.content) : cell.content}
       ${sortIndicator}
       ${resizeColumn}
       ${dropdown}
