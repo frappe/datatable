@@ -369,12 +369,6 @@ export default class DataManager {
       }
     }
 
-    // update model
-    if (!Array.isArray(this.data[rowIndex])) {
-      const col = this.getColumn(colIndex);
-      this.data[rowIndex][col.id] = options.content;
-    }
-
     return cell;
   }
 
