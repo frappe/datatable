@@ -54,6 +54,7 @@ export default class CellManager {
 
   bindKeyboardNav() {
     const focusCell = (direction) => {
+      console.log(direction);
       if (!this.$focusedCell || this.$editingCell) {
         return false;
       }
@@ -62,7 +63,7 @@ export default class CellManager {
 
       if (direction === 'left') {
         $cell = this.getLeftCell$($cell);
-      } else if (direction === 'right') {
+      } else if (direction === 'right' || direction === 'tab') {
         $cell = this.getRightCell$($cell);
       } else if (direction === 'up') {
         $cell = this.getAboveCell$($cell);
@@ -96,7 +97,7 @@ export default class CellManager {
       return true;
     };
 
-    ['left', 'right', 'up', 'down'].map(
+    ['left', 'right', 'up', 'down', 'tab'].map(
       direction => keyboard.on(direction, () => focusCell(direction))
     );
 
@@ -360,10 +361,10 @@ export default class CellManager {
   }
 
   deactivateEditing() {
-    if (!this.$editingCell) return;
-
     // keep focus on the cell so that keyboard navigation works
-    this.$editingCell.focus();
+    if (this.$focusedCell) this.$focusedCell.focus();
+
+    if (!this.$editingCell) return;
     this.$editingCell.classList.remove('editing');
     this.$editingCell = null;
   }
@@ -570,9 +571,11 @@ export function getCellContent(cell) {
   const hasDropdown = isHeader && cell.dropdown !== false;
   const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
 
+  const contentHTML = (!cell.isHeader && cell.column.format) ? cell.column.format(cell.content) : cell.content;
+
   return `
     <div class="content ellipsis">
-      ${(!cell.isHeader && cell.column.format) ? cell.column.format(cell.content) : cell.content}
+      ${(contentHTML)}
       ${sortIndicator}
       ${resizeColumn}
       ${dropdown}
