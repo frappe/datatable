@@ -54,7 +54,6 @@ export default class CellManager {
 
   bindKeyboardNav() {
     const focusCell = (direction) => {
-      console.log(direction);
       if (!this.$focusedCell || this.$editingCell) {
         return false;
       }
@@ -186,6 +185,9 @@ export default class CellManager {
 
     this.$focusedCell = $cell;
     $cell.classList.add('selected');
+
+    // so that keyboard nav works
+    $cell.focus();
 
     this.highlightRowColumnHeader($cell);
     this.scrollToCell($cell);

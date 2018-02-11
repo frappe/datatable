@@ -10,29 +10,28 @@ $spacer-1: 0.25rem;
 $spacer-2: 0.5rem;
 $spacer-3: 1rem;
 
-/* resets */
-*, *::after, *::before {
-	box-sizing: border-box;
-}
-
-.data-table button, .data-table input {
-	overflow: visible;
-	font-family: inherit;
-	font-size: inherit;
-	line-height: inherit;
-	margin: 0;
-	padding: 0;
-}
-
-/* styling */
-
-.data-table *, .data-table *:focus {
-	outline: none !important;
-	border-radius: 0px;
-	box-shadow: none;
-}
-
 .data-table {
+	/* resets */
+	*, *::after, *::before {
+		box-sizing: border-box;
+	}
+
+	button, input {
+		overflow: visible;
+		font-family: inherit;
+		font-size: inherit;
+		line-height: inherit;
+		margin: 0;
+		padding: 0;
+	}
+
+	*, *:focus {
+		outline: none;
+		border-radius: 0px;
+		box-shadow: none;
+	}
+
+	/* styling */
 	width: 100%;
 	position: relative;
 	overflow: auto;
