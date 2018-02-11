@@ -78,6 +78,9 @@ class DataTable {
     this.datamanager.init(data);
     this.render();
     this.setDimensions();
+    if (this.cellmanager.$focusedCell) {
+      this.cellmanager.$focusedCell.focus();
+    }
   }
 
   destroy() {

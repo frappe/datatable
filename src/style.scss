@@ -4,6 +4,7 @@ $border-color: #d1d8dd;
 $primary-color: rgb(82, 146, 247);
 $light-bg: #f5f7fa;
 $light-red: #FD8B8B;
+$text-color: #000000;
 
 $spacer-1: 0.25rem;
 $spacer-2: 0.5rem;
@@ -25,8 +26,10 @@ $spacer-3: 1rem;
 
 /* styling */
 
-.data-table * {
-	outline: none;
+.data-table *, .data-table *:focus {
+	outline: none !important;
+	border-radius: 0px;
+	box-shadow: none;
 }
 
 .data-table {
@@ -207,7 +210,7 @@ $spacer-3: 1rem;
 		}
 
 		.edit-cell {
-			border: 2px solid $light-red;
+			border: 2px solid $primary-color;
 			display: block;
 		}
 	}

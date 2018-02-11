@@ -32,6 +32,7 @@ export default class BodyRenderer {
       </table>
     `;
     this.instance.setDimensions();
+    this.restoreState();
   }
 
   renderBodyWithClusterize() {
@@ -55,9 +56,7 @@ export default class BodyRenderer {
         contentElem: $('tbody', this.bodyScrollable),
         callbacks: {
           clusterChanged: () => {
-            this.rowmanager.highlightCheckedRows();
-            this.cellmanager.selectAreaOnClusterChanged();
-            this.cellmanager.focusCellOnClusterChanged();
+            this.restoreState();
           }
         },
         /* eslint-disable */
@@ -73,6 +72,12 @@ export default class BodyRenderer {
     }
 
     this.appendRemainingData();
+  }
+
+  restoreState() {
+    this.rowmanager.highlightCheckedRows();
+    this.cellmanager.selectAreaOnClusterChanged();
+    this.cellmanager.focusCellOnClusterChanged();
   }
 
   appendRemainingData() {

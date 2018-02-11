@@ -38,12 +38,12 @@ export default {
     desc: '↓',
     none: ''
   },
-  freezeMessage: 'Loading...',
+  freezeMessage: '',
   editing: () => {},
   addSerialNoColumn: true,
   addCheckboxColumn: false,
   enableClusterize: true,
   enableLogs: false,
   takeAvailableSpace: false,
-  loadingText: 'Loading...'
+  loadingText: ''
 };
