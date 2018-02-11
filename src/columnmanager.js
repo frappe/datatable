@@ -357,8 +357,10 @@ export default class ColumnManager {
   setDefaultCellHeight() {
     if (this.__cellHeightSet) return;
     const height = $.style($('.data-table-col', this.instance.datatableWrapper), 'height');
-    this.setCellHeight(height);
-    this.__cellHeightSet = true;
+    if (height) {
+      this.setCellHeight(height);
+      this.__cellHeightSet = true;
+    }
   }
 
   setCellHeight(height) {

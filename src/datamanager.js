@@ -35,38 +35,97 @@ export default class DataManager {
   }
 
   prepareColumns() {
-    let columns = this.options.columns;
-    this.validateColumns(columns);
+    this.columns = [];
+    this.validateColumns();
+    this.prepareDefaultColumns();
+    this.prepareHeader();
+  }
 
-    if (this.options.addSerialNoColumn && !this.hasColumnById('_rowIndex')) {
-      let val = {
-        id: '_rowIndex',
-        content: '',
-        align: 'center',
-        editable: false,
-        resizable: false,
-        focusable: false,
-        dropdown: false
-      };
-
-      columns = [val].concat(columns);
-    }
-
+  prepareDefaultColumns() {
     if (this.options.addCheckboxColumn && !this.hasColumnById('_checkbox')) {
-      const val = {
+      const cell = {
         id: '_checkbox',
         content: this.getCheckboxHTML(),
         editable: false,
         resizable: false,
         sortable: false,
         focusable: false,
-        dropdown: false
+        dropdown: false,
+        width: 25
       };
-
-      columns = [val].concat(columns);
+      this.columns.push(cell);
     }
 
-    this.columns = prepareColumns(columns);
+    if (this.options.addSerialNoColumn && !this.hasColumnById('_rowIndex')) {
+      let cell = {
+        id: '_rowIndex',
+        content: '',
+        align: 'center',
+        editable: false,
+        resizable: false,
+        focusable: false,
+        dropdown: false,
+        width: 30
+      };
+
+      this.columns.push(cell);
+    }
+  }
+
+  prepareRow(row, i) {
+    const baseRowCell = {
+      rowIndex: i
+    };
+
+    return row
+      .map((cell, i) => this.prepareCell(cell, i))
+      .map(cell => Object.assign({}, baseRowCell, cell));
+  }
+
+  prepareHeader() {
+    let columns = this.columns.concat(this.options.columns);
+    const baseCell = {
+      isHeader: 1,
+      editable: true,
+      sortable: true,
+      resizable: true,
+      focusable: true,
+      dropdown: true,
+      format: (value) => {
+        if (value === null || value === undefined) {
+          return '';
+        }
+        return value + '';
+      }
+    };
+
+    this.columns = columns
+      .map((cell, i) => this.prepareCell(cell, i))
+      .map(col => Object.assign({}, baseCell, col))
+      .map(col => {
+        col.id = col.id || col.content;
+        return col;
+      });
+  }
+
+  prepareCell(content, i) {
+    const cell = {
+      content: '',
+      align: 'left',
+      sortOrder: 'none',
+      colIndex: i,
+      column: this.columns[i],
+      width: 0
+    };
+
+    if (content !== null && typeof content === 'object') {
+      // passed as column/header
+      Object.assign(cell, content);
+    } else {
+      cell.content = content;
+    }
+
+    return cell;
   }
 
   prepareNumericColumns() {
@@ -114,11 +173,12 @@ export default class DataManager {
         }
       }
 
-      return prepareRow(row, index);
+      return this.prepareRow(row, index);
     });
   }
 
-  validateColumns(columns) {
+  validateColumns() {
+    const columns = this.options.columns;
     if (!Array.isArray(columns)) {
       throw new DataError('`columns` must be an array');
     }
@@ -131,7 +191,8 @@ export default class DataManager {
   }
 
   validateData(data) {
-    if (Array.isArray(data) && (Array.isArray(data[0]) || typeof data[0] === 'object')) {
+    if (Array.isArray(data) &&
+      (data.length === 0 || Array.isArray(data[0]) || typeof data[0] === 'object')) {
       return true;
     }
     throw new DataError('`data` must be an array of arrays or objects');
@@ -280,7 +341,7 @@ export default class DataManager {
       }
     }
 
-    const _row = prepareRow(row, rowIndex);
+    const _row = this.prepareRow(row, rowIndex);
     const index = this.rows.findIndex(row => row[0].rowIndex === rowIndex);
     this.rows[index] = _row;
 
@@ -306,12 +367,6 @@ export default class DataManager {
       if (newVal !== undefined) {
         cell[key] = newVal;
       }
-    }
-
-    // update model
-    if (!Array.isArray(this.data[rowIndex])) {
-      const col = this.getColumn(colIndex);
-      this.data[rowIndex][col.id] = options.content;
     }
 
     return cell;
@@ -417,56 +472,6 @@ export default class DataManager {
   getCheckboxHTML() {
     return '<input type="checkbox" />';
   }
-}
-
-function prepareRow(row, i) {
-  const baseRowCell = {
-    rowIndex: i
-  };
-
-  return row
-    .map(prepareCell)
-    .map(cell => Object.assign({}, baseRowCell, cell));
-}
-
-function prepareColumns(columns, props = {}) {
-  const baseColumn = {
-    isHeader: 1,
-    editable: true,
-    sortable: true,
-    resizable: true,
-    focusable: true,
-    dropdown: true,
-    format: value => value + ''
-  };
-
-  return columns
-    .map(prepareCell)
-    .map(col => Object.assign({}, baseColumn, col))
-    .map(col => {
-      col.id = col.id || col.content;
-      return col;
-    });
-}
-
-function prepareCell(col, i) {
-  const baseCell = {
-    content: '',
-    align: 'left',
-    sortOrder: 'none',
-    colIndex: 0,
-    width: 0
-  };
-
-  if (typeof col === 'string') {
-    col = {
-      content: col
-    };
-  }
-
-  return Object.assign({}, baseCell, col, {
-    colIndex: i
-  });
 }
 
 // Custom Errors
