@@ -353,12 +353,12 @@ export default class CellManager {
     const $editCell = $('.edit-cell', $cell);
     $editCell.innerHTML = '';
 
-    const editing = this.getEditingObject(colIndex, rowIndex, cell.content, $editCell);
+    const editor = this.getEditor(colIndex, rowIndex, cell.content, $editCell);
 
-    if (editing) {
-      this.currentCellEditing = editing;
+    if (editor) {
+      this.currentCellEditor = editor;
       // initialize editing input with cell value
-      editing.initValue(cell.content, rowIndex, col);
+      editor.initValue(cell.content, rowIndex, col);
     }
   }
 
@@ -371,9 +371,9 @@ export default class CellManager {
     this.$editingCell = null;
   }
 
-  getEditingObject(colIndex, rowIndex, value, parent) {
+  getEditor(colIndex, rowIndex, value, parent) {
     // debugger;
-    const obj = this.options.editing(colIndex, rowIndex, value, parent);
+    const obj = this.options.getEditor(colIndex, rowIndex, value, parent);
     if (obj && obj.setValue) return obj;
 
     // editing fallback
@@ -403,11 +403,11 @@ export default class CellManager {
     const col = this.datamanager.getColumn(colIndex);
 
     if ($cell) {
-      const editing = this.currentCellEditing;
+      const editor = this.currentCellEditor;
 
-      if (editing) {
-        const value = editing.getValue();
-        const done = editing.setValue(value, rowIndex, col);
+      if (editor) {
+        const value = editor.getValue();
+        const done = editor.setValue(value, rowIndex, col);
         const oldValue = this.getCell(colIndex, rowIndex).content;
 
         // update cell immediately
@@ -424,7 +424,7 @@ export default class CellManager {
       }
     }
 
-    this.currentCellEditing = null;
+    this.currentCellEditor = null;
   }
 
   copyCellContents($cell1, $cell2) {
@@ -467,8 +467,8 @@ export default class CellManager {
   }
 
   refreshCell(cell) {
-    const $cell = $(cellSelector(cell.colIndex, cell.rowIndex), this.bodyScrollable);
-    $cell.innerHTML = getCellContent(cell);
+    const $cell = $(this.cellSelector(cell.colIndex, cell.rowIndex), this.bodyScrollable);
+    $cell.innerHTML = this.getCellContent(cell);
   }
 
   isStandardCell(colIndex) {
@@ -477,7 +477,7 @@ export default class CellManager {
   }
 
   getCell$(colIndex, rowIndex) {
-    return $(cellSelector(colIndex, rowIndex), this.bodyScrollable);
+    return $(this.cellSelector(colIndex, rowIndex), this.bodyScrollable);
   }
 
   getAboveCell$($cell) {
@@ -541,57 +541,57 @@ export default class CellManager {
   getRowCountPerPage() {
     return Math.ceil(this.instance.getViewportHeight() / this.getRowHeight());
   }
-}
 
-export function getCellHTML(cell) {
-  const { rowIndex, colIndex, isHeader } = cell;
-  const dataAttr = makeDataAttributeString({
-    rowIndex,
-    colIndex,
-    isHeader
-  });
+  getCellHTML(cell) {
+    const { rowIndex, colIndex, isHeader } = cell;
+    const dataAttr = makeDataAttributeString({
+      rowIndex,
+      colIndex,
+      isHeader
+    });
 
-  return `
-    <td class="data-table-col noselect" ${dataAttr} tabindex="0">
-      ${getCellContent(cell)}
-    </td>
-  `;
-}
+    return `
+      <td class="data-table-col noselect" ${dataAttr} tabindex="0">
+        ${this.getCellContent(cell)}
+      </td>
+    `;
+  }
 
-export function getCellContent(cell) {
-  const { isHeader } = cell;
+  getCellContent(cell) {
+    const { isHeader } = cell;
 
-  const editable = !isHeader && cell.editable !== false;
-  const editCellHTML = editable ? getEditCellHTML() : '';
+    const editable = !isHeader && cell.editable !== false;
+    const editCellHTML = editable ? this.getEditCellHTML() : '';
 
-  const sortable = isHeader && cell.sortable !== false;
-  const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
+    const sortable = isHeader && cell.sortable !== false;
+    const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
 
-  const resizable = isHeader && cell.resizable !== false;
-  const resizeColumn = resizable ? '<span class="column-resizer"></span>' : '';
+    const resizable = isHeader && cell.resizable !== false;
+    const resizeColumn = resizable ? '<span class="column-resizer"></span>' : '';
 
-  const hasDropdown = isHeader && cell.dropdown !== false;
-  const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
+    const hasDropdown = isHeader && cell.dropdown !== false;
+    const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
 
-  const contentHTML = (!cell.isHeader && cell.column.format) ? cell.column.format(cell.content) : cell.content;
+    const contentHTML = (!cell.isHeader && cell.column.format) ? cell.column.format(cell.content) : cell.content;
 
-  return `
-    <div class="content ellipsis">
-      ${(contentHTML)}
-      ${sortIndicator}
-      ${resizeColumn}
-      ${dropdown}
-    </div>
-    ${editCellHTML}
-  `;
-}
+    return `
+      <div class="content ellipsis">
+        ${(contentHTML)}
+        ${sortIndicator}
+        ${resizeColumn}
+        ${dropdown}
+      </div>
+      ${editCellHTML}
+    `;
+  }
 
-export function getEditCellHTML() {
-  return `
-    <div class="edit-cell"></div>
-  `;
-}
+  getEditCellHTML() {
+    return `
+      <div class="edit-cell"></div>
+    `;
+  }
 
-function cellSelector(colIndex, rowIndex) {
-  return `.data-table-col[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
+  cellSelector(colIndex, rowIndex) {
+    return `.data-table-col[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
+  }
 }

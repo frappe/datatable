@@ -1,6 +1,5 @@
 import $ from './dom';
 import Clusterize from 'clusterize.js';
-import { getRowHTML } from './rowmanager';
 import { promisify } from './utils';
 
 export default class BodyRenderer {
@@ -87,14 +86,14 @@ export default class BodyRenderer {
   }
 
   getDataForClusterize(rows) {
-    return rows.map((row) => getRowHTML(row, { rowIndex: row[0].rowIndex }));
+    return rows.map((row) => this.rowmanager.getRowHTML(row, { rowIndex: row[0].rowIndex }));
   }
 };
 
 export function getBodyHTML(rows) {
   return `
     <tbody>
-      ${rows.map(row => getRowHTML(row, { rowIndex: row[0].rowIndex })).join('')}
+      ${rows.map(row => this.rowmanager.getRowHTML(row, { rowIndex: row[0].rowIndex })).join('')}
     </tbody>
   `;
 }

@@ -70,7 +70,7 @@
 					takeAvailableSpace: false,
 					columns,
 					data,
-					editing(colIndex, rowIndex, value, parent) {
+					getEditor(colIndex, rowIndex, value, parent) {
 						// editing obj only for date field
 						if (colIndex != 6) return;
 
