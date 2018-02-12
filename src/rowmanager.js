@@ -1,6 +1,5 @@
 import $ from './dom';
 import { makeDataAttributeString, promisify } from './utils';
-import { getCellHTML } from './cellmanager';
 
 export default class RowManager {
   constructor(instance) {
@@ -184,14 +183,14 @@ export default class RowManager {
     this._lastScrollTo = rowIndex;
     $.scrollTop(this.bodyScrollable, offset);
   }
-}
 
-export function getRowHTML(row, props) {
-  const dataAttr = makeDataAttributeString(props);
+  getRowHTML(row, props) {
+    const dataAttr = makeDataAttributeString(props);
 
-  return `
-    <tr class="data-table-row" ${dataAttr}>
-      ${row.map(getCellHTML).join('')}
-    </tr>
-  `;
+    return `
+      <tr class="data-table-row" ${dataAttr}>
+        ${row.map(cell => this.cellmanager.getCellHTML(cell)).join('')}
+      </tr>
+    `;
+  }
 }

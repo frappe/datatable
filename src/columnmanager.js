@@ -1,6 +1,5 @@
 import $ from './dom';
 import Sortable from 'sortablejs';
-import { getRowHTML } from './rowmanager';
 import { getDefault } from './utils';
 
 export default class ColumnManager {
@@ -28,13 +27,13 @@ export default class ColumnManager {
 
     if (!$('.data-table-col', this.header)) {
       // insert html
-      $('thead', this.header).innerHTML = getRowHTML(columns, { isHeader: 1 });
+      $('thead', this.header).innerHTML = this.rowmanager.getRowHTML(columns, { isHeader: 1 });
     } else {
       // refresh dom state
       const $cols = $.each('.data-table-col', this.header);
       if (columns.length < $cols.length) {
         // deleted column
-        $('thead', this.header).innerHTML = getRowHTML(columns, { isHeader: 1 });
+        $('thead', this.header).innerHTML = this.rowmanager.getRowHTML(columns, { isHeader: 1 });
         return;
       }
 
