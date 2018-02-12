@@ -353,12 +353,12 @@ export default class CellManager {
     const $editCell = $('.edit-cell', $cell);
     $editCell.innerHTML = '';
 
-    const editing = this.getEditingObject(colIndex, rowIndex, cell.content, $editCell);
+    const editor = this.getEditor(colIndex, rowIndex, cell.content, $editCell);
 
-    if (editing) {
-      this.currentCellEditing = editing;
+    if (editor) {
+      this.currentCellEditor = editor;
       // initialize editing input with cell value
-      editing.initValue(cell.content, rowIndex, col);
+      editor.initValue(cell.content, rowIndex, col);
     }
   }
 
@@ -371,9 +371,9 @@ export default class CellManager {
     this.$editingCell = null;
   }
 
-  getEditingObject(colIndex, rowIndex, value, parent) {
+  getEditor(colIndex, rowIndex, value, parent) {
     // debugger;
-    const obj = this.options.editing(colIndex, rowIndex, value, parent);
+    const obj = this.options.getEditor(colIndex, rowIndex, value, parent);
     if (obj && obj.setValue) return obj;
 
     // editing fallback
@@ -403,11 +403,11 @@ export default class CellManager {
     const col = this.datamanager.getColumn(colIndex);
 
     if ($cell) {
-      const editing = this.currentCellEditing;
+      const editor = this.currentCellEditor;
 
-      if (editing) {
-        const value = editing.getValue();
-        const done = editing.setValue(value, rowIndex, col);
+      if (editor) {
+        const value = editor.getValue();
+        const done = editor.setValue(value, rowIndex, col);
         const oldValue = this.getCell(colIndex, rowIndex).content;
 
         // update cell immediately
@@ -424,7 +424,7 @@ export default class CellManager {
       }
     }
 
-    this.currentCellEditing = null;
+    this.currentCellEditor = null;
   }
 
   copyCellContents($cell1, $cell2) {
