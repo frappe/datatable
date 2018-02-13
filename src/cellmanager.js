@@ -326,6 +326,7 @@ export default class CellManager {
   }
 
   activateEditing($cell) {
+    this.focusCell($cell);
     const { rowIndex, colIndex } = $.data($cell);
 
     const col = this.columnmanager.getColumn(colIndex);
