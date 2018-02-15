@@ -5,7 +5,7 @@ import ColumnManager from './columnmanager';
 import RowManager from './rowmanager';
 import BodyRenderer from './body-renderer';
 import Style from './style';
-import keyboard from './keyboard';
+import Keyboard from './keyboard';
 import DEFAULT_OPTIONS from './defaults';
 import './style.scss';
 
@@ -35,13 +35,12 @@ class DataTable {
     this.prepare();
 
     this.style = new Style(this);
+    this.keyboard = new Keyboard(this.wrapper);
     this.datamanager = new DataManager(this.options);
     this.rowmanager = new RowManager(this);
     this.columnmanager = new ColumnManager(this);
     this.cellmanager = new CellManager(this);
     this.bodyRenderer = new BodyRenderer(this);
-
-    keyboard.init(this.wrapper);
 
     if (this.options.data) {
       this.refresh();

@@ -3,7 +3,6 @@ import {
   makeDataAttributeString,
   throttle
 } from './utils';
-import keyboard from './keyboard';
 import $ from './dom';
 import { getDropdownHTML } from './columnmanager';
 
@@ -17,6 +16,7 @@ export default class CellManager {
     this.columnmanager = this.instance.columnmanager;
     this.rowmanager = this.instance.rowmanager;
     this.datamanager = this.instance.datamanager;
+    this.keyboard = this.instance.keyboard;
 
     this.bindEvents();
   }
@@ -40,7 +40,7 @@ export default class CellManager {
       this.activateEditing(cell);
     });
 
-    keyboard.on('enter', (e) => {
+    this.keyboard.on('enter', (e) => {
       if (this.$focusedCell && !this.$editingCell) {
         // enter keypress on focused cell
         this.activateEditing(this.$focusedCell);
@@ -97,14 +97,14 @@ export default class CellManager {
     };
 
     ['left', 'right', 'up', 'down', 'tab'].map(
-      direction => keyboard.on(direction, () => focusCell(direction))
+      direction => this.keyboard.on(direction, () => focusCell(direction))
     );
 
     ['left', 'right', 'up', 'down'].map(
-      direction => keyboard.on('ctrl+' + direction, () => focusLastCell(direction))
+      direction => this.keyboard.on('ctrl+' + direction, () => focusLastCell(direction))
     );
 
-    keyboard.on('esc', () => {
+    this.keyboard.on('esc', () => {
       this.deactivateEditing();
     });
   }
@@ -127,13 +127,13 @@ export default class CellManager {
     };
 
     ['left', 'right', 'up', 'down'].map(
-      direction => keyboard.on('shift+' + direction,
+      direction => this.keyboard.on('shift+' + direction,
         () => this.selectArea(getNextSelectionCursor(direction)))
     );
   }
 
   bindCopyCellContents() {
-    keyboard.on('ctrl+c', () => {
+    this.keyboard.on('ctrl+c', () => {
       this.copyCellContents(this.$focusedCell, this.$selectionCursor);
     });
   }
