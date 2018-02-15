@@ -15,49 +15,41 @@ const KEYCODES = {
   67: 'c'
 };
 
-let initDone = false;
-const handlers = {};
-
-function bind(dom) {
-  if (initDone) return;
-  $.on(dom, 'keydown', handler);
-  initDone = true;
-}
-
-function handler(e) {
-  let key = KEYCODES[e.keyCode];
-
-  if (e.shiftKey && key !== 'shift') {
-    key = 'shift+' + key;
+export default class Keyboard {
+  constructor(element) {
+    this.listeners = {};
+    $.on(element, 'keydown', this.handler.bind(this));
   }
 
-  if ((e.ctrlKey && key !== 'ctrl') || (e.metaKey && key !== 'meta')) {
-    key = 'ctrl+' + key;
-  }
+  handler(e) {
+    let key = KEYCODES[e.keyCode];
 
-  const _handlers = handlers[key];
+    if (e.shiftKey && key !== 'shift') {
+      key = 'shift+' + key;
+    }
 
-  if (_handlers && _handlers.length > 0) {
-    _handlers.map(handler => {
-      const preventBubbling = handler();
+    if ((e.ctrlKey && key !== 'ctrl') || (e.metaKey && key !== 'meta')) {
+      key = 'ctrl+' + key;
+    }
 
-      if (preventBubbling === undefined || preventBubbling === true) {
-        e.preventDefault();
+    const listeners = this.listeners[key];
+
+    if (listeners && listeners.length > 0) {
+      for (let listener of listeners) {
+        const preventBubbling = listener();
+        if (preventBubbling === undefined || preventBubbling === true) {
+          e.preventDefault();
+        }
       }
-    });
+    }
   }
-}
 
-export default {
-  init(dom) {
-    bind(dom);
-  },
-  on(key, handler) {
+  on(key, listener) {
     const keys = key.split(',').map(k => k.trim());
 
     keys.map(key => {
-      handlers[key] = handlers[key] || [];
-      handlers[key].push(handler);
+      this.listeners[key] = this.listeners[key] || [];
+      this.listeners[key].push(listener);
     });
   }
-};
+}

@@ -12,6 +12,7 @@ export default class ColumnManager {
     this.style = this.instance.style;
     this.wrapper = this.instance.wrapper;
     this.rowmanager = this.instance.rowmanager;
+    this.bodyScrollable = this.instance.bodyScrollable;
 
     this.bindEvents();
     getDropdownHTML = getDropdownHTML.bind(this, this.options.dropdownButton);
@@ -311,7 +312,6 @@ export default class ColumnManager {
   setupNaturalColumnWidth() {
     // set initial width as naturally calculated by table's first row
     $.each('.data-table-row[data-row-index="0"] .data-table-col', this.bodyScrollable).map($cell => {
-
       const { colIndex } = $.data($cell);
       if (this.getColumn(colIndex).width > 0) {
         // already set
