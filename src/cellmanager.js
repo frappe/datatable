@@ -60,7 +60,7 @@ export default class CellManager {
 
       let $cell = this.$focusedCell;
 
-      if (direction === 'left') {
+      if (direction === 'left' || direction === 'shift+tab') {
         $cell = this.getLeftCell$($cell);
       } else if (direction === 'right' || direction === 'tab') {
         $cell = this.getRightCell$($cell);
@@ -96,7 +96,7 @@ export default class CellManager {
       return true;
     };
 
-    ['left', 'right', 'up', 'down', 'tab'].map(
+    ['left', 'right', 'up', 'down', 'tab', 'shift+tab'].map(
       direction => this.keyboard.on(direction, () => focusCell(direction))
     );
 

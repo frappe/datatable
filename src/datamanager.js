@@ -91,6 +91,7 @@ export default class DataManager {
       resizable: true,
       focusable: true,
       dropdown: true,
+      width: null,
       format: (value) => {
         if (value === null || value === undefined) {
           return '';
@@ -114,8 +115,7 @@ export default class DataManager {
       align: 'left',
       sortOrder: 'none',
       colIndex: i,
-      column: this.columns[i],
-      width: 0
+      column: this.columns[i]
     };
 
     if (content !== null && typeof content === 'object') {
@@ -159,6 +159,10 @@ export default class DataManager {
           row.push((index + 1) + '');
         }
         row = row.concat(d);
+
+        while (row.length < this.columns.length) {
+          row.push('');
+        }
 
       } else {
         // row is a dict

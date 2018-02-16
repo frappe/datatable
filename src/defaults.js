@@ -44,6 +44,6 @@ export default {
   addCheckboxColumn: false,
   enableClusterize: true,
   enableLogs: false,
-  takeAvailableSpace: false,
-  loadingText: ''
+  layout: 'fixed', // fixed, fluid
+  noDataMessage: 'No Data'
 };

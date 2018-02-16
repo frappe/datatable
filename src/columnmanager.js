@@ -1,18 +1,21 @@
 import $ from './dom';
 import Sortable from 'sortablejs';
-import { getDefault } from './utils';
+import { getDefault, linkProperties } from './utils';
 
 export default class ColumnManager {
   constructor(instance) {
     this.instance = instance;
-    this.options = this.instance.options;
-    this.fireEvent = this.instance.fireEvent;
-    this.header = this.instance.header;
-    this.datamanager = this.instance.datamanager;
-    this.style = this.instance.style;
-    this.wrapper = this.instance.wrapper;
-    this.rowmanager = this.instance.rowmanager;
-    this.bodyScrollable = this.instance.bodyScrollable;
+
+    linkProperties(this, this.instance, [
+      'options',
+      'fireEvent',
+      'header',
+      'datamanager',
+      'style',
+      'wrapper',
+      'rowmanager',
+      'bodyScrollable'
+    ]);
 
     this.bindEvents();
     getDropdownHTML = getDropdownHTML.bind(this, this.options.dropdownButton);
@@ -126,7 +129,7 @@ export default class ColumnManager {
 
       const { colIndex } = $.data($resizingCell);
       this.setColumnWidth(colIndex);
-      this.instance.setBodyWidth();
+      this.style.setBodyStyle();
       $resizingCell = null;
     });
 
@@ -262,133 +265,6 @@ export default class ColumnManager {
       });
   }
 
-  setDimensions() {
-    this.setHeaderStyle();
-    this.setupMinWidth();
-    this.setupNaturalColumnWidth();
-    this.distributeRemainingWidth();
-    this.setColumnStyle();
-    this.setDefaultCellHeight();
-  }
-
-  setHeaderStyle() {
-    if (!this.options.takeAvailableSpace) {
-      // setting width as 0 will ensure that the
-      // header doesn't take the available space
-      $.style(this.header, {
-        width: 0
-      });
-    }
-
-    $.style(this.header, {
-      margin: 0
-    });
-
-    // don't show resize cursor on nonResizable columns
-    const nonResizableColumnsSelector = this.datamanager.getColumns()
-      .filter(col => col.resizable === false)
-      .map(col => col.colIndex)
-      .map(i => `.data-table-header [data-col-index="${i}"]`)
-      .join();
-
-    this.style.setStyle(nonResizableColumnsSelector, {
-      cursor: 'pointer'
-    });
-  }
-
-  setupMinWidth() {
-    $.each('.data-table-col', this.header).map(col => {
-      const width = $.style($('.content', col), 'width');
-      const { colIndex } = $.data(col);
-      const column = this.getColumn(colIndex);
-
-      if (!column.minWidth) {
-        // only set this once
-        this.datamanager.updateColumn(colIndex, { minWidth: width });
-      }
-    });
-  }
-
-  setupNaturalColumnWidth() {
-    // set initial width as naturally calculated by table's first row
-    $.each('.data-table-row[data-row-index="0"] .data-table-col', this.bodyScrollable).map($cell => {
-      const { colIndex } = $.data($cell);
-      if (this.getColumn(colIndex).width > 0) {
-        // already set
-        return;
-      }
-
-      let width = $.style($('.content', $cell), 'width');
-      const minWidth = this.getColumnMinWidth(colIndex);
-
-      if (width < minWidth) {
-        width = minWidth;
-      }
-      this.datamanager.updateColumn(colIndex, { width });
-    });
-  }
-
-  distributeRemainingWidth() {
-    if (!this.options.takeAvailableSpace) return;
-
-    const wrapperWidth = $.style(this.instance.datatableWrapper, 'width');
-    const headerWidth = $.style(this.header, 'width');
-
-    if (headerWidth >= wrapperWidth) {
-      // don't resize, horizontal scroll takes place
-      return;
-    }
-
-    const resizableColumns = this.datamanager.getColumns().filter(
-      col => col.resizable === undefined || col.resizable
-    );
-
-    const deltaWidth = (wrapperWidth - headerWidth) / resizableColumns.length;
-
-    resizableColumns.map(col => {
-      const width = $.style(this.getColumnHeaderElement(col.colIndex), 'width');
-      let finalWidth = Math.min(width + deltaWidth) - 2;
-
-      this.datamanager.updateColumn(col.colIndex, { width: finalWidth });
-    });
-  }
-
-  setDefaultCellHeight() {
-    if (this.__cellHeightSet) return;
-    const height = $.style($('.data-table-col', this.instance.datatableWrapper), 'height');
-    if (height) {
-      this.setCellHeight(height);
-      this.__cellHeightSet = true;
-    }
-  }
-
-  setCellHeight(height) {
-    this.style.setStyle('.data-table-col .content', {
-      height: height + 'px'
-    });
-    this.style.setStyle('.data-table-col .edit-cell', {
-      height: height + 'px'
-    });
-  }
-
-  setColumnStyle() {
-    // align columns
-    this.getColumns()
-      .map(column => {
-        // alignment
-        if (['left', 'center', 'right'].includes(column.align)) {
-          this.style.setStyle(`[data-col-index="${column.colIndex}"]`, {
-            'text-align': column.align
-          });
-        }
-        // width
-        this.setColumnHeaderWidth(column.colIndex);
-        this.setColumnWidth(column.colIndex);
-      });
-    this.instance.setBodyWidth();
-
-  }
-
   sortRows(colIndex, sortOrder) {
     return this.datamanager.sortRows(colIndex, sortOrder);
   }
@@ -455,12 +331,6 @@ export default class ColumnManager {
 
   getLastColumnIndex() {
     return this.datamanager.getColumnCount() - 1;
-  }
-
-  getColumnHeaderElement(colIndex) {
-    colIndex = +colIndex;
-    if (colIndex < 0) return null;
-    return $(`.data-table-col[data-is-header][data-col-index="${colIndex}"]`, this.wrapper);
   }
 
   getSerialColumnIndex() {
