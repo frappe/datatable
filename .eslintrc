@@ -5,6 +5,11 @@
     "modules": true
   },
 
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+
   "env": {
     "browser": true,
     "es6": true,
@@ -24,8 +29,6 @@
     "sinon": true,
     "Clusterize": true
   },
-
-  "parser": "babel-eslint",
 
   "plugins": [
 

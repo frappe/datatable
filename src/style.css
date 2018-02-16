@@ -1,14 +1,16 @@
 /* variables */
 
-$border-color: #d1d8dd;
-$primary-color: rgb(82, 146, 247);
-$light-bg: #f5f7fa;
-$light-red: #FD8B8B;
-$text-color: #000000;
+:root {
+	--border-color: #d1d8dd;
+	--primary-color: rgb(82, 146, 247);
+	--light-bg: #f5f7fa;
+	--light-red: #FD8B8B;
+	--text-color: #000000;
 
-$spacer-1: 0.25rem;
-$spacer-2: 0.5rem;
-$spacer-3: 1rem;
+	--spacer-1: 0.25rem;
+	--spacer-2: 0.5rem;
+	--spacer-3: 1rem;
+}
 
 .data-table {
 	/* resets */
@@ -42,7 +44,7 @@ $spacer-3: 1rem;
 
 	table td {
 		padding: 0;
-		border: 1px solid $border-color;
+		border: 1px solid var(--border-color);
 	}
 
 	thead td {
@@ -58,7 +60,7 @@ $spacer-3: 1rem;
 		right: 0;
 		top: 0;
 		bottom: 0;
-		background-color: $light-bg;
+		background-color: var(--light-bg);
 		opacity: 0.5;
 		font-size: 2em;
 
@@ -83,10 +85,10 @@ $spacer-3: 1rem;
 .body-scrollable {
 	max-height: 500px;
 	overflow: auto;
-	border-bottom: 1px solid $border-color;
+	border-bottom: 1px solid var(--border-color);
 
 	&.row-highlight-all .data-table-row:not(.row-unhighlight) {
-		background-color: $light-bg;
+		background-color: var(--light-bg);
 	}
 }
 
@@ -106,9 +108,9 @@ $spacer-3: 1rem;
 		position: absolute;
 		right: 0;
 		top: 0;
-		width: $spacer-1;
+		width: var(--spacer-1);
 		height: 100%;
-		background-color: $primary-color;
+		background-color: var(--primary-color);
 		cursor: col-resize;
 	}
 
@@ -148,25 +150,25 @@ $spacer-3: 1rem;
 		background-color: white;
 		border-radius: 3px;
 		box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
-		padding-bottom: $spacer-2;
-		padding-top: $spacer-2;
+		padding-bottom: var(--spacer-2);
+		padding-top: var(--spacer-2);
 
 		&> div {
-			padding: $spacer-2 $spacer-3;
+			padding: var(--spacer-2) var(--spacer-3);
 
 			&:hover {
-				background-color: $light-bg;
+				background-color: var(--light-bg);
 			}
 		}
 	}
 
 	.data-table-col.remove-column {
-		background-color: $light-red;
+		background-color: var(--light-red);
 		transition: 300ms background-color ease-in-out;
 	}
 
 	.data-table-col.sortable-chosen {
-		background-color: $light-bg;
+		background-color: var(--light-bg);
 	}
 }
 
@@ -174,7 +176,7 @@ $spacer-3: 1rem;
 	position: relative;
 
 	.content {
-		padding: $spacer-1;
+		padding: var(--spacer-1);
 		border: 2px solid transparent;
 
 		&.ellipsis {
@@ -187,7 +189,7 @@ $spacer-3: 1rem;
 	.edit-cell {
 		display: none;
 		// position: absolute;
-		padding: $spacer-1;
+		padding: var(--spacer-1);
 		background: #fff;
 		z-index: 1;
 		height: 100%;
@@ -200,7 +202,7 @@ $spacer-3: 1rem;
 	}
 
 	&.selected .content {
-		border: 2px solid $primary-color;
+		border: 2px solid var(--primary-color);
 	}
 
 	&.editing {
@@ -209,13 +211,13 @@ $spacer-3: 1rem;
 		}
 
 		.edit-cell {
-			border: 2px solid $primary-color;
+			border: 2px solid var(--primary-color);
 			display: block;
 		}
 	}
 
 	&.highlight {
-		background-color: $light-bg;
+		background-color: var(--light-bg);
 	}
 
 	&:hover .column-resizer {
@@ -229,7 +231,7 @@ $spacer-3: 1rem;
 
 .data-table-row {
   &.row-highlight {
-    background-color: $light-bg;
+    background-color: var(--light-bg);
   }
 }
 
