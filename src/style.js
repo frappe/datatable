@@ -145,14 +145,7 @@ export default class Style {
 
     const wrapperWidth = $.style(this.instance.datatableWrapper, 'width');
     const headerWidth = $.style(this.header, 'width');
-
-    // if (headerWidth >= wrapperWidth) {
-    //   // don't resize, horizontal scroll takes place
-    //   return;
-    // }
-
     const resizableColumns = this.datamanager.getColumns().filter(col => col.resizable);
-
     const deltaWidth = (wrapperWidth - headerWidth) / resizableColumns.length;
 
     resizableColumns.map(col => {
