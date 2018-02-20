@@ -7,7 +7,7 @@ import BodyRenderer from './body-renderer';
 import Style from './style';
 import Keyboard from './keyboard';
 import DEFAULT_OPTIONS from './defaults';
-import './style.scss';
+import './style.css';
 
 class DataTable {
   constructor(wrapper, options) {
