@@ -26,8 +26,8 @@ var grid = new DataTable(document.querySelector('#data-table'), {
 
 ## Contribute
 
-* `npm run dev` - run this command and start hacking
-* `npm run test` - run tests
+* `yarn start` - Start rollup watch
+* `yarn build` - Build js/css bundles
 
 ## License
 
