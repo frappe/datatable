@@ -1,10 +1,9 @@
-import merge from 'deepmerge';
 import json from 'rollup-plugin-json';
-import uglify from 'rollup-plugin-uglify';
+// import uglify from 'rollup-plugin-uglify';
 import postcss from 'rollup-plugin-postcss';
 import nested from 'postcss-nested';
 import cssnext from 'postcss-cssnext';
-import cssnano from 'cssnano';
+// import cssnano from 'cssnano';
 
 const dev = {
   input: 'src/index.js',
@@ -23,29 +22,16 @@ const dev = {
       extract: 'dist/frappe-datatable.css',
       plugins: [
         nested(),
-        cssnext(),
-        cssnano()
+        cssnext()
       ]
     })
   ],
   external: ['sortablejs', 'clusterize.js']
 };
 
-const prod = merge(dev, {
+export default [dev, Object.assign(dev, {
   output: {
-    file: 'dist/frappe-datatable.min.js'
-  },
-  plugins: [
-    postcss({
-      extract: 'dist/frappe-datatable.min.css',
-      plugins: [
-        nested(),
-        cssnext(),
-        cssnano()
-      ]
-    }),
-    uglify()
-  ]
-});
-
-export default [dev];
+    format: 'cjs',
+    file: 'dist/frappe-datatable.cjs.js'
+  }
+})];
