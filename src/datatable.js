@@ -107,27 +107,19 @@ class DataTable {
   }
 
   setDimensions() {
-    this.columnmanager.setDimensions();
-
-    this.setBodyWidth();
-
-    $.style(this.bodyScrollable, {
-      marginTop: $.style(this.header, 'height') + 'px'
-    });
-
-    $.style($('table', this.bodyScrollable), {
-      margin: 0
-    });
-  }
-
-  setBodyWidth() {
-    const width = $.style(this.header, 'width');
-
-    $.style(this.bodyScrollable, { width: width + 'px' });
+    this.style.setDimensions();
   }
 
   getColumn(colIndex) {
     return this.datamanager.getColumn(colIndex);
+  }
+
+  getColumns() {
+    return this.datamanager.getColumns();
+  }
+
+  getRows() {
+    return this.datamanager.getRows();
   }
 
   getCell(colIndex, rowIndex) {

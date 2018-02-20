@@ -59,7 +59,7 @@ export default class BodyRenderer {
           }
         },
         /* eslint-disable */
-        no_data_text: this.options.loadingText,
+        no_data_text: this.options.noDataMessage,
         no_data_class: 'empty-state'
         /* eslint-enable */
       });
