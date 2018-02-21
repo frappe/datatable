@@ -24,6 +24,12 @@
 		padding: 0;
 	}
 
+.data-table .input-style {
+		outline: none;
+		width: 100%;
+		border: none;
+	}
+
 .data-table *, .data-table *:focus {
 		outline: none;
 		border-radius: 0px;
@@ -78,6 +84,10 @@
 		height: 70px;
 		background: palevioletred;
 		opacity: 0.5;
+	}
+
+.data-table .hide {
+		display: none;
 	}
 
 .body-scrollable {
@@ -195,19 +205,12 @@
 
 .data-table-col .edit-cell {
 		display: none;
-		// position: absolute;
 		padding: 8px;
 		padding: 0.5rem;
 		background: #fff;
 		z-index: 1;
 		height: 100%;
 	}
-
-.data-table-col .edit-cell input {
-			outline: none;
-			width: 100%;
-			border: none;
-		}
 
 .data-table-col.selected .content {
 		border: 2px solid rgb(82, 146, 247);

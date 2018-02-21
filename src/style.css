@@ -27,6 +27,12 @@
 		padding: 0;
 	}
 
+	.input-style {
+		outline: none;
+		width: 100%;
+		border: none;
+	}
+
 	*, *:focus {
 		outline: none;
 		border-radius: 0px;
@@ -79,6 +85,10 @@
 		height: 70px;
 		background: palevioletred;
 		opacity: 0.5;
+	}
+
+	.hide {
+		display: none;
 	}
 }
 
@@ -188,17 +198,10 @@
 
 	.edit-cell {
 		display: none;
-		// position: absolute;
 		padding: var(--spacer-2);
 		background: #fff;
 		z-index: 1;
 		height: 100%;
-
-		input {
-			outline: none;
-			width: 100%;
-			border: none;
-		}
 	}
 
 	&.selected .content {

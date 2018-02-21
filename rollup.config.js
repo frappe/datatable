@@ -1,5 +1,7 @@
 import json from 'rollup-plugin-json';
 // import uglify from 'rollup-plugin-uglify';
+import nodeResolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
 import postcss from 'rollup-plugin-postcss';
 import nested from 'postcss-nested';
 import cssnext from 'postcss-cssnext';
@@ -18,6 +20,8 @@ const dev = {
   },
   plugins: [
     json(),
+    nodeResolve(),
+    commonjs(),
     postcss({
       extract: 'dist/frappe-datatable.css',
       plugins: [

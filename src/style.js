@@ -99,7 +99,7 @@ export default class Style {
   }
 
   setupMinWidth() {
-    $.each('.data-table-col', this.header).map(col => {
+    $.each('.data-table-col[data-is-header]', this.header).map(col => {
       const width = $.style($('.content', col), 'width');
       const {
         colIndex

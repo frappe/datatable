@@ -1,6 +1,6 @@
 import $ from './dom';
 import Sortable from 'sortablejs';
-import { getDefault, linkProperties } from './utils';
+import { getDefault, linkProperties, debounce } from './utils';
 
 export default class ColumnManager {
   constructor(instance) {
@@ -31,7 +31,19 @@ export default class ColumnManager {
 
     if (!$('.data-table-col', this.header)) {
       // insert html
-      $('thead', this.header).innerHTML = this.rowmanager.getRowHTML(columns, { isHeader: 1 });
+
+      let html = this.rowmanager.getRowHTML(columns, { isHeader: 1 });
+      if (this.options.enableInlineFilters) {
+        html += this.rowmanager.getRowHTML(columns, { isFilter: 1 });
+      }
+
+      $('thead', this.header).innerHTML = html;
+
+      this.$filterRow = $('.data-table-row[data-is-filter]', this.header);
+      // hide filter row immediately, so it doesn't disturb layout
+      $.style(this.$filterRow, {
+        display: 'none'
+      });
     } else {
       // refresh dom state
       const $cols = $.each('.data-table-col', this.header);
@@ -64,6 +76,7 @@ export default class ColumnManager {
     this.bindDropdown();
     this.bindResizeColumn();
     this.bindMoveColumn();
+    this.bindFilter();
   }
 
   bindDropdown() {
@@ -265,6 +278,51 @@ export default class ColumnManager {
       });
   }
 
+  toggleFilter() {
+    this.isFilterShown = this.isFilterShown || false;
+
+    if (this.isFilterShown) {
+      $.style(this.$filterRow, {
+        display: 'none'
+      });
+    } else {
+      $.style(this.$filterRow, {
+        display: ''
+      });
+    }
+
+    this.isFilterShown = !this.isFilterShown;
+    this.style.setBodyStyle();
+  }
+
+  focusFilter(colIndex) {
+    if (!this.isFilterShown) return;
+
+    const $filterInput = $(`[data-col-index="${colIndex}"] .data-table-filter`, this.$filterRow);
+    $filterInput.focus();
+  }
+
+  bindFilter() {
+    const handler = e => {
+      const $filterCell = $.closest('.data-table-col', e.target);
+      const { colIndex } = $.data($filterCell);
+      const keyword = e.target.value;
+
+      this.datamanager.filterRows(keyword, colIndex)
+        .then(({ rowsToHide, rowsToShow }) => {
+          rowsToHide.map(rowIndex => {
+            const $tr = $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
+            $tr.classList.add('hide');
+          });
+          rowsToShow.map(rowIndex => {
+            const $tr = $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
+            $tr.classList.remove('hide');
+          });
+        });
+    };
+    $.on(this.header, 'keydown', '.data-table-filter', debounce(handler, 300));
+  }
+
   sortRows(colIndex, sortOrder) {
     return this.datamanager.sortRows(colIndex, sortOrder);
   }
@@ -296,7 +354,7 @@ export default class ColumnManager {
   setColumnHeaderWidth(colIndex) {
     colIndex = +colIndex;
     this.$columnMap = this.$columnMap || [];
-    const selector = `[data-col-index="${colIndex}"][data-is-header] .content`;
+    const selector = `.data-table-header [data-col-index="${colIndex}"] .content`;
     const { width } = this.getColumn(colIndex);
 
     let $column = this.$columnMap[colIndex];

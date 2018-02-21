@@ -46,5 +46,6 @@ export default {
   enableLogs: false,
   layout: 'fixed', // fixed, fluid
   noDataMessage: 'No Data',
-  cellHeight: null
+  cellHeight: null,
+  enableInlineFilters: false
 };

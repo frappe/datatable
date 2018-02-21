@@ -177,6 +177,548 @@ $.scrollTop = function scrollTop(element, pixels) {
   });
 };
 
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject(value) {
+  var type = typeof value;
+  return value != null && (type == 'object' || type == 'function');
+}
+
+var isObject_1 = isObject;
+
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+/** Detect free variable `global` from Node.js. */
+var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
+
+var _freeGlobal = freeGlobal;
+
+/** Detect free variable `self`. */
+var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root = _freeGlobal || freeSelf || Function('return this')();
+
+var _root = root;
+
+/**
+ * Gets the timestamp of the number of milliseconds that have elapsed since
+ * the Unix epoch (1 January 1970 00:00:00 UTC).
+ *
+ * @static
+ * @memberOf _
+ * @since 2.4.0
+ * @category Date
+ * @returns {number} Returns the timestamp.
+ * @example
+ *
+ * _.defer(function(stamp) {
+ *   console.log(_.now() - stamp);
+ * }, _.now());
+ * // => Logs the number of milliseconds it took for the deferred invocation.
+ */
+var now = function() {
+  return _root.Date.now();
+};
+
+var now_1 = now;
+
+/** Built-in value references. */
+var Symbol = _root.Symbol;
+
+var _Symbol = Symbol;
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString = objectProto.toString;
+
+/** Built-in value references. */
+var symToStringTag = _Symbol ? _Symbol.toStringTag : undefined;
+
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */
+function getRawTag(value) {
+  var isOwn = hasOwnProperty.call(value, symToStringTag),
+      tag = value[symToStringTag];
+
+  try {
+    value[symToStringTag] = undefined;
+    var unmasked = true;
+  } catch (e) {}
+
+  var result = nativeObjectToString.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag] = tag;
+    } else {
+      delete value[symToStringTag];
+    }
+  }
+  return result;
+}
+
+var _getRawTag = getRawTag;
+
+/** Used for built-in method references. */
+var objectProto$1 = Object.prototype;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString$1 = objectProto$1.toString;
+
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */
+function objectToString(value) {
+  return nativeObjectToString$1.call(value);
+}
+
+var _objectToString = objectToString;
+
+/** `Object#toString` result references. */
+var nullTag = '[object Null]';
+var undefinedTag = '[object Undefined]';
+
+/** Built-in value references. */
+var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
+
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+function baseGetTag(value) {
+  if (value == null) {
+    return value === undefined ? undefinedTag : nullTag;
+  }
+  return (symToStringTag$1 && symToStringTag$1 in Object(value))
+    ? _getRawTag(value)
+    : _objectToString(value);
+}
+
+var _baseGetTag = baseGetTag;
+
+/**
+ * Checks if `value` is object-like. A value is object-like if it's not `null`
+ * and has a `typeof` result of "object".
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ * @example
+ *
+ * _.isObjectLike({});
+ * // => true
+ *
+ * _.isObjectLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isObjectLike(_.noop);
+ * // => false
+ *
+ * _.isObjectLike(null);
+ * // => false
+ */
+function isObjectLike(value) {
+  return value != null && typeof value == 'object';
+}
+
+var isObjectLike_1 = isObjectLike;
+
+/** `Object#toString` result references. */
+var symbolTag = '[object Symbol]';
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (isObjectLike_1(value) && _baseGetTag(value) == symbolTag);
+}
+
+var isSymbol_1 = isSymbol;
+
+/** Used as references for various `Number` constants. */
+var NAN = 0 / 0;
+
+/** Used to match leading and trailing whitespace. */
+var reTrim = /^\s+|\s+$/g;
+
+/** Used to detect bad signed hexadecimal string values. */
+var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+
+/** Used to detect binary string values. */
+var reIsBinary = /^0b[01]+$/i;
+
+/** Used to detect octal string values. */
+var reIsOctal = /^0o[0-7]+$/i;
+
+/** Built-in method references without a dependency on `root`. */
+var freeParseInt = parseInt;
+
+/**
+ * Converts `value` to a number.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to process.
+ * @returns {number} Returns the number.
+ * @example
+ *
+ * _.toNumber(3.2);
+ * // => 3.2
+ *
+ * _.toNumber(Number.MIN_VALUE);
+ * // => 5e-324
+ *
+ * _.toNumber(Infinity);
+ * // => Infinity
+ *
+ * _.toNumber('3.2');
+ * // => 3.2
+ */
+function toNumber(value) {
+  if (typeof value == 'number') {
+    return value;
+  }
+  if (isSymbol_1(value)) {
+    return NAN;
+  }
+  if (isObject_1(value)) {
+    var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
+    value = isObject_1(other) ? (other + '') : other;
+  }
+  if (typeof value != 'string') {
+    return value === 0 ? value : +value;
+  }
+  value = value.replace(reTrim, '');
+  var isBinary = reIsBinary.test(value);
+  return (isBinary || reIsOctal.test(value))
+    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
+    : (reIsBadHex.test(value) ? NAN : +value);
+}
+
+var toNumber_1 = toNumber;
+
+/** Error message constants. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/* Built-in method references for those with the same name as other `lodash` methods. */
+var nativeMax = Math.max;
+var nativeMin = Math.min;
+
+/**
+ * Creates a debounced function that delays invoking `func` until after `wait`
+ * milliseconds have elapsed since the last time the debounced function was
+ * invoked. The debounced function comes with a `cancel` method to cancel
+ * delayed `func` invocations and a `flush` method to immediately invoke them.
+ * Provide `options` to indicate whether `func` should be invoked on the
+ * leading and/or trailing edge of the `wait` timeout. The `func` is invoked
+ * with the last arguments provided to the debounced function. Subsequent
+ * calls to the debounced function return the result of the last `func`
+ * invocation.
+ *
+ * **Note:** If `leading` and `trailing` options are `true`, `func` is
+ * invoked on the trailing edge of the timeout only if the debounced function
+ * is invoked more than once during the `wait` timeout.
+ *
+ * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
+ * until to the next tick, similar to `setTimeout` with a timeout of `0`.
+ *
+ * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
+ * for details over the differences between `_.debounce` and `_.throttle`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to debounce.
+ * @param {number} [wait=0] The number of milliseconds to delay.
+ * @param {Object} [options={}] The options object.
+ * @param {boolean} [options.leading=false]
+ *  Specify invoking on the leading edge of the timeout.
+ * @param {number} [options.maxWait]
+ *  The maximum time `func` is allowed to be delayed before it's invoked.
+ * @param {boolean} [options.trailing=true]
+ *  Specify invoking on the trailing edge of the timeout.
+ * @returns {Function} Returns the new debounced function.
+ * @example
+ *
+ * // Avoid costly calculations while the window size is in flux.
+ * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
+ *
+ * // Invoke `sendMail` when clicked, debouncing subsequent calls.
+ * jQuery(element).on('click', _.debounce(sendMail, 300, {
+ *   'leading': true,
+ *   'trailing': false
+ * }));
+ *
+ * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
+ * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
+ * var source = new EventSource('/stream');
+ * jQuery(source).on('message', debounced);
+ *
+ * // Cancel the trailing debounced invocation.
+ * jQuery(window).on('popstate', debounced.cancel);
+ */
+function debounce(func, wait, options) {
+  var lastArgs,
+      lastThis,
+      maxWait,
+      result,
+      timerId,
+      lastCallTime,
+      lastInvokeTime = 0,
+      leading = false,
+      maxing = false,
+      trailing = true;
+
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  wait = toNumber_1(wait) || 0;
+  if (isObject_1(options)) {
+    leading = !!options.leading;
+    maxing = 'maxWait' in options;
+    maxWait = maxing ? nativeMax(toNumber_1(options.maxWait) || 0, wait) : maxWait;
+    trailing = 'trailing' in options ? !!options.trailing : trailing;
+  }
+
+  function invokeFunc(time) {
+    var args = lastArgs,
+        thisArg = lastThis;
+
+    lastArgs = lastThis = undefined;
+    lastInvokeTime = time;
+    result = func.apply(thisArg, args);
+    return result;
+  }
+
+  function leadingEdge(time) {
+    // Reset any `maxWait` timer.
+    lastInvokeTime = time;
+    // Start the timer for the trailing edge.
+    timerId = setTimeout(timerExpired, wait);
+    // Invoke the leading edge.
+    return leading ? invokeFunc(time) : result;
+  }
+
+  function remainingWait(time) {
+    var timeSinceLastCall = time - lastCallTime,
+        timeSinceLastInvoke = time - lastInvokeTime,
+        timeWaiting = wait - timeSinceLastCall;
+
+    return maxing
+      ? nativeMin(timeWaiting, maxWait - timeSinceLastInvoke)
+      : timeWaiting;
+  }
+
+  function shouldInvoke(time) {
+    var timeSinceLastCall = time - lastCallTime,
+        timeSinceLastInvoke = time - lastInvokeTime;
+
+    // Either this is the first call, activity has stopped and we're at the
+    // trailing edge, the system time has gone backwards and we're treating
+    // it as the trailing edge, or we've hit the `maxWait` limit.
+    return (lastCallTime === undefined || (timeSinceLastCall >= wait) ||
+      (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
+  }
+
+  function timerExpired() {
+    var time = now_1();
+    if (shouldInvoke(time)) {
+      return trailingEdge(time);
+    }
+    // Restart the timer.
+    timerId = setTimeout(timerExpired, remainingWait(time));
+  }
+
+  function trailingEdge(time) {
+    timerId = undefined;
+
+    // Only invoke if we have `lastArgs` which means `func` has been
+    // debounced at least once.
+    if (trailing && lastArgs) {
+      return invokeFunc(time);
+    }
+    lastArgs = lastThis = undefined;
+    return result;
+  }
+
+  function cancel() {
+    if (timerId !== undefined) {
+      clearTimeout(timerId);
+    }
+    lastInvokeTime = 0;
+    lastArgs = lastCallTime = lastThis = timerId = undefined;
+  }
+
+  function flush() {
+    return timerId === undefined ? result : trailingEdge(now_1());
+  }
+
+  function debounced() {
+    var time = now_1(),
+        isInvoking = shouldInvoke(time);
+
+    lastArgs = arguments;
+    lastThis = this;
+    lastCallTime = time;
+
+    if (isInvoking) {
+      if (timerId === undefined) {
+        return leadingEdge(lastCallTime);
+      }
+      if (maxing) {
+        // Handle invocations in a tight loop.
+        timerId = setTimeout(timerExpired, wait);
+        return invokeFunc(lastCallTime);
+      }
+    }
+    if (timerId === undefined) {
+      timerId = setTimeout(timerExpired, wait);
+    }
+    return result;
+  }
+  debounced.cancel = cancel;
+  debounced.flush = flush;
+  return debounced;
+}
+
+var debounce_1 = debounce;
+
+/** Error message constants. */
+var FUNC_ERROR_TEXT$1 = 'Expected a function';
+
+/**
+ * Creates a throttled function that only invokes `func` at most once per
+ * every `wait` milliseconds. The throttled function comes with a `cancel`
+ * method to cancel delayed `func` invocations and a `flush` method to
+ * immediately invoke them. Provide `options` to indicate whether `func`
+ * should be invoked on the leading and/or trailing edge of the `wait`
+ * timeout. The `func` is invoked with the last arguments provided to the
+ * throttled function. Subsequent calls to the throttled function return the
+ * result of the last `func` invocation.
+ *
+ * **Note:** If `leading` and `trailing` options are `true`, `func` is
+ * invoked on the trailing edge of the timeout only if the throttled function
+ * is invoked more than once during the `wait` timeout.
+ *
+ * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
+ * until to the next tick, similar to `setTimeout` with a timeout of `0`.
+ *
+ * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
+ * for details over the differences between `_.throttle` and `_.debounce`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to throttle.
+ * @param {number} [wait=0] The number of milliseconds to throttle invocations to.
+ * @param {Object} [options={}] The options object.
+ * @param {boolean} [options.leading=true]
+ *  Specify invoking on the leading edge of the timeout.
+ * @param {boolean} [options.trailing=true]
+ *  Specify invoking on the trailing edge of the timeout.
+ * @returns {Function} Returns the new throttled function.
+ * @example
+ *
+ * // Avoid excessively updating the position while scrolling.
+ * jQuery(window).on('scroll', _.throttle(updatePosition, 100));
+ *
+ * // Invoke `renewToken` when the click event is fired, but not more than once every 5 minutes.
+ * var throttled = _.throttle(renewToken, 300000, { 'trailing': false });
+ * jQuery(element).on('click', throttled);
+ *
+ * // Cancel the trailing throttled invocation.
+ * jQuery(window).on('popstate', throttled.cancel);
+ */
+function throttle(func, wait, options) {
+  var leading = true,
+      trailing = true;
+
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT$1);
+  }
+  if (isObject_1(options)) {
+    leading = 'leading' in options ? !!options.leading : leading;
+    trailing = 'trailing' in options ? !!options.trailing : trailing;
+  }
+  return debounce_1(func, wait, {
+    'leading': leading,
+    'maxWait': wait,
+    'trailing': trailing
+  });
+}
+
+var throttle_1 = throttle;
+
 function camelCaseToDash(str) {
   return str.replace(/([A-Z])/g, (g) => `-${g[0].toLowerCase()}`);
 }
@@ -269,47 +811,16 @@ function isNumeric(val) {
   return !isNaN(val);
 }
 
-// https://stackoverflow.com/a/27078401
-function throttle(func, wait, options) {
-  var context, args, result;
-  var timeout = null;
-  var previous = 0;
-  if (!options) options = {};
+let throttle$1 = throttle_1;
 
-  let later = function () {
-    previous = options.leading === false ? 0 : Date.now();
-    timeout = null;
-    result = func.apply(context, args);
-    if (!timeout) context = args = null;
-  };
-
-  return function () {
-    var now = Date.now();
-    if (!previous && options.leading === false) previous = now;
-    let remaining = wait - (now - previous);
-    context = this;
-    args = arguments;
-    if (remaining <= 0 || remaining > wait) {
-      if (timeout) {
-        clearTimeout(timeout);
-        timeout = null;
-      }
-      previous = now;
-      result = func.apply(context, args);
-      if (!timeout) context = args = null;
-    } else if (!timeout && options.trailing !== false) {
-      timeout = setTimeout(later, remaining);
-    }
-    return result;
-  };
-}
+let debounce$2 = debounce_1;
 
 function promisify(fn, context = null) {
   return (...args) => {
     return new Promise(resolve => {
       setTimeout(() => {
-        fn.apply(context, args);
-        resolve('done', fn.name);
+        const out = fn.apply(context, args);
+        resolve(out);
       }, 0);
     });
   };
@@ -335,6 +846,7 @@ class DataManager {
     this.sortRows = promisify(this.sortRows, this);
     this.switchColumn = promisify(this.switchColumn, this);
     this.removeColumn = promisify(this.removeColumn, this);
+    this.filterRows = promisify(this.filterRows, this);
   }
 
   init(data) {
@@ -716,6 +1228,25 @@ class DataManager {
     return column;
   }
 
+  filterRows(keyword, colIndex) {
+    let rowsToHide = [];
+    let rowsToShow = [];
+    const cells = this.rows.map(row => row[colIndex]);
+
+    cells.forEach(cell => {
+      const hay = cell.content.toLowerCase();
+      const needle = (keyword || '').toLowerCase();
+
+      if (!needle || hay.includes(needle)) {
+        rowsToShow.push(cell.rowIndex);
+      } else {
+        rowsToHide.push(cell.rowIndex);
+      }
+    });
+
+    return {rowsToHide, rowsToShow};
+  }
+
   getRowCount() {
     return this.rowCount;
   }
@@ -839,7 +1370,19 @@ class ColumnManager {
 
     if (!$('.data-table-col', this.header)) {
       // insert html
-      $('thead', this.header).innerHTML = this.rowmanager.getRowHTML(columns, { isHeader: 1 });
+
+      let html = this.rowmanager.getRowHTML(columns, { isHeader: 1 });
+      if (this.options.enableInlineFilters) {
+        html += this.rowmanager.getRowHTML(columns, { isFilter: 1 });
+      }
+
+      $('thead', this.header).innerHTML = html;
+
+      this.$filterRow = $('.data-table-row[data-is-filter]', this.header);
+      // hide filter row immediately, so it doesn't disturb layout
+      $.style(this.$filterRow, {
+        display: 'none'
+      });
     } else {
       // refresh dom state
       const $cols = $.each('.data-table-col', this.header);
@@ -872,6 +1415,7 @@ class ColumnManager {
     this.bindDropdown();
     this.bindResizeColumn();
     this.bindMoveColumn();
+    this.bindFilter();
   }
 
   bindDropdown() {
@@ -1073,6 +1617,51 @@ class ColumnManager {
       });
   }
 
+  toggleFilter() {
+    this.isFilterShown = this.isFilterShown || false;
+
+    if (this.isFilterShown) {
+      $.style(this.$filterRow, {
+        display: 'none'
+      });
+    } else {
+      $.style(this.$filterRow, {
+        display: ''
+      });
+    }
+
+    this.isFilterShown = !this.isFilterShown;
+    this.style.setBodyStyle();
+  }
+
+  focusFilter(colIndex) {
+    if (!this.isFilterShown) return;
+
+    const $filterInput = $(`[data-col-index="${colIndex}"] .data-table-filter`, this.$filterRow);
+    $filterInput.focus();
+  }
+
+  bindFilter() {
+    const handler = e => {
+      const $filterCell = $.closest('.data-table-col', e.target);
+      const { colIndex } = $.data($filterCell);
+      const keyword = e.target.value;
+
+      this.datamanager.filterRows(keyword, colIndex)
+        .then(({ rowsToHide, rowsToShow }) => {
+          rowsToHide.map(rowIndex => {
+            const $tr = $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
+            $tr.classList.add('hide');
+          });
+          rowsToShow.map(rowIndex => {
+            const $tr = $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
+            $tr.classList.remove('hide');
+          });
+        });
+    };
+    $.on(this.header, 'keydown', '.data-table-filter', debounce$2(handler, 300));
+  }
+
   sortRows(colIndex, sortOrder) {
     return this.datamanager.sortRows(colIndex, sortOrder);
   }
@@ -1104,7 +1693,7 @@ class ColumnManager {
   setColumnHeaderWidth(colIndex) {
     colIndex = +colIndex;
     this.$columnMap = this.$columnMap || [];
-    const selector = `[data-col-index="${colIndex}"][data-is-header] .content`;
+    const selector = `.data-table-header [data-col-index="${colIndex}"] .content`;
     const { width } = this.getColumn(colIndex);
 
     let $column = this.$columnMap[colIndex];
@@ -1261,6 +1850,14 @@ class CellManager {
     this.keyboard.on('esc', () => {
       this.deactivateEditing();
     });
+
+    this.keyboard.on('ctrl+f', (e) => {
+      const $cell = $.closest('.data-table-col', e.target);
+      let { colIndex } = $.data($cell);
+
+      this.activateFilter(colIndex);
+      return true;
+    });
   }
 
   bindKeyboardSelection() {
@@ -1309,7 +1906,7 @@ class CellManager {
       this.selectArea($(e.delegatedTarget));
     };
 
-    $.on(this.bodyScrollable, 'mousemove', '.data-table-col', throttle(selectArea, 50));
+    $.on(this.bodyScrollable, 'mousemove', '.data-table-col', throttle$1(selectArea, 50));
   }
 
   focusCell($cell, { skipClearSelection = 0 } = {}) {
@@ -1615,6 +2212,16 @@ class CellManager {
     copyTextToClipboard(values);
   }
 
+  activateFilter(colIndex) {
+    this.columnmanager.toggleFilter();
+    this.columnmanager.focusFilter(colIndex);
+
+    if (!this.columnmanager.isFilterShown) {
+      // put focus back on cell
+      this.$focusedCell.focus();
+    }
+  }
+
   updateCell(colIndex, rowIndex, value) {
     const cell = this.datamanager.updateCell(colIndex, rowIndex, {
       content: value
@@ -1699,11 +2306,12 @@ class CellManager {
   }
 
   getCellHTML(cell) {
-    const { rowIndex, colIndex, isHeader } = cell;
+    const { rowIndex, colIndex, isHeader, isFilter } = cell;
     const dataAttr = makeDataAttributeString({
       rowIndex,
       colIndex,
-      isHeader
+      isHeader,
+      isFilter
     });
 
     return `
@@ -1728,7 +2336,12 @@ class CellManager {
     const hasDropdown = isHeader && cell.dropdown !== false;
     const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
 
-    const contentHTML = (!cell.isHeader && cell.column.format) ? cell.column.format(cell.content) : cell.content;
+    let contentHTML;
+    if (cell.isHeader || cell.isFilter || !cell.column.format) {
+      contentHTML = cell.content;
+    } else {
+      contentHTML = cell.column.format(cell.content);
+    }
 
     return `
       <div class="content ellipsis">
@@ -1743,7 +2356,7 @@ class CellManager {
 
   getEditCellHTML() {
     return `
-      <div class="edit-cell"></div>
+      <div class="edit-cell input-style"></div>
     `;
   }
 
@@ -1938,11 +2551,26 @@ class RowManager {
   getRowHTML(row, props) {
     const dataAttr = makeDataAttributeString(props);
 
+    if (props.isFilter) {
+      row = row.map(cell => (Object.assign(cell, {
+        content: this.getFilterInput({ colIndex: cell.colIndex }),
+        format: value => value,
+        isFilter: 1,
+        isHeader: undefined,
+        editable: false
+      })));
+    }
+
     return `
       <tr class="data-table-row" ${dataAttr}>
         ${row.map(cell => this.cellmanager.getCellHTML(cell)).join('')}
       </tr>
     `;
+  }
+
+  getFilterInput(props) {
+    const dataAttr = makeDataAttributeString(props);
+    return `<input class="data-table-filter input-style" type="text" ${dataAttr} />`;
   }
 }
 
@@ -2064,7 +2692,7 @@ class Style {
 
   bindResizeWindow() {
     if (this.options.layout === 'fluid') {
-      $.on(window, 'resize', throttle(() => {
+      $.on(window, 'resize', throttle$1(() => {
         this.distributeRemainingWidth();
         this.refreshColumnWidth();
         this.setBodyStyle();
@@ -2136,7 +2764,7 @@ class Style {
   }
 
   setupMinWidth() {
-    $.each('.data-table-col', this.header).map(col => {
+    $.each('.data-table-col[data-is-header]', this.header).map(col => {
       const width = $.style($('.content', col), 'width');
       const {
         colIndex
@@ -2273,7 +2901,8 @@ const KEYCODES = {
   40: 'down',
   9: 'tab',
   27: 'esc',
-  67: 'c'
+  67: 'c',
+  70: 'f'
 };
 
 class Keyboard {
@@ -2297,7 +2926,7 @@ class Keyboard {
 
     if (listeners && listeners.length > 0) {
       for (let listener of listeners) {
-        const preventBubbling = listener();
+        const preventBubbling = listener(e);
         if (preventBubbling === undefined || preventBubbling === true) {
           e.preventDefault();
         }
@@ -2363,7 +2992,8 @@ var DEFAULT_OPTIONS = {
   enableLogs: false,
   layout: 'fixed', // fixed, fluid
   noDataMessage: 'No Data',
-  cellHeight: null
+  cellHeight: null,
+  enableInlineFilters: false
 };
 
 class DataTable {
@@ -2537,14 +3167,14 @@ var version = "0.0.2";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
 var scripts = {"start":"npm run dev","build":"rollup -c","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js","test:watch":"mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js"};
-var devDependencies = {"chai":"3.5.0","cssnano":"^3.10.0","deepmerge":"^2.0.1","eslint":"3.19.0","eslint-loader":"1.7.1","mocha":"3.3.0","postcss-cssnext":"^3.1.0","postcss-nested":"^3.0.0","precss":"^3.1.0","rollup-plugin-json":"^2.3.0","rollup-plugin-postcss":"^1.2.8","rollup-plugin-uglify":"^3.0.0"};
+var devDependencies = {"chai":"3.5.0","cssnano":"^3.10.0","deepmerge":"^2.0.1","eslint":"3.19.0","eslint-loader":"1.7.1","mocha":"3.3.0","postcss-cssnext":"^3.1.0","postcss-nested":"^3.0.0","precss":"^3.1.0","rollup-plugin-commonjs":"^8.3.0","rollup-plugin-json":"^2.3.0","rollup-plugin-node-resolve":"^3.0.3","rollup-plugin-postcss":"^1.2.8","rollup-plugin-uglify":"^3.0.0"};
 var repository = {"type":"git","url":"https://github.com/frappe/datatable.git"};
 var keywords = ["datatable","data","grid","table"];
 var author = "Faris Ansari";
 var license = "MIT";
 var bugs = {"url":"https://github.com/frappe/datatable/issues"};
 var homepage = "https://frappe.github.io/datatable";
-var dependencies = {"clusterize.js":"^0.18.0","sortablejs":"^1.7.0"};
+var dependencies = {"clusterize.js":"^0.18.0","lodash":"^4.17.5","sortablejs":"^1.7.0"};
 var packageJson = {
 	name: name,
 	version: version,

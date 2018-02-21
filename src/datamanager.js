@@ -6,6 +6,7 @@ export default class DataManager {
     this.sortRows = promisify(this.sortRows, this);
     this.switchColumn = promisify(this.switchColumn, this);
     this.removeColumn = promisify(this.removeColumn, this);
+    this.filterRows = promisify(this.filterRows, this);
   }
 
   init(data) {
@@ -385,6 +386,25 @@ export default class DataManager {
       }
     }
     return column;
+  }
+
+  filterRows(keyword, colIndex) {
+    let rowsToHide = [];
+    let rowsToShow = [];
+    const cells = this.rows.map(row => row[colIndex]);
+
+    cells.forEach(cell => {
+      const hay = cell.content.toLowerCase();
+      const needle = (keyword || '').toLowerCase();
+
+      if (!needle || hay.includes(needle)) {
+        rowsToShow.push(cell.rowIndex);
+      } else {
+        rowsToHide.push(cell.rowIndex);
+      }
+    });
+
+    return {rowsToHide, rowsToShow};
   }
 
   getRowCount() {

@@ -12,7 +12,8 @@ const KEYCODES = {
   40: 'down',
   9: 'tab',
   27: 'esc',
-  67: 'c'
+  67: 'c',
+  70: 'f'
 };
 
 export default class Keyboard {
@@ -36,7 +37,7 @@ export default class Keyboard {
 
     if (listeners && listeners.length > 0) {
       for (let listener of listeners) {
-        const preventBubbling = listener();
+        const preventBubbling = listener(e);
         if (preventBubbling === undefined || preventBubbling === true) {
           e.preventDefault();
         }

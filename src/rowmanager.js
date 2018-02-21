@@ -187,10 +187,25 @@ export default class RowManager {
   getRowHTML(row, props) {
     const dataAttr = makeDataAttributeString(props);
 
+    if (props.isFilter) {
+      row = row.map(cell => (Object.assign(cell, {
+        content: this.getFilterInput({ colIndex: cell.colIndex }),
+        format: value => value,
+        isFilter: 1,
+        isHeader: undefined,
+        editable: false
+      })));
+    }
+
     return `
       <tr class="data-table-row" ${dataAttr}>
         ${row.map(cell => this.cellmanager.getCellHTML(cell)).join('')}
       </tr>
     `;
+  }
+
+  getFilterInput(props) {
+    const dataAttr = makeDataAttributeString(props);
+    return `<input class="data-table-filter input-style" type="text" ${dataAttr} />`;
   }
 }

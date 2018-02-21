@@ -107,6 +107,14 @@ export default class CellManager {
     this.keyboard.on('esc', () => {
       this.deactivateEditing();
     });
+
+    this.keyboard.on('ctrl+f', (e) => {
+      const $cell = $.closest('.data-table-col', e.target);
+      let { colIndex } = $.data($cell);
+
+      this.activateFilter(colIndex);
+      return true;
+    });
   }
 
   bindKeyboardSelection() {
@@ -461,6 +469,16 @@ export default class CellManager {
     copyTextToClipboard(values);
   }
 
+  activateFilter(colIndex) {
+    this.columnmanager.toggleFilter();
+    this.columnmanager.focusFilter(colIndex);
+
+    if (!this.columnmanager.isFilterShown) {
+      // put focus back on cell
+      this.$focusedCell.focus();
+    }
+  }
+
   updateCell(colIndex, rowIndex, value) {
     const cell = this.datamanager.updateCell(colIndex, rowIndex, {
       content: value
@@ -545,11 +563,12 @@ export default class CellManager {
   }
 
   getCellHTML(cell) {
-    const { rowIndex, colIndex, isHeader } = cell;
+    const { rowIndex, colIndex, isHeader, isFilter } = cell;
     const dataAttr = makeDataAttributeString({
       rowIndex,
       colIndex,
-      isHeader
+      isHeader,
+      isFilter
     });
 
     return `
@@ -574,7 +593,12 @@ export default class CellManager {
     const hasDropdown = isHeader && cell.dropdown !== false;
     const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
 
-    const contentHTML = (!cell.isHeader && cell.column.format) ? cell.column.format(cell.content) : cell.content;
+    let contentHTML;
+    if (cell.isHeader || cell.isFilter || !cell.column.format) {
+      contentHTML = cell.content;
+    } else {
+      contentHTML = cell.column.format(cell.content);
+    }
 
     return `
       <div class="content ellipsis">
@@ -589,7 +613,7 @@ export default class CellManager {
 
   getEditCellHTML() {
     return `
-      <div class="edit-cell"></div>
+      <div class="edit-cell input-style"></div>
     `;
   }
 
