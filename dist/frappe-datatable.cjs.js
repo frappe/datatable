@@ -2168,7 +2168,7 @@ class Style {
   setupColumnWidth() {
     this.datamanager.getColumns()
       .map(column => {
-        if (column.width === null) {
+        if (!column.width) {
           column.width = column.naturalWidth;
         }
         if (column.width < column.minWidth) {
