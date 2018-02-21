@@ -174,6 +174,8 @@ export default class CellManager {
       return;
     }
 
+    this.scrollToCell($cell);
+
     this.deactivateEditing();
     if (!skipClearSelection) {
       this.clearSelection();
@@ -190,7 +192,6 @@ export default class CellManager {
     $cell.focus();
 
     this.highlightRowColumnHeader($cell);
-    this.scrollToCell($cell);
   }
 
   highlightRowColumnHeader($cell) {

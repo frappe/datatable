@@ -1328,6 +1328,8 @@ class CellManager {
       return;
     }
 
+    this.scrollToCell($cell);
+
     this.deactivateEditing();
     if (!skipClearSelection) {
       this.clearSelection();
@@ -1344,7 +1346,6 @@ class CellManager {
     $cell.focus();
 
     this.highlightRowColumnHeader($cell);
-    this.scrollToCell($cell);
   }
 
   highlightRowColumnHeader($cell) {
