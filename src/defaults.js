@@ -45,5 +45,6 @@ export default {
   enableClusterize: true,
   enableLogs: false,
   layout: 'fixed', // fixed, fluid
-  noDataMessage: 'No Data'
+  noDataMessage: 'No Data',
+  cellHeight: null
 };

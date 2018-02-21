@@ -176,7 +176,7 @@
 	position: relative;
 
 	.content {
-		padding: var(--spacer-1);
+		padding: var(--spacer-2);
 		border: 2px solid transparent;
 
 		&.ellipsis {
@@ -189,7 +189,7 @@
 	.edit-cell {
 		display: none;
 		// position: absolute;
-		padding: var(--spacer-1);
+		padding: var(--spacer-2);
 		background: #fff;
 		z-index: 1;
 		height: 100%;

@@ -182,8 +182,8 @@
 }
 
 .data-table-col .content {
-		padding: 4px;
-		padding: 0.25rem;
+		padding: 8px;
+		padding: 0.5rem;
 		border: 2px solid transparent;
 	}
 
@@ -196,8 +196,8 @@
 .data-table-col .edit-cell {
 		display: none;
 		// position: absolute;
-		padding: 4px;
-		padding: 0.25rem;
+		padding: 8px;
+		padding: 0.5rem;
 		background: #fff;
 		z-index: 1;
 		height: 100%;

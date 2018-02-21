@@ -1,6 +1,6 @@
 {
   "name": "frappe-datatable",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A modern datatable library for the web",
   "main": "dist/frappe-datatable.cjs.js",
   "scripts": {
@@ -29,13 +29,10 @@
     "url": "https://github.com/frappe/datatable.git"
   },
   "keywords": [
-    "webpack",
-    "es6",
-    "starter",
-    "library",
-    "universal",
-    "umd",
-    "commonjs"
+    "datatable",
+    "data",
+    "grid",
+    "table"
   ],
   "author": "Faris Ansari",
   "license": "MIT",

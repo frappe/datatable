@@ -315,6 +315,20 @@ function promisify(fn, context = null) {
   };
 }
 
+
+
+function linkProperties(target, source, properties) {
+  const props = properties.reduce((acc, prop) => {
+    acc[prop] = {
+      get() {
+        return source[prop];
+      }
+    };
+    return acc;
+  }, {});
+  Object.defineProperties(target, props);
+}
+
 class DataManager {
   constructor(options) {
     this.options = options;
@@ -406,6 +420,7 @@ class DataManager {
       resizable: true,
       focusable: true,
       dropdown: true,
+      width: null,
       format: (value) => {
         if (value === null || value === undefined) {
           return '';
@@ -429,8 +444,7 @@ class DataManager {
       align: 'left',
       sortOrder: 'none',
       colIndex: i,
-      column: this.columns[i],
-      width: 0
+      column: this.columns[i]
     };
 
     if (content !== null && typeof content === 'object') {
@@ -474,6 +488,10 @@ class DataManager {
           row.push((index + 1) + '');
         }
         row = row.concat(d);
+
+        while (row.length < this.columns.length) {
+          row.push('');
+        }
 
       } else {
         // row is a dict
@@ -795,14 +813,17 @@ class DataError extends TypeError {}
 class ColumnManager {
   constructor(instance) {
     this.instance = instance;
-    this.options = this.instance.options;
-    this.fireEvent = this.instance.fireEvent;
-    this.header = this.instance.header;
-    this.datamanager = this.instance.datamanager;
-    this.style = this.instance.style;
-    this.wrapper = this.instance.wrapper;
-    this.rowmanager = this.instance.rowmanager;
-    this.bodyScrollable = this.instance.bodyScrollable;
+
+    linkProperties(this, this.instance, [
+      'options',
+      'fireEvent',
+      'header',
+      'datamanager',
+      'style',
+      'wrapper',
+      'rowmanager',
+      'bodyScrollable'
+    ]);
 
     this.bindEvents();
     getDropdownHTML = getDropdownHTML.bind(this, this.options.dropdownButton);
@@ -916,7 +937,7 @@ class ColumnManager {
 
       const { colIndex } = $.data($resizingCell);
       this.setColumnWidth(colIndex);
-      this.instance.setBodyWidth();
+      this.style.setBodyStyle();
       $resizingCell = null;
     });
 
@@ -1052,133 +1073,6 @@ class ColumnManager {
       });
   }
 
-  setDimensions() {
-    this.setHeaderStyle();
-    this.setupMinWidth();
-    this.setupNaturalColumnWidth();
-    this.distributeRemainingWidth();
-    this.setColumnStyle();
-    this.setDefaultCellHeight();
-  }
-
-  setHeaderStyle() {
-    if (!this.options.takeAvailableSpace) {
-      // setting width as 0 will ensure that the
-      // header doesn't take the available space
-      $.style(this.header, {
-        width: 0
-      });
-    }
-
-    $.style(this.header, {
-      margin: 0
-    });
-
-    // don't show resize cursor on nonResizable columns
-    const nonResizableColumnsSelector = this.datamanager.getColumns()
-      .filter(col => col.resizable === false)
-      .map(col => col.colIndex)
-      .map(i => `.data-table-header [data-col-index="${i}"]`)
-      .join();
-
-    this.style.setStyle(nonResizableColumnsSelector, {
-      cursor: 'pointer'
-    });
-  }
-
-  setupMinWidth() {
-    $.each('.data-table-col', this.header).map(col => {
-      const width = $.style($('.content', col), 'width');
-      const { colIndex } = $.data(col);
-      const column = this.getColumn(colIndex);
-
-      if (!column.minWidth) {
-        // only set this once
-        this.datamanager.updateColumn(colIndex, { minWidth: width });
-      }
-    });
-  }
-
-  setupNaturalColumnWidth() {
-    // set initial width as naturally calculated by table's first row
-    $.each('.data-table-row[data-row-index="0"] .data-table-col', this.bodyScrollable).map($cell => {
-      const { colIndex } = $.data($cell);
-      if (this.getColumn(colIndex).width > 0) {
-        // already set
-        return;
-      }
-
-      let width = $.style($('.content', $cell), 'width');
-      const minWidth = this.getColumnMinWidth(colIndex);
-
-      if (width < minWidth) {
-        width = minWidth;
-      }
-      this.datamanager.updateColumn(colIndex, { width });
-    });
-  }
-
-  distributeRemainingWidth() {
-    if (!this.options.takeAvailableSpace) return;
-
-    const wrapperWidth = $.style(this.instance.datatableWrapper, 'width');
-    const headerWidth = $.style(this.header, 'width');
-
-    if (headerWidth >= wrapperWidth) {
-      // don't resize, horizontal scroll takes place
-      return;
-    }
-
-    const resizableColumns = this.datamanager.getColumns().filter(
-      col => col.resizable === undefined || col.resizable
-    );
-
-    const deltaWidth = (wrapperWidth - headerWidth) / resizableColumns.length;
-
-    resizableColumns.map(col => {
-      const width = $.style(this.getColumnHeaderElement(col.colIndex), 'width');
-      let finalWidth = Math.min(width + deltaWidth) - 2;
-
-      this.datamanager.updateColumn(col.colIndex, { width: finalWidth });
-    });
-  }
-
-  setDefaultCellHeight() {
-    if (this.__cellHeightSet) return;
-    const height = $.style($('.data-table-col', this.instance.datatableWrapper), 'height');
-    if (height) {
-      this.setCellHeight(height);
-      this.__cellHeightSet = true;
-    }
-  }
-
-  setCellHeight(height) {
-    this.style.setStyle('.data-table-col .content', {
-      height: height + 'px'
-    });
-    this.style.setStyle('.data-table-col .edit-cell', {
-      height: height + 'px'
-    });
-  }
-
-  setColumnStyle() {
-    // align columns
-    this.getColumns()
-      .map(column => {
-        // alignment
-        if (['left', 'center', 'right'].includes(column.align)) {
-          this.style.setStyle(`[data-col-index="${column.colIndex}"]`, {
-            'text-align': column.align
-          });
-        }
-        // width
-        this.setColumnHeaderWidth(column.colIndex);
-        this.setColumnWidth(column.colIndex);
-      });
-    this.instance.setBodyWidth();
-
-  }
-
   sortRows(colIndex, sortOrder) {
     return this.datamanager.sortRows(colIndex, sortOrder);
   }
@@ -1245,12 +1139,6 @@ class ColumnManager {
 
   getLastColumnIndex() {
     return this.datamanager.getColumnCount() - 1;
-  }
-
-  getColumnHeaderElement(colIndex) {
-    colIndex = +colIndex;
-    if (colIndex < 0) return null;
-    return $(`.data-table-col[data-is-header][data-col-index="${colIndex}"]`, this.wrapper);
   }
 
   getSerialColumnIndex() {
@@ -1326,7 +1214,7 @@ class CellManager {
 
       let $cell = this.$focusedCell;
 
-      if (direction === 'left') {
+      if (direction === 'left' || direction === 'shift+tab') {
         $cell = this.getLeftCell$($cell);
       } else if (direction === 'right' || direction === 'tab') {
         $cell = this.getRightCell$($cell);
@@ -1362,7 +1250,7 @@ class CellManager {
       return true;
     };
 
-    ['left', 'right', 'up', 'down', 'tab'].map(
+    ['left', 'right', 'up', 'down', 'tab', 'shift+tab'].map(
       direction => this.keyboard.on(direction, () => focusCell(direction))
     );
 
@@ -2114,7 +2002,7 @@ class BodyRenderer {
           }
         },
         /* eslint-disable */
-        no_data_text: this.options.loadingText,
+        no_data_text: this.options.noDataMessage,
         no_data_class: 'empty-state'
         /* eslint-enable */
       });
@@ -2154,16 +2042,33 @@ function getBodyHTML(rows) {
 }
 
 class Style {
+  constructor(instance) {
+    this.instance = instance;
 
-  constructor(datatable) {
-    this.datatable = datatable;
-    this.scopeClass = 'datatable-instance-' + datatable.constructor.instances;
-    datatable.datatableWrapper.classList.add(this.scopeClass);
+    linkProperties(this, this.instance, [
+      'options', 'datamanager', 'columnmanager',
+      'header', 'bodyScrollable', 'getColumn'
+    ]);
+
+    this.scopeClass = 'datatable-instance-' + instance.constructor.instances;
+    instance.datatableWrapper.classList.add(this.scopeClass);
 
     const styleEl = document.createElement('style');
-    datatable.wrapper.insertBefore(styleEl, datatable.datatableWrapper);
+    instance.wrapper.insertBefore(styleEl, instance.datatableWrapper);
     this.styleEl = styleEl;
     this.styleSheet = styleEl.sheet;
+
+    this.bindResizeWindow();
+  }
+
+  bindResizeWindow() {
+    if (this.options.layout === 'fluid') {
+      $.on(window, 'resize', throttle(() => {
+        this.distributeRemainingWidth();
+        this.refreshColumnWidth();
+        this.setBodyStyle();
+      }, 300));
+    }
   }
 
   destroy() {
@@ -2189,6 +2094,169 @@ class Style {
 
     this.styleSheet.insertRule(ruleString, _index);
     return _index;
+  }
+
+  setDimensions() {
+    this.setHeaderStyle();
+
+    this.setupMinWidth();
+    this.setupNaturalColumnWidth();
+    this.setupColumnWidth();
+
+    this.distributeRemainingWidth();
+    this.setColumnStyle();
+    this.setDefaultCellHeight();
+    this.setBodyStyle();
+  }
+
+  setHeaderStyle() {
+    if (this.options.layout === 'fluid') {
+      // setting width as 0 will ensure that the
+      // header doesn't take the available space
+      $.style(this.header, {
+        width: 0
+      });
+    }
+
+    $.style(this.header, {
+      margin: 0
+    });
+
+    // don't show resize cursor on nonResizable columns
+    const nonResizableColumnsSelector = this.datamanager.getColumns()
+      .filter(col => col.resizable === false)
+      .map(col => col.colIndex)
+      .map(i => `.data-table-header [data-col-index="${i}"]`)
+      .join();
+
+    this.setStyle(nonResizableColumnsSelector, {
+      cursor: 'pointer'
+    });
+  }
+
+  setupMinWidth() {
+    $.each('.data-table-col', this.header).map(col => {
+      const width = $.style($('.content', col), 'width');
+      const {
+        colIndex
+      } = $.data(col);
+      const column = this.getColumn(colIndex);
+
+      if (!column.minWidth) {
+        // only set this once
+        column.minWidth = width;
+      }
+    });
+  }
+
+  setupNaturalColumnWidth() {
+    if (!$('.data-table-row')) return;
+
+    // set initial width as naturally calculated by table's first row
+    $.each('.data-table-row[data-row-index="0"] .data-table-col', this.bodyScrollable).map($cell => {
+      const {
+        colIndex
+      } = $.data($cell);
+      const column = this.datamanager.getColumn(colIndex);
+
+      let naturalWidth = $.style($('.content', $cell), 'width');
+      column.naturalWidth = naturalWidth;
+    });
+  }
+
+  setupColumnWidth() {
+    this.datamanager.getColumns()
+      .map(column => {
+        if (column.width === null) {
+          column.width = column.naturalWidth;
+        }
+        if (column.width < column.minWidth) {
+          column.width = column.minWidth;
+        }
+      });
+  }
+
+  distributeRemainingWidth() {
+    if (this.options.layout !== 'fluid') return;
+
+    const wrapperWidth = $.style(this.instance.datatableWrapper, 'width');
+    const headerWidth = $.style(this.header, 'width');
+    const resizableColumns = this.datamanager.getColumns().filter(col => col.resizable);
+    const deltaWidth = (wrapperWidth - headerWidth) / resizableColumns.length;
+
+    resizableColumns.map(col => {
+      const width = $.style(this.getColumnHeaderElement(col.colIndex), 'width');
+      let finalWidth = Math.floor(width + deltaWidth) - 2;
+
+      this.datamanager.updateColumn(col.colIndex, {
+        width: finalWidth
+      });
+    });
+  }
+
+  setDefaultCellHeight() {
+    if (this.__cellHeightSet) return;
+    const height = this.options.cellHeight || $.style($('.data-table-col', this.instance.datatableWrapper), 'height');
+    if (height) {
+      this.setCellHeight(height);
+      this.__cellHeightSet = true;
+    }
+  }
+
+  setCellHeight(height) {
+    this.setStyle('.data-table-col .content', {
+      height: height + 'px'
+    });
+    this.setStyle('.data-table-col .edit-cell', {
+      height: height + 'px'
+    });
+  }
+
+  setColumnStyle() {
+    // align columns
+    this.datamanager.getColumns()
+      .map(column => {
+        // alignment
+        if (['left', 'center', 'right'].includes(column.align)) {
+          this.setStyle(`[data-col-index="${column.colIndex}"]`, {
+            'text-align': column.align
+          });
+        }
+        // width
+        this.columnmanager.setColumnHeaderWidth(column.colIndex);
+        this.columnmanager.setColumnWidth(column.colIndex);
+      });
+    this.setBodyStyle();
+  }
+
+  refreshColumnWidth() {
+    this.datamanager.getColumns()
+      .map(column => {
+        this.columnmanager.setColumnHeaderWidth(column.colIndex);
+        this.columnmanager.setColumnWidth(column.colIndex);
+      });
+  }
+
+  setBodyStyle() {
+    const width = $.style(this.header, 'width');
+
+    $.style(this.bodyScrollable, {
+      width: width + 'px'
+    });
+
+    $.style(this.bodyScrollable, {
+      marginTop: $.style(this.header, 'height') + 'px'
+    });
+
+    $.style($('table', this.bodyScrollable), {
+      margin: 0
+    });
+  }
+
+  getColumnHeaderElement(colIndex) {
+    colIndex = +colIndex;
+    if (colIndex < 0) return null;
+    return $(`.data-table-col[data-col-index="${colIndex}"]`, this.header);
   }
 }
 
@@ -2292,8 +2360,9 @@ var DEFAULT_OPTIONS = {
   addCheckboxColumn: false,
   enableClusterize: true,
   enableLogs: false,
-  takeAvailableSpace: false,
-  loadingText: ''
+  layout: 'fixed', // fixed, fluid
+  noDataMessage: 'No Data',
+  cellHeight: null
 };
 
 class DataTable {
@@ -2394,27 +2463,19 @@ class DataTable {
   }
 
   setDimensions() {
-    this.columnmanager.setDimensions();
-
-    this.setBodyWidth();
-
-    $.style(this.bodyScrollable, {
-      marginTop: $.style(this.header, 'height') + 'px'
-    });
-
-    $.style($('table', this.bodyScrollable), {
-      margin: 0
-    });
-  }
-
-  setBodyWidth() {
-    const width = $.style(this.header, 'width');
-
-    $.style(this.bodyScrollable, { width: width + 'px' });
+    this.style.setDimensions();
   }
 
   getColumn(colIndex) {
     return this.datamanager.getColumn(colIndex);
+  }
+
+  getColumns() {
+    return this.datamanager.getColumns();
+  }
+
+  getRows() {
+    return this.datamanager.getRows();
   }
 
   getCell(colIndex, rowIndex) {
@@ -2471,13 +2532,13 @@ class DataTable {
 DataTable.instances = 0;
 
 var name = "frappe-datatable";
-var version = "0.0.1";
+var version = "0.0.2";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
 var scripts = {"start":"npm run dev","build":"rollup -c","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js","test:watch":"mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js"};
 var devDependencies = {"chai":"3.5.0","cssnano":"^3.10.0","deepmerge":"^2.0.1","eslint":"3.19.0","eslint-loader":"1.7.1","mocha":"3.3.0","postcss-cssnext":"^3.1.0","postcss-nested":"^3.0.0","precss":"^3.1.0","rollup-plugin-json":"^2.3.0","rollup-plugin-postcss":"^1.2.8","rollup-plugin-uglify":"^3.0.0"};
 var repository = {"type":"git","url":"https://github.com/frappe/datatable.git"};
-var keywords = ["webpack","es6","starter","library","universal","umd","commonjs"];
+var keywords = ["datatable","data","grid","table"];
 var author = "Faris Ansari";
 var license = "MIT";
 var bugs = {"url":"https://github.com/frappe/datatable/issues"};

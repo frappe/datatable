@@ -29,7 +29,7 @@ const dev = {
   external: ['sortablejs', 'clusterize.js']
 };
 
-export default [dev, Object.assign(dev, {
+export default [dev, Object.assign({}, dev, {
   output: {
     format: 'cjs',
     file: 'dist/frappe-datatable.cjs.js'
