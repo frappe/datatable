@@ -40,10 +40,13 @@ export default class ColumnManager {
       $('thead', this.header).innerHTML = html;
 
       this.$filterRow = $('.data-table-row[data-is-filter]', this.header);
-      // hide filter row immediately, so it doesn't disturb layout
-      $.style(this.$filterRow, {
-        display: 'none'
-      });
+
+      if (this.$filterRow) {
+        // hide filter row immediately, so it doesn't disturb layout
+        $.style(this.$filterRow, {
+          display: 'none'
+        });
+      }
     } else {
       // refresh dom state
       const $cols = $.each('.data-table-col', this.header);
@@ -303,6 +306,7 @@ export default class ColumnManager {
   }
 
   bindFilter() {
+    if (!this.options.enableInlineFilters) return;
     const handler = e => {
       const $filterCell = $.closest('.data-table-col', e.target);
       const { colIndex } = $.data($filterCell);

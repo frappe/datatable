@@ -108,13 +108,15 @@ export default class CellManager {
       this.deactivateEditing();
     });
 
-    this.keyboard.on('ctrl+f', (e) => {
-      const $cell = $.closest('.data-table-col', e.target);
-      let { colIndex } = $.data($cell);
+    if (this.options.enableInlineFilters) {
+      this.keyboard.on('ctrl+f', (e) => {
+        const $cell = $.closest('.data-table-col', e.target);
+        let { colIndex } = $.data($cell);
 
-      this.activateFilter(colIndex);
-      return true;
-    });
+        this.activateFilter(colIndex);
+        return true;
+      });
+    }
   }
 
   bindKeyboardSelection() {
