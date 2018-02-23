@@ -879,8 +879,7 @@ class DataManager {
         editable: false,
         resizable: false,
         focusable: false,
-        dropdown: false,
-        width: 30
+        dropdown: false
       };
 
       this.columns.push(cell);
@@ -2769,6 +2768,16 @@ class Style {
       const column = this.datamanager.getColumn(colIndex);
 
       let naturalWidth = $.style($('.content', $cell), 'width');
+
+      if (column.id === '_rowIndex') {
+        // width based on rowCount
+        const rowCount = this.datamanager.getRowCount();
+        const digits = (rowCount + '').length;
+        if (digits > 2) {
+          naturalWidth = naturalWidth + ((digits - 2) * 8);
+        }
+      }
+
       column.naturalWidth = naturalWidth;
     });
   }

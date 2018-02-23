@@ -65,8 +65,7 @@ export default class DataManager {
         editable: false,
         resizable: false,
         focusable: false,
-        dropdown: false,
-        width: 30
+        dropdown: false
       };
 
       this.columns.push(cell);
