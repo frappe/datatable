@@ -2320,7 +2320,7 @@ class CellManager {
     if (cell.isHeader || cell.isFilter || !cell.column.format) {
       contentHTML = cell.content;
     } else {
-      contentHTML = cell.column.format(cell.content);
+      contentHTML = cell.column.format(cell.content, cell);
     }
 
     return `
