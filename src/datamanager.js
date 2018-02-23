@@ -172,7 +172,7 @@ export default class DataManager {
           } else if (col.id === '_rowIndex') {
             row.push((index + 1) + '');
           } else {
-            row.push(col.format(d[col.id]));
+            row.push(d[col.id]);
           }
         }
       }
