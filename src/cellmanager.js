@@ -390,6 +390,7 @@ export default class CellManager {
 
     // editing fallback
     const $input = $.create('input', {
+      class: 'input-style',
       type: 'text',
       inside: parent
     });
@@ -615,7 +616,7 @@ export default class CellManager {
 
   getEditCellHTML() {
     return `
-      <div class="edit-cell input-style"></div>
+      <div class="edit-cell"></div>
     `;
   }
 

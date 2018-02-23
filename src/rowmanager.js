@@ -190,7 +190,6 @@ export default class RowManager {
     if (props.isFilter) {
       row = row.map(cell => (Object.assign(cell, {
         content: this.getFilterInput({ colIndex: cell.colIndex }),
-        format: value => value,
         isFilter: 1,
         isHeader: undefined,
         editable: false
