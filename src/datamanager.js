@@ -270,12 +270,11 @@ export default class DataManager {
         if (this.hasColumnById('_rowIndex')) {
             // update row index
             const srNoColIndex = this.getColumnIndexById('_rowIndex');
-            this.rows = this.rows.map((row, index) => {
-                return row.map(cell => {
+            this.rows.forEach((row, index) => {
+                row.forEach(cell => {
                     if (cell.colIndex === srNoColIndex) {
                         cell.content = (index + 1) + '';
                     }
-                    return cell;
                 });
             });
         }
