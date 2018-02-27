@@ -407,7 +407,7 @@ export default class DataManager {
         const cells = this.rows.map(row => row[colIndex]);
 
         cells.forEach(cell => {
-            const hay = cell.content.toLowerCase();
+            const hay = String(cell.content || '').toLowerCase();
             const needle = (keyword || '').toLowerCase();
 
             if (!needle || hay.includes(needle)) {
