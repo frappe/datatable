@@ -1,172 +1,181 @@
-
 export default function $(expr, con) {
-  return typeof expr === 'string' ?
-    (con || document).querySelector(expr) :
-    expr || null;
+    return typeof expr === 'string' ?
+        (con || document).querySelector(expr) :
+        expr || null;
 }
 
 $.each = (expr, con) => {
-  return typeof expr === 'string' ?
-    Array.from((con || document).querySelectorAll(expr)) :
-    expr || null;
+    return typeof expr === 'string' ?
+        Array.from((con || document).querySelectorAll(expr)) :
+        expr || null;
 };
 
 $.create = (tag, o) => {
-  let element = document.createElement(tag);
+    let element = document.createElement(tag);
 
-  for (let i in o) {
-    let val = o[i];
+    for (let i in o) {
+        let val = o[i];
 
-    if (i === 'inside') {
-      $(val).appendChild(element);
-    } else
-      if (i === 'around') {
-        let ref = $(val);
-        ref.parentNode.insertBefore(element, ref);
-        element.appendChild(ref);
-      } else
-        if (i === 'styles') {
-          if (typeof val === 'object') {
-            Object.keys(val).map(prop => {
-              element.style[prop] = val[prop];
-            });
-          }
+        if (i === 'inside') {
+            $(val).appendChild(element);
         } else
-          if (i in element) {
+        if (i === 'around') {
+            let ref = $(val);
+            ref.parentNode.insertBefore(element, ref);
+            element.appendChild(ref);
+        } else
+        if (i === 'styles') {
+            if (typeof val === 'object') {
+                Object.keys(val).map(prop => {
+                    element.style[prop] = val[prop];
+                });
+            }
+        } else
+        if (i in element) {
             element[i] = val;
-          } else {
+        } else {
             element.setAttribute(i, val);
-          }
-  }
+        }
+    }
 
-  return element;
+    return element;
 };
 
 $.on = (element, event, selector, callback) => {
-  if (!callback) {
-    callback = selector;
-    $.bind(element, event, callback);
-  } else {
-    $.delegate(element, event, selector, callback);
-  }
+    if (!callback) {
+        callback = selector;
+        $.bind(element, event, callback);
+    } else {
+        $.delegate(element, event, selector, callback);
+    }
 };
 
 $.off = (element, event, handler) => {
-  element.removeEventListener(event, handler);
+    element.removeEventListener(event, handler);
 };
 
 $.bind = (element, event, callback) => {
-  event.split(/\s+/).forEach(function (event) {
-    element.addEventListener(event, callback);
-  });
+    event.split(/\s+/).forEach(function (event) {
+        element.addEventListener(event, callback);
+    });
 };
 
 $.delegate = (element, event, selector, callback) => {
-  element.addEventListener(event, function (e) {
-    const delegatedTarget = e.target.closest(selector);
-    if (delegatedTarget) {
-      e.delegatedTarget = delegatedTarget;
-      callback.call(this, e, delegatedTarget);
-    }
-  });
+    element.addEventListener(event, function (e) {
+        const delegatedTarget = e.target.closest(selector);
+        if (delegatedTarget) {
+            e.delegatedTarget = delegatedTarget;
+            callback.call(this, e, delegatedTarget);
+        }
+    });
 };
 
 $.unbind = (element, o) => {
-  if (element) {
-    for (let event in o) {
-      let callback = o[event];
+    if (element) {
+        for (let event in o) {
+            let callback = o[event];
 
-      event.split(/\s+/).forEach(function (event) {
-        element.removeEventListener(event, callback);
-      });
+            event.split(/\s+/).forEach(function (event) {
+                element.removeEventListener(event, callback);
+            });
+        }
     }
-  }
 };
 
 $.fire = (target, type, properties) => {
-  let evt = document.createEvent('HTMLEvents');
+    let evt = document.createEvent('HTMLEvents');
 
-  evt.initEvent(type, true, true);
+    evt.initEvent(type, true, true);
 
-  for (let j in properties) {
-    evt[j] = properties[j];
-  }
+    for (let j in properties) {
+        evt[j] = properties[j];
+    }
 
-  return target.dispatchEvent(evt);
+    return target.dispatchEvent(evt);
 };
 
 $.data = (element, attrs) => { // eslint-disable-line
-  if (!attrs) {
-    return element.dataset;
-  }
+    if (!attrs) {
+        return element.dataset;
+    }
 
-  for (const attr in attrs) {
-    element.dataset[attr] = attrs[attr];
-  }
+    for (const attr in attrs) {
+        element.dataset[attr] = attrs[attr];
+    }
 };
 
 $.style = (elements, styleMap) => { // eslint-disable-line
 
-  if (typeof styleMap === 'string') {
-    return $.getStyle(elements, styleMap);
-  }
-
-  if (!Array.isArray(elements)) {
-    elements = [elements];
-  }
-
-  elements.map(element => {
-    for (const prop in styleMap) {
-      element.style[prop] = styleMap[prop];
+    if (typeof styleMap === 'string') {
+        return $.getStyle(elements, styleMap);
     }
-  });
+
+    if (!Array.isArray(elements)) {
+        elements = [elements];
+    }
+
+    elements.map(element => {
+        for (const prop in styleMap) {
+            element.style[prop] = styleMap[prop];
+        }
+    });
 };
 
 $.removeStyle = (elements, styleProps) => {
-  if (!Array.isArray(elements)) {
-    elements = [elements];
-  }
-
-  if (!Array.isArray(styleProps)) {
-    styleProps = [styleProps];
-  }
-
-  elements.map(element => {
-    for (const prop of styleProps) {
-      element.style[prop] = '';
+    if (!Array.isArray(elements)) {
+        elements = [elements];
     }
-  });
+
+    if (!Array.isArray(styleProps)) {
+        styleProps = [styleProps];
+    }
+
+    elements.map(element => {
+        for (const prop of styleProps) {
+            element.style[prop] = '';
+        }
+    });
 };
 
 $.getStyle = (element, prop) => {
-  let val = getComputedStyle(element)[prop];
+    let val = getComputedStyle(element)[prop];
 
-  if (['width', 'height'].includes(prop)) {
-    val = parseFloat(val);
-  }
+    if (['width', 'height'].includes(prop)) {
+        val = parseFloat(val);
+    }
 
-  return val;
+    return val;
 };
 
 $.closest = (selector, element) => {
-  if (!element) return null;
+    if (!element) return null;
 
-  if (element.matches(selector)) {
-    return element;
-  }
+    if (element.matches(selector)) {
+        return element;
+    }
 
-  return $.closest(selector, element.parentNode);
+    return $.closest(selector, element.parentNode);
 };
 
 $.inViewport = (el, parentEl) => {
-  const { top, left, bottom, right } = el.getBoundingClientRect();
-  const { top: pTop, left: pLeft, bottom: pBottom, right: pRight } = parentEl.getBoundingClientRect();
+    const {
+        top,
+        left,
+        bottom,
+        right
+    } = el.getBoundingClientRect();
+    const {
+        top: pTop,
+        left: pLeft,
+        bottom: pBottom,
+        right: pRight
+    } = parentEl.getBoundingClientRect();
 
-  return top >= pTop && left >= pLeft && bottom <= pBottom && right <= pRight;
+    return top >= pTop && left >= pLeft && bottom <= pBottom && right <= pRight;
 };
 
 $.scrollTop = function scrollTop(element, pixels) {
-  requestAnimationFrame(() => {
-    element.scrollTop = pixels;
-  });
+    requestAnimationFrame(() => {
+        element.scrollTop = pixels;
+    });
 };

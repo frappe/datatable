@@ -39,7 +39,7 @@ export default class Style {
         this.styleEl.remove();
     }
 
-    setStyle(rule, styleMap, index = -1) {
+    setStyle(selector, styleMap, index = -1) {
         const styles = Object.keys(styleMap)
             .map(prop => {
                 if (!prop.includes('-')) {
@@ -48,7 +48,12 @@ export default class Style {
                 return `${prop}:${styleMap[prop]};`;
             })
             .join('');
-        let ruleString = `.${this.scopeClass} ${rule} { ${styles} }`;
+        let prefixedSelector = selector
+            .split(',')
+            .map(r => `.${this.scopeClass} ${r}`)
+            .join(',');
+
+        let ruleString = `${prefixedSelector} { ${styles} }`;
 
         let _index = this.styleSheet.cssRules.length;
         if (index !== -1) {
