@@ -45,6 +45,7 @@
   "dependencies": {
     "clusterize.js": "^0.18.0",
     "lodash": "^4.17.5",
+    "rollup": "^0.56.3",
     "sortablejs": "^1.7.0"
   }
 }

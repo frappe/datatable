@@ -359,15 +359,15 @@ export default class CellManager {
       }
     }
 
-    this.$editingCell = $cell;
-    $cell.classList.add('editing');
-
     const $editCell = $('.edit-cell', $cell);
     $editCell.innerHTML = '';
 
     const editor = this.getEditor(colIndex, rowIndex, cell.content, $editCell);
 
     if (editor) {
+      this.$editingCell = $cell;
+      $cell.classList.add('editing');
+
       this.currentCellEditor = editor;
       // initialize editing input with cell value
       editor.initValue(cell.content, rowIndex, col);
@@ -387,6 +387,10 @@ export default class CellManager {
     // debugger;
     const obj = this.options.getEditor(colIndex, rowIndex, value, parent);
     if (obj && obj.setValue) return obj;
+
+    // let the getEditor method determine dynamically
+    // if the cell is editable or not
+    if (obj === false) return null;
 
     // editing fallback
     const $input = $.create('input', {

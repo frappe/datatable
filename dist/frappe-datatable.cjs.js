@@ -320,8 +320,8 @@ function objectToString(value) {
 var _objectToString = objectToString;
 
 /** `Object#toString` result references. */
-var nullTag = '[object Null]';
-var undefinedTag = '[object Undefined]';
+var nullTag = '[object Null]',
+    undefinedTag = '[object Undefined]';
 
 /** Built-in value references. */
 var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
@@ -469,8 +469,8 @@ var toNumber_1 = toNumber;
 var FUNC_ERROR_TEXT = 'Expected a function';
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max;
-var nativeMin = Math.min;
+var nativeMax = Math.max,
+    nativeMin = Math.min;
 
 /**
  * Creates a debounced function that delays invoking `func` until after `wait`
@@ -742,16 +742,6 @@ function getDefault(a, b) {
   return a !== undefined ? a : b;
 }
 
-
-
-
-
-
-
-
-
-
-
 function copyTextToClipboard(text) {
   // https://stackoverflow.com/a/30810322/5353542
   var textArea = document.createElement('textarea');
@@ -813,7 +803,7 @@ function isNumeric(val) {
 
 let throttle$1 = throttle_1;
 
-let debounce$2 = debounce_1;
+let debounce$1 = debounce_1;
 
 function promisify(fn, context = null) {
   return (...args) => {
@@ -825,9 +815,6 @@ function promisify(fn, context = null) {
     });
   };
 }
-
-
-
 function linkProperties(target, source, properties) {
   const props = properties.reduce((acc, prop) => {
     acc[prop] = {
@@ -1662,7 +1649,7 @@ class ColumnManager {
           });
         });
     };
-    $.on(this.header, 'keydown', '.data-table-filter', debounce$2(handler, 300));
+    $.on(this.header, 'keydown', '.data-table-filter', debounce$1(handler, 300));
   }
 
   sortRows(colIndex, sortOrder) {
@@ -2105,15 +2092,15 @@ class CellManager {
       }
     }
 
-    this.$editingCell = $cell;
-    $cell.classList.add('editing');
-
     const $editCell = $('.edit-cell', $cell);
     $editCell.innerHTML = '';
 
     const editor = this.getEditor(colIndex, rowIndex, cell.content, $editCell);
 
     if (editor) {
+      this.$editingCell = $cell;
+      $cell.classList.add('editing');
+
       this.currentCellEditor = editor;
       // initialize editing input with cell value
       editor.initValue(cell.content, rowIndex, col);
@@ -2133,6 +2120,10 @@ class CellManager {
     // debugger;
     const obj = this.options.getEditor(colIndex, rowIndex, value, parent);
     if (obj && obj.setValue) return obj;
+
+    // let the getEditor method determine dynamically
+    // if the cell is editable or not
+    if (obj === false) return null;
 
     // editing fallback
     const $input = $.create('input', {
@@ -2666,7 +2657,6 @@ class BodyRenderer {
     return rows.map((row) => this.rowmanager.getRowHTML(row, { rowIndex: row[0].rowIndex }));
   }
 }
-
 function getBodyHTML(rows) {
   return `
     <tbody>
@@ -3189,7 +3179,7 @@ var author = "Faris Ansari";
 var license = "MIT";
 var bugs = {"url":"https://github.com/frappe/datatable/issues"};
 var homepage = "https://frappe.github.io/datatable";
-var dependencies = {"clusterize.js":"^0.18.0","lodash":"^4.17.5","sortablejs":"^1.7.0"};
+var dependencies = {"clusterize.js":"^0.18.0","lodash":"^4.17.5","rollup":"^0.56.3","sortablejs":"^1.7.0"};
 var packageJson = {
 	name: name,
 	version: version,
