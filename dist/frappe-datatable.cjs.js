@@ -1264,10 +1264,16 @@ class DataManager {
             }
         });
 
+        this._filteredRows = rowsToShow;
+
         return {
             rowsToHide,
             rowsToShow
         };
+    }
+
+    getFilteredRowIndices() {
+        return this._filteredRows || [];
     }
 
     getRowCount() {
