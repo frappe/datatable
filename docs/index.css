@@ -14,19 +14,27 @@ h1 {
     margin: 1rem 0;
 }
 
-.hero {
+h2 {
+    font-size: 2.5rem;
+}
+
+.showcase {
     margin: 0 auto;
     padding: 4rem;
     text-align: center;
 }
 
-.hero p {
+.showcase p {
     font-size: 2rem;
     margin: 1rem 0;
 }
 
-.datatable-1 {
+.datatable-1, .datatable-2 {
     width: 735px;
     margin: 0 auto;
     margin-top: 2rem;
+}
+
+.datatable-2 {
+    width: 934px;
 }

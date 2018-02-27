@@ -1,13 +1,19 @@
 /* global DataTable */
+/* eslint-disable no-unused-vars */
 
-const { columns, data } = getSampleData();
+const {
+    columns,
+    data
+} = getSampleData();
 
 let datatable1 = new DataTable('.datatable-1', {
     columns,
     data
 });
 
-console.log(datatable1);
+let datatable2 = new DataTable('.datatable-2', Object.assign(getTreeData(), {
+    enableInlineFilters: true
+}));
 
 function getSampleData(multiplier) {
     let columns = ['Name', 'Position', 'Office', 'Extn.', 'Start Date', 'Salary'];
@@ -77,5 +83,609 @@ function getSampleData(multiplier) {
         });
     }
 
-    return { columns, data };
+    return {
+        columns,
+        data
+    };
+}
+
+function getTreeData() {
+    return {
+        columns: [{
+            'id': 'account',
+            'content': 'Account'
+        }, {
+            'id': 'opening_debit',
+            'content': 'Opening (Dr)'
+        }, {
+            'id': 'opening_credit',
+            'content': 'Opening (Cr)'
+        }, {
+            'id': 'debit',
+            'content': 'Debit'
+        }, {
+            'id': 'credit',
+            'content': 'Credit'
+        }, {
+            'id': 'closing_debit',
+            'content': 'Closing (Dr)'
+        }, {
+            'id': 'closing_credit',
+            'content': 'Closing (Cr)'
+        }, {
+            'id': 'currency',
+            'content': 'Currency',
+            'hidden': 1
+        }],
+        data: [{
+            'account_name': 'Application of Funds (Assets)',
+            'account': 'Application of Funds (Assets) - GTPL',
+            'parent_account': null,
+            'indent': 0,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 12023729.54,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 12023729.54,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Current Assets',
+            'account': 'Current Assets - GTPL',
+            'parent_account': 'Application of Funds (Assets) - GTPL',
+            'indent': 1,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 13960649.54,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 13960649.54,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Accounts Receivable',
+            'account': 'Accounts Receivable - GTPL',
+            'parent_account': 'Current Assets - GTPL',
+            'indent': 2,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 742790.474,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 742790.474,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Debtors',
+            'account': 'Debtors - GTPL',
+            'parent_account': 'Accounts Receivable - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 742790.474,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 742790.474,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Bank Accounts',
+            'account': 'Bank Accounts - GTPL',
+            'parent_account': 'Current Assets - GTPL',
+            'indent': 2,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 280676.822,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 280676.822,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Corporation Bank',
+            'account': 'Corporation Bank - GTPL',
+            'parent_account': 'Bank Accounts - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 290676.822,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 290676.822,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'HDFC Bank',
+            'account': 'HDFC Bank - GTPL',
+            'parent_account': 'Bank Accounts - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 10000.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 10000.0,
+            'has_value': true
+        }, {
+            'account_name': 'Cash In Hand',
+            'account': 'Cash In Hand - GTPL',
+            'parent_account': 'Current Assets - GTPL',
+            'indent': 2,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 229904.494,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 229904.494,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Cash',
+            'account': 'Cash - GTPL',
+            'parent_account': 'Cash In Hand - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 229904.494,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 229904.494,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Stock Assets',
+            'account': 'Stock Assets - GTPL',
+            'parent_account': 'Current Assets - GTPL',
+            'indent': 2,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 12707277.75,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 12707277.75,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'All Warehouses',
+            'account': 'All Warehouses - GTPL',
+            'parent_account': 'Stock Assets - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 12707277.75,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 12707277.75,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Finished Goods',
+            'account': 'Finished Goods - GTPL',
+            'parent_account': 'All Warehouses - GTPL',
+            'indent': 4,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 87320.3,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 87320.3,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Retail Stores',
+            'account': 'Retail Stores - GTPL',
+            'parent_account': 'All Warehouses - GTPL',
+            'indent': 4,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 4540590.0,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 4540590.0,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Bandra Store',
+            'account': 'Bandra Store - GTPL',
+            'parent_account': 'Retail Stores - GTPL',
+            'indent': 5,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 3246800.0,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 3246800.0,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Central Warehouse',
+            'account': 'Central Warehouse - GTPL',
+            'parent_account': 'Retail Stores - GTPL',
+            'indent': 5,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 1236790.0,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 1236790.0,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Lower Parel Store',
+            'account': 'Lower Parel Store - GTPL',
+            'parent_account': 'Retail Stores - GTPL',
+            'indent': 5,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 57000.0,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 57000.0,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Stores',
+            'account': 'Stores - GTPL',
+            'parent_account': 'All Warehouses - GTPL',
+            'indent': 4,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 8016525.27,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 8016525.27,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Work In Progress',
+            'account': 'Work In Progress - GTPL',
+            'parent_account': 'All Warehouses - GTPL',
+            'indent': 4,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 62842.18,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 62842.18,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Fixed Assets',
+            'account': 'Fixed Assets - GTPL',
+            'parent_account': 'Application of Funds (Assets) - GTPL',
+            'indent': 1,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 19920.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 19920.0,
+            'has_value': true
+        }, {
+            'account_name': 'Electronic Equipments',
+            'account': 'Electronic Equipments - GTPL',
+            'parent_account': 'Fixed Assets - GTPL',
+            'indent': 2,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 80.0,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 80.0,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'Furnitures and Fixtures',
+            'account': 'Furnitures and Fixtures - GTPL',
+            'parent_account': 'Fixed Assets - GTPL',
+            'indent': 2,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 20000.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 20000.0,
+            'has_value': true
+        }, {
+            'account_name': 'Temporary Accounts',
+            'account': 'Temporary Accounts - GTPL',
+            'parent_account': 'Application of Funds (Assets) - GTPL',
+            'indent': 1,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 1917000.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 1917000.0,
+            'has_value': true
+        }, {
+            'account_name': 'Temporary Opening',
+            'account': 'Temporary Opening - GTPL',
+            'parent_account': 'Temporary Accounts - GTPL',
+            'indent': 2,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 1917000.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 1917000.0,
+            'has_value': true
+        }, {
+            'account_name': 'Source of Funds (Liabilities)',
+            'account': 'Source of Funds (Liabilities) - GTPL',
+            'parent_account': null,
+            'indent': 0,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 2371628.002,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 2371628.002,
+            'has_value': true
+        }, {
+            'account_name': 'Current Liabilities',
+            'account': 'Current Liabilities - GTPL',
+            'parent_account': 'Source of Funds (Liabilities) - GTPL',
+            'indent': 1,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 2371628.002,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 2371628.002,
+            'has_value': true
+        }, {
+            'account_name': 'Accounts Payable',
+            'account': 'Accounts Payable - GTPL',
+            'parent_account': 'Current Liabilities - GTPL',
+            'indent': 2,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 368311.85,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 368311.85,
+            'has_value': true
+        }, {
+            'account_name': 'Creditors',
+            'account': 'Creditors - GTPL',
+            'parent_account': 'Accounts Payable - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 194871.85,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 194871.85,
+            'has_value': true
+        }, {
+            'account_name': 'Salary Payable',
+            'account': 'Salary Payable - GTPL',
+            'parent_account': 'Accounts Payable - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 173440.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 173440.0,
+            'has_value': true
+        }, {
+            'account_name': 'Duties and Taxes',
+            'account': 'Duties and Taxes - GTPL',
+            'parent_account': 'Current Liabilities - GTPL',
+            'indent': 2,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 150146.822,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 150146.822,
+            'has_value': true
+        }, {
+            'account_name': 'CGST',
+            'account': 'CGST - GTPL',
+            'parent_account': 'Duties and Taxes - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 51479.591,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 51479.591,
+            'has_value': true
+        }, {
+            'account_name': 'IGST',
+            'account': 'IGST - GTPL',
+            'parent_account': 'Duties and Taxes - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 1944.0,
+            'opening_credit': 0.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 1944.0,
+            'closing_credit': 0.0,
+            'has_value': true
+        }, {
+            'account_name': 'SGST',
+            'account': 'SGST - GTPL',
+            'parent_account': 'Duties and Taxes - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 97711.231,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 97711.231,
+            'has_value': true
+        }, {
+            'account_name': 'UGST',
+            'account': 'UGST - GTPL',
+            'parent_account': 'Duties and Taxes - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 2900.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 2900.0,
+            'has_value': true
+        }, {
+            'account_name': 'Stock Liabilities',
+            'account': 'Stock Liabilities - GTPL',
+            'parent_account': 'Current Liabilities - GTPL',
+            'indent': 2,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 1853169.33,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 1853169.33,
+            'has_value': true
+        }, {
+            'account_name': 'Stock Received But Not Billed',
+            'account': 'Stock Received But Not Billed - GTPL',
+            'parent_account': 'Stock Liabilities - GTPL',
+            'indent': 3,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 1853169.33,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 1853169.33,
+            'has_value': true
+        }, {
+            'account_name': 'Equity',
+            'account': 'Equity - GTPL',
+            'parent_account': null,
+            'indent': 0,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 10000.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 10000.0,
+            'has_value': true
+        }, {
+            'account_name': 'Capital Stock',
+            'account': 'Capital Stock - GTPL',
+            'parent_account': 'Equity - GTPL',
+            'indent': 1,
+            'from_date': '2018-04-01',
+            'to_date': '2019-03-31',
+            'currency': 'INR',
+            'opening_debit': 0.0,
+            'opening_credit': 10000.0,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 0.0,
+            'closing_credit': 10000.0,
+            'has_value': true
+        }, {}, {
+            'account': 'Total',
+            'account_name': 'Total',
+            'warn_if_negative': true,
+            'opening_debit': 32260956.43,
+            'opening_credit': 22618854.891999997,
+            'debit': 0.0,
+            'credit': 0.0,
+            'closing_debit': 32260956.43,
+            'closing_credit': 22618854.891999997,
+            'parent_account': null,
+            'indent': 0,
+            'has_value': true,
+            'currency': 'INR'
+        }]
+    };
 }
