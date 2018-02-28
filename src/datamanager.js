@@ -420,7 +420,7 @@ export default class DataManager {
     }
 
     getFilteredRowIndices() {
-        return this._filteredRows || [];
+        return this._filteredRows || this.rows.map(row => row.meta.rowIndex);
     }
 
     getRowCount() {
