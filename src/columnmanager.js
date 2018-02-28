@@ -32,40 +32,22 @@ export default class ColumnManager {
 
     refreshHeader() {
         const columns = this.datamanager.getColumns();
+        const $cols = $.each('.data-table-col[data-is-header]', this.header);
 
-        if (!$('.data-table-col', this.header)) {
-            // insert html
+        const refreshHTML =
+            // first init
+            !$('.data-table-col', this.header) ||
+            // deleted column
+            columns.length < $cols.length;
 
-            let html = this.rowmanager.getRowHTML(columns, {
-                isHeader: 1
-            });
-            if (this.options.enableInlineFilters) {
-                html += this.rowmanager.getRowHTML(columns, {
-                    isFilter: 1
-                });
-            }
-
-            $('thead', this.header).innerHTML = html;
+        if (refreshHTML) {
+            // refresh html
+            $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
 
             this.$filterRow = $('.data-table-row[data-is-filter]', this.header);
-
-            if (this.$filterRow) {
-                // hide filter row immediately, so it doesn't disturb layout
-                $.style(this.$filterRow, {
-                    display: 'none'
-                });
-            }
+            $.style(this.$filterRow, { display: 'none' });
         } else {
-            // refresh dom state
-            const $cols = $.each('.data-table-col', this.header);
-            if (columns.length < $cols.length) {
-                // deleted column
-                $('thead', this.header).innerHTML = this.rowmanager.getRowHTML(columns, {
-                    isHeader: 1
-                });
-                return;
-            }
-
+            // update data-attributes
             $cols.map(($col, i) => {
                 const column = columns[i];
                 // column sorted or order changed
@@ -83,6 +65,18 @@ export default class ColumnManager {
         }
         // reset columnMap
         this.$columnMap = [];
+    }
+
+    getHeaderHTML(columns) {
+        let html = this.rowmanager.getRowHTML(columns, {
+            isHeader: 1
+        });
+        if (this.options.enableInlineFilters) {
+            html += this.rowmanager.getRowHTML(columns, {
+                isFilter: 1
+            });
+        }
+        return html;
     }
 
     bindEvents() {
@@ -311,20 +305,21 @@ export default class ColumnManager {
             });
     }
 
-    toggleFilter() {
-        this.isFilterShown = this.isFilterShown || false;
-
-        if (this.isFilterShown) {
-            $.style(this.$filterRow, {
-                display: 'none'
-            });
+    toggleFilter(flag) {
+        let showFilter;
+        if (flag === undefined) {
+            showFilter = !this.isFilterShown;
         } else {
-            $.style(this.$filterRow, {
-                display: ''
-            });
+            showFilter = flag;
         }
 
-        this.isFilterShown = !this.isFilterShown;
+        if (showFilter) {
+            $.style(this.$filterRow, { display: '' });
+        } else {
+            $.style(this.$filterRow, { display: 'none' });
+        }
+
+        this.isFilterShown = showFilter;
         this.style.setBodyStyle();
     }
 

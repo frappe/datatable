@@ -200,7 +200,7 @@ export default class RowManager {
         const dataAttr = makeDataAttributeString(props);
 
         if (props.isFilter) {
-            row = row.map(cell => (Object.assign(cell, {
+            row = row.map(cell => (Object.assign({}, cell, {
                 content: this.getFilterInput({
                     colIndex: cell.colIndex
                 }),
