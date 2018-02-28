@@ -221,12 +221,10 @@ var isObject_1 = isObject;
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-/** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
 
 var _freeGlobal = freeGlobal;
 
-/** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
 
 /** Used as a reference to the global object. */
@@ -234,34 +232,16 @@ var root = _freeGlobal || freeSelf || Function('return this')();
 
 var _root = root;
 
-/**
- * Gets the timestamp of the number of milliseconds that have elapsed since
- * the Unix epoch (1 January 1970 00:00:00 UTC).
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Date
- * @returns {number} Returns the timestamp.
- * @example
- *
- * _.defer(function(stamp) {
- *   console.log(_.now() - stamp);
- * }, _.now());
- * // => Logs the number of milliseconds it took for the deferred invocation.
- */
 var now = function() {
   return _root.Date.now();
 };
 
 var now_1 = now;
 
-/** Built-in value references. */
 var Symbol = _root.Symbol;
 
 var _Symbol = Symbol;
 
-/** Used for built-in method references. */
 var objectProto = Object.prototype;
 
 /** Used to check objects for own properties. */
@@ -329,7 +309,6 @@ function objectToString(value) {
 
 var _objectToString = objectToString;
 
-/** `Object#toString` result references. */
 var nullTag = '[object Null]';
 var undefinedTag = '[object Undefined]';
 
@@ -384,7 +363,6 @@ function isObjectLike(value) {
 
 var isObjectLike_1 = isObjectLike;
 
-/** `Object#toString` result references. */
 var symbolTag = '[object Symbol]';
 
 /**
@@ -411,7 +389,6 @@ function isSymbol(value) {
 
 var isSymbol_1 = isSymbol;
 
-/** Used as references for various `Number` constants. */
 var NAN = 0 / 0;
 
 /** Used to match leading and trailing whitespace. */
@@ -475,7 +452,6 @@ function toNumber(value) {
 
 var toNumber_1 = toNumber;
 
-/** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
@@ -662,7 +638,6 @@ function debounce(func, wait, options) {
 
 var debounce_1 = debounce;
 
-/** Error message constants. */
 var FUNC_ERROR_TEXT$1 = 'Expected a function';
 
 /**
@@ -1061,7 +1036,7 @@ class DataManager {
     appendRows(rows) {
         this.validateData(rows);
 
-        this.rows = this.rows.concat(this.prepareRows(rows));
+        this.rows.push(...this.prepareRows(rows));
     }
 
     sortRows(colIndex, sortOrder = 'none') {
@@ -1150,7 +1125,7 @@ class DataManager {
         this.columns[index2].colIndex = index2;
 
         // update rows
-        this.rows = this.rows.map(row => {
+        this.rows.forEach(row => {
             const newCell1 = Object.assign({}, row[index1], {
                 colIndex: index2
             });
@@ -1158,15 +1133,8 @@ class DataManager {
                 colIndex: index1
             });
 
-            let newRow = row.map(cell => {
-                // make object copy
-                return Object.assign({}, cell);
-            });
-
-            newRow[index2] = newCell1;
-            newRow[index1] = newCell2;
-
-            return newRow;
+            row[index2] = newCell1;
+            row[index1] = newCell2;
         });
     }
 
@@ -1182,12 +1150,13 @@ class DataManager {
             .map(map);
 
         // update rows
-        this.rows = this.rows.map(row => {
-            const newRow = row
-                .filter(filter)
-                .map(map);
-
-            return newRow;
+        this.rows.forEach(row => {
+            // remove cell
+            row.splice(index, 1);
+            // update colIndex
+            row.forEach((cell, i) => {
+                cell.colIndex = i;
+            });
         });
     }
 
@@ -2923,12 +2892,7 @@ class Style {
             let naturalWidth = $.style($('.content', $cell), 'width');
 
             if (column.id === '_rowIndex') {
-                // width based on rowCount
-                const rowCount = this.datamanager.getRowCount();
-                const digits = (rowCount + '').length;
-                if (digits > 1) {
-                    naturalWidth = naturalWidth + ((digits - 1) * 8);
-                }
+                naturalWidth = this.getRowIndexColumnWidth(naturalWidth);
             }
 
             column.naturalWidth = naturalWidth;
@@ -3029,6 +2993,19 @@ class Style {
         colIndex = +colIndex;
         if (colIndex < 0) return null;
         return $(`.data-table-col[data-col-index="${colIndex}"]`, this.header);
+    }
+
+    getRowIndexColumnWidth(baseWidth) {
+        this._rowIndexColumnWidthMap = this._rowIndexColumnWidthMap || {};
+        const rowCount = this.datamanager.getRowCount();
+        const digits = (rowCount + '').length;
+
+        if (!this._rowIndexColumnWidthMap[digits]) {
+            // add 8px for each unit
+            this._rowIndexColumnWidthMap[digits] = baseWidth + ((digits - 1) * 8);
+        }
+
+        return this._rowIndexColumnWidthMap[digits];
     }
 }
 

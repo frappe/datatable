@@ -131,12 +131,7 @@ export default class Style {
             let naturalWidth = $.style($('.content', $cell), 'width');
 
             if (column.id === '_rowIndex') {
-                // width based on rowCount
-                const rowCount = this.datamanager.getRowCount();
-                const digits = (rowCount + '').length;
-                if (digits > 1) {
-                    naturalWidth = naturalWidth + ((digits - 1) * 8);
-                }
+                naturalWidth = this.getRowIndexColumnWidth(naturalWidth);
             }
 
             column.naturalWidth = naturalWidth;
@@ -237,5 +232,18 @@ export default class Style {
         colIndex = +colIndex;
         if (colIndex < 0) return null;
         return $(`.data-table-col[data-col-index="${colIndex}"]`, this.header);
+    }
+
+    getRowIndexColumnWidth(baseWidth) {
+        this._rowIndexColumnWidthMap = this._rowIndexColumnWidthMap || {};
+        const rowCount = this.datamanager.getRowCount();
+        const digits = (rowCount + '').length;
+
+        if (!this._rowIndexColumnWidthMap[digits]) {
+            // add 8px for each unit
+            this._rowIndexColumnWidthMap[digits] = baseWidth + ((digits - 1) * 8);
+        }
+
+        return this._rowIndexColumnWidthMap[digits];
     }
 }
