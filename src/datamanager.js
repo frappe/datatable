@@ -214,7 +214,7 @@ export default class DataManager {
     appendRows(rows) {
         this.validateData(rows);
 
-        this.rows = this.rows.concat(this.prepareRows(rows));
+        this.rows.push(...this.prepareRows(rows));
     }
 
     sortRows(colIndex, sortOrder = 'none') {
@@ -303,7 +303,7 @@ export default class DataManager {
         this.columns[index2].colIndex = index2;
 
         // update rows
-        this.rows = this.rows.map(row => {
+        this.rows.forEach(row => {
             const newCell1 = Object.assign({}, row[index1], {
                 colIndex: index2
             });
@@ -311,15 +311,8 @@ export default class DataManager {
                 colIndex: index1
             });
 
-            let newRow = row.map(cell => {
-                // make object copy
-                return Object.assign({}, cell);
-            });
-
-            newRow[index2] = newCell1;
-            newRow[index1] = newCell2;
-
-            return newRow;
+            row[index2] = newCell1;
+            row[index1] = newCell2;
         });
     }
 
@@ -335,12 +328,13 @@ export default class DataManager {
             .map(map);
 
         // update rows
-        this.rows = this.rows.map(row => {
-            const newRow = row
-                .filter(filter)
-                .map(map);
-
-            return newRow;
+        this.rows.forEach(row => {
+            // remove cell
+            row.splice(index, 1);
+            // update colIndex
+            row.forEach((cell, i) => {
+                cell.colIndex = i;
+            });
         });
     }
 
