@@ -25,6 +25,7 @@ export default class DataManager {
 
         this.prepareColumns();
         this.prepareRows();
+        this.prepareRowView();
 
         this.prepareNumericColumns();
     }
@@ -142,6 +143,9 @@ export default class DataManager {
             const index = this._getNextRowCount();
 
             let row = [];
+            let meta = {
+                rowIndex: index
+            };
 
             if (Array.isArray(d)) {
                 // row is an array
@@ -168,17 +172,25 @@ export default class DataManager {
                         row.push(d[col.id]);
                     }
                 }
+
+                meta.indent = d.indent;
             }
 
-            return this.prepareRow(row, {
-                rowIndex: index
-            });
+            return this.prepareRow(row, meta);
         });
     }
 
-    prepareRow(row, props) {
+    prepareRowView() {
+        // This is order in which rows will be rendered in the table.
+        // When sorting happens, only this.rowViewOrder will change
+        // and not the original this.rows
+        this.rowViewOrder = this.rows.map(row => row.meta.rowIndex);
+    }
+
+    prepareRow(row, meta) {
         const baseRowCell = {
-            rowIndex: props.rowIndex
+            rowIndex: meta.rowIndex,
+            indent: meta.indent
         };
 
         row = row
@@ -186,7 +198,7 @@ export default class DataManager {
             .map(cell => Object.assign({}, baseRowCell, cell));
 
         // monkey patched in array object
-        row.meta = props;
+        row.meta = meta;
         return row;
     }
 
@@ -241,28 +253,28 @@ export default class DataManager {
                 (this.currentSort.sortOrder === 'asc' && sortOrder === 'desc') ||
                 (this.currentSort.sortOrder === 'desc' && sortOrder === 'asc')
             ) {
-                this.reverseArray(this.rows);
+                this.reverseArray(this.rowViewOrder);
                 this.currentSort.sortOrder = sortOrder;
                 return;
             }
         }
 
-        this.rows.sort((a, b) => {
-            const _aIndex = a[0].rowIndex;
-            const _bIndex = b[0].rowIndex;
-            const _a = a[colIndex].content;
-            const _b = b[colIndex].content;
+        this.rowViewOrder.sort((a, b) => {
+            const aIndex = a;
+            const bIndex = b;
+            const aContent = this.getCell(colIndex, a).content;
+            const bContent = this.getCell(colIndex, b).content;
 
             if (sortOrder === 'none') {
-                return _aIndex - _bIndex;
+                return aIndex - bIndex;
             } else if (sortOrder === 'asc') {
-                if (_a < _b) return -1;
-                if (_a > _b) return 1;
-                if (_a === _b) return 0;
+                if (aContent < bContent) return -1;
+                if (aContent > bContent) return 1;
+                if (aContent === bContent) return 0;
             } else if (sortOrder === 'desc') {
-                if (_a < _b) return 1;
-                if (_a > _b) return -1;
-                if (_a === _b) return 0;
+                if (aContent < bContent) return 1;
+                if (aContent > bContent) return -1;
+                if (aContent === bContent) return 0;
             }
             return 0;
         });
@@ -271,11 +283,9 @@ export default class DataManager {
             // update row index
             const srNoColIndex = this.getColumnIndexById('_rowIndex');
             this.rows.forEach((row, index) => {
-                row.forEach(cell => {
-                    if (cell.colIndex === srNoColIndex) {
-                        cell.content = (index + 1) + '';
-                    }
-                });
+                const viewIndex = this.rowViewOrder.indexOf(index);
+                const cell = row[srNoColIndex];
+                cell.content = (viewIndex + 1) + '';
             });
         }
     }
@@ -438,6 +448,11 @@ export default class DataManager {
         return this.rows.slice(start, end);
     }
 
+    getRowsForView(start, end) {
+        const rows = this.rowViewOrder.map(i => this.rows[i]);
+        return rows.slice(start, end);
+    }
+
     getColumns(skipStandardColumns) {
         let columns = this.columns;
 
@@ -477,13 +492,13 @@ export default class DataManager {
 
     getRow(rowIndex) {
         rowIndex = +rowIndex;
-        return this.rows.find(row => row[0].rowIndex === rowIndex);
+        return this.rows[rowIndex];
     }
 
     getCell(colIndex, rowIndex) {
         rowIndex = +rowIndex;
         colIndex = +colIndex;
-        return this.rows.find(row => row[0].rowIndex === rowIndex)[colIndex];
+        return this.getRow(rowIndex)[colIndex];
     }
 
     get() {

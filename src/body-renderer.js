@@ -25,7 +25,7 @@ export default class BodyRenderer {
     }
 
     renderBodyHTML() {
-        const rows = this.datamanager.getRows();
+        const rows = this.datamanager.getRowsForView();
 
         this.bodyScrollable.innerHTML = `
             <table class="data-table-body">
@@ -38,7 +38,7 @@ export default class BodyRenderer {
 
     renderBodyWithClusterize() {
         // first page
-        const rows = this.datamanager.getRows(0, 20);
+        const rows = this.datamanager.getRowsForView(0, 20);
         const initialData = this.getDataForClusterize(rows);
 
         if (!this.clusterize) {
@@ -82,7 +82,7 @@ export default class BodyRenderer {
     }
 
     appendRemainingData() {
-        const rows = this.datamanager.getRows(20);
+        const rows = this.datamanager.getRowsForView(20);
         const data = this.getDataForClusterize(rows);
         this.clusterize.append(data);
     }
