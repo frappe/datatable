@@ -846,6 +846,7 @@ class DataManager {
 
         this.prepareColumns();
         this.prepareRows();
+        this.prepareRowView();
 
         this.prepareNumericColumns();
     }
@@ -963,6 +964,9 @@ class DataManager {
             const index = this._getNextRowCount();
 
             let row = [];
+            let meta = {
+                rowIndex: index
+            };
 
             if (Array.isArray(d)) {
                 // row is an array
@@ -989,17 +993,25 @@ class DataManager {
                         row.push(d[col.id]);
                     }
                 }
+
+                meta.indent = d.indent;
             }
 
-            return this.prepareRow(row, {
-                rowIndex: index
-            });
+            return this.prepareRow(row, meta);
         });
     }
 
-    prepareRow(row, props) {
+    prepareRowView() {
+        // This is order in which rows will be rendered in the table.
+        // When sorting happens, only this.rowViewOrder will change
+        // and not the original this.rows
+        this.rowViewOrder = this.rows.map(row => row.meta.rowIndex);
+    }
+
+    prepareRow(row, meta) {
         const baseRowCell = {
-            rowIndex: props.rowIndex
+            rowIndex: meta.rowIndex,
+            indent: meta.indent
         };
 
         row = row
@@ -1007,7 +1019,7 @@ class DataManager {
             .map(cell => Object.assign({}, baseRowCell, cell));
 
         // monkey patched in array object
-        row.meta = props;
+        row.meta = meta;
         return row;
     }
 
@@ -1062,28 +1074,28 @@ class DataManager {
                 (this.currentSort.sortOrder === 'asc' && sortOrder === 'desc') ||
                 (this.currentSort.sortOrder === 'desc' && sortOrder === 'asc')
             ) {
-                this.reverseArray(this.rows);
+                this.reverseArray(this.rowViewOrder);
                 this.currentSort.sortOrder = sortOrder;
                 return;
             }
         }
 
-        this.rows.sort((a, b) => {
-            const _aIndex = a[0].rowIndex;
-            const _bIndex = b[0].rowIndex;
-            const _a = a[colIndex].content;
-            const _b = b[colIndex].content;
+        this.rowViewOrder.sort((a, b) => {
+            const aIndex = a;
+            const bIndex = b;
+            const aContent = this.getCell(colIndex, a).content;
+            const bContent = this.getCell(colIndex, b).content;
 
             if (sortOrder === 'none') {
-                return _aIndex - _bIndex;
+                return aIndex - bIndex;
             } else if (sortOrder === 'asc') {
-                if (_a < _b) return -1;
-                if (_a > _b) return 1;
-                if (_a === _b) return 0;
+                if (aContent < bContent) return -1;
+                if (aContent > bContent) return 1;
+                if (aContent === bContent) return 0;
             } else if (sortOrder === 'desc') {
-                if (_a < _b) return 1;
-                if (_a > _b) return -1;
-                if (_a === _b) return 0;
+                if (aContent < bContent) return 1;
+                if (aContent > bContent) return -1;
+                if (aContent === bContent) return 0;
             }
             return 0;
         });
@@ -1092,11 +1104,9 @@ class DataManager {
             // update row index
             const srNoColIndex = this.getColumnIndexById('_rowIndex');
             this.rows.forEach((row, index) => {
-                row.forEach(cell => {
-                    if (cell.colIndex === srNoColIndex) {
-                        cell.content = (index + 1) + '';
-                    }
-                });
+                const viewIndex = this.rowViewOrder.indexOf(index);
+                const cell = row[srNoColIndex];
+                cell.content = (viewIndex + 1) + '';
             });
         }
     }
@@ -1259,6 +1269,11 @@ class DataManager {
         return this.rows.slice(start, end);
     }
 
+    getRowsForView(start, end) {
+        const rows = this.rowViewOrder.map(i => this.rows[i]);
+        return rows.slice(start, end);
+    }
+
     getColumns(skipStandardColumns) {
         let columns = this.columns;
 
@@ -1298,13 +1313,33 @@ class DataManager {
 
     getRow(rowIndex) {
         rowIndex = +rowIndex;
-        return this.rows.find(row => row[0].rowIndex === rowIndex);
+        return this.rows[rowIndex];
     }
 
     getCell(colIndex, rowIndex) {
         rowIndex = +rowIndex;
         colIndex = +colIndex;
-        return this.rows.find(row => row[0].rowIndex === rowIndex)[colIndex];
+        return this.getRow(rowIndex)[colIndex];
+    }
+
+    getChildrenIndices(parentRowIndex) {
+        parentRowIndex = +parentRowIndex;
+        const parentIndent = this.getRow(parentRowIndex).meta.indent;
+        const out = [];
+
+        let i = parentRowIndex + 1;
+        let nextRow = this.getRow(i);
+        let nextIndent = nextRow ? (nextRow.meta.indent || 0) : -1;
+
+        while (nextIndent > parentIndent) {
+            out.push(i);
+
+            i++;
+            nextRow = this.getRow(i);
+            nextIndent = nextRow ? (nextRow.meta.indent || 0) : -1;
+        }
+
+        return out;
     }
 
     get() {
@@ -1364,11 +1399,11 @@ class ColumnManager {
 
     refreshHeader() {
         const columns = this.datamanager.getColumns();
-        const $cols = $.each('.data-table-col[data-is-header]', this.header);
+        const $cols = $.each('.data-table-cell[data-is-header]', this.header);
 
         const refreshHTML =
             // first init
-            !$('.data-table-col', this.header) ||
+            !$('.data-table-cell', this.header) ||
             // deleted column
             columns.length < $cols.length;
 
@@ -1377,7 +1412,9 @@ class ColumnManager {
             $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
 
             this.$filterRow = $('.data-table-row[data-is-filter]', this.header);
-            $.style(this.$filterRow, { display: 'none' });
+            if (this.$filterRow) {
+                $.style(this.$filterRow, { display: 'none' });
+            }
         } else {
             // update data-attributes
             $cols.map(($col, i) => {
@@ -1440,7 +1477,7 @@ class ColumnManager {
         const dropdownItems = this.options.headerDropdown;
 
         $.on(this.header, 'click', '.data-table-dropdown-list > div', (e, $item) => {
-            const $col = $.closest('.data-table-col', $item);
+            const $col = $.closest('.data-table-cell', $item);
             const {
                 index
             } = $.data($item);
@@ -1462,7 +1499,7 @@ class ColumnManager {
         let isDragging = false;
         let $resizingCell, startWidth, startX;
 
-        $.on(this.header, 'mousedown', '.data-table-col .column-resizer', (e, $handle) => {
+        $.on(this.header, 'mousedown', '.data-table-cell .column-resizer', (e, $handle) => {
             document.body.classList.add('data-table-resize');
             const $cell = $handle.parentNode.parentNode;
             $resizingCell = $cell;
@@ -1519,7 +1556,7 @@ class ColumnManager {
                 $.off(document.body, 'mousemove', initialize);
                 return;
             }
-            const ready = $('.data-table-col', this.header);
+            const ready = $('.data-table-cell', this.header);
             if (!ready) return;
 
             const $parent = $('.data-table-row', this.header);
@@ -1549,8 +1586,8 @@ class ColumnManager {
 
     bindSortColumn() {
 
-        $.on(this.header, 'click', '.data-table-col .column-title', (e, span) => {
-            const $cell = span.closest('.data-table-col');
+        $.on(this.header, 'click', '.data-table-cell .column-title', (e, span) => {
+            const $cell = span.closest('.data-table-cell');
             let {
                 colIndex,
                 sortOrder
@@ -1564,7 +1601,7 @@ class ColumnManager {
 
             // reset sort indicator
             $('.sort-indicator', this.header).textContent = '';
-            $.each('.data-table-col', this.header).map($cell => {
+            $.each('.data-table-cell', this.header).map($cell => {
                 $.data($cell, {
                     sortOrder: 'none'
                 });
@@ -1665,7 +1702,7 @@ class ColumnManager {
     bindFilter() {
         if (!this.options.enableInlineFilters) return;
         const handler = e => {
-            const $filterCell = $.closest('.data-table-col', e.target);
+            const $filterCell = $.closest('.data-table-cell', e.target);
             const {
                 colIndex
             } = $.data($filterCell);
@@ -1676,14 +1713,8 @@ class ColumnManager {
                     rowsToHide,
                     rowsToShow
                 }) => {
-                    rowsToHide.map(rowIndex => {
-                        const $tr = $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
-                        $tr.classList.add('hide');
-                    });
-                    rowsToShow.map(rowIndex => {
-                        const $tr = $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
-                        $tr.classList.remove('hide');
-                    });
+                    this.rowmanager.hideRows(rowsToHide);
+                    this.rowmanager.showRows(rowsToShow);
                 });
         };
         $.on(this.header, 'keydown', '.data-table-filter', debounce$2(handler, 300));
@@ -1754,7 +1785,7 @@ class ColumnManager {
     }
 
     getHeaderCell$(colIndex) {
-        return $(`.data-table-col[data-col-index="${colIndex}"]`, this.header);
+        return $(`.data-table-cell[data-col-index="${colIndex}"]`, this.header);
     }
 
     getLastColumnIndex() {
@@ -1801,6 +1832,7 @@ class CellManager {
         this.bindKeyboardSelection();
         this.bindCopyCellContents();
         this.bindMouseEvents();
+        this.bindTreeEvents();
     }
 
     bindFocusCell() {
@@ -1810,7 +1842,7 @@ class CellManager {
     bindEditCell() {
         this.$editingCell = null;
 
-        $.on(this.bodyScrollable, 'dblclick', '.data-table-col', (e, cell) => {
+        $.on(this.bodyScrollable, 'dblclick', '.data-table-cell', (e, cell) => {
             this.activateEditing(cell);
         });
 
@@ -1887,7 +1919,7 @@ class CellManager {
 
         if (this.options.enableInlineFilters) {
             this.keyboard.on('ctrl+f', (e) => {
-                const $cell = $.closest('.data-table-col', e.target);
+                const $cell = $.closest('.data-table-cell', e.target);
                 let {
                     colIndex
                 } = $.data($cell);
@@ -1930,7 +1962,7 @@ class CellManager {
     bindMouseEvents() {
         let mouseDown = null;
 
-        $.on(this.bodyScrollable, 'mousedown', '.data-table-col', (e) => {
+        $.on(this.bodyScrollable, 'mousedown', '.data-table-cell', (e) => {
             mouseDown = true;
             this.focusCell($(e.delegatedTarget));
         });
@@ -1944,7 +1976,39 @@ class CellManager {
             this.selectArea($(e.delegatedTarget));
         };
 
-        $.on(this.bodyScrollable, 'mousemove', '.data-table-col', throttle$1(selectArea, 50));
+        $.on(this.bodyScrollable, 'mousemove', '.data-table-cell', throttle$1(selectArea, 50));
+    }
+
+    bindTreeEvents() {
+        $.on(this.bodyScrollable, 'click', '.toggle', (e, $toggle) => {
+            const $cell = $.closest('.data-table-cell', $toggle);
+            const { rowIndex } = $.data($cell);
+
+            if ($cell.classList.contains('tree-close')) {
+                this.rowmanager.openTreeNode(rowIndex);
+                $cell.classList.remove('tree-close');
+            } else {
+                this.rowmanager.closeTreeNode(rowIndex);
+                $cell.classList.add('tree-close');
+            }
+        });
+
+        // this.keyboard.on('left, right', (e) => {
+        //     const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
+        //     if (e.target.matches('.data-table-cell')) {
+        //         const $cell = e.target;
+        //         const { colIndex, rowIndex } = $.data($cell);
+        //         if (+colIndex === firstColumnIndex) {
+        //             if (keyCode[e.keyCode] === 'left') {
+        //                 this.rowmanager.closeTreeNode(rowIndex);
+        //             }
+        //             if (keyCode[e.keyCode] === 'right') {
+        //                 this.rowmanager.openTreeNode(rowIndex);
+        //             }
+        //             return false;
+        //         }
+        //     }
+        // });
     }
 
     focusCell($cell, {
@@ -1994,8 +2058,8 @@ class CellManager {
             rowIndex
         } = $.data($cell);
         const _colIndex = this.datamanager.getColumnIndexById('_rowIndex');
-        const colHeaderSelector = `.data-table-header .data-table-col[data-col-index="${colIndex}"]`;
-        const rowHeaderSelector = `.data-table-col[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
+        const colHeaderSelector = `.data-table-header .data-table-cell[data-col-index="${colIndex}"]`;
+        const rowHeaderSelector = `.data-table-cell[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
 
         if (this.lastHeaders) {
             $.removeStyle(this.lastHeaders, 'backgroundColor');
@@ -2121,7 +2185,7 @@ class CellManager {
     }
 
     clearSelection() {
-        $.each('.data-table-col.highlight', this.bodyScrollable)
+        $.each('.data-table-cell.highlight', this.bodyScrollable)
             .map(cell => cell.classList.remove('highlight'));
 
         this.$selectionCursor = null;
@@ -2393,15 +2457,16 @@ class CellManager {
         });
 
         return `
-      <td class="data-table-col noselect" ${dataAttr} tabindex="0">
-        ${this.getCellContent(cell)}
-      </td>
-    `;
+            <td class="data-table-cell noselect" ${dataAttr} tabindex="0">
+                ${this.getCellContent(cell)}
+            </td>
+        `;
     }
 
     getCellContent(cell) {
         const {
-            isHeader
+            isHeader,
+            isFilter
         } = cell;
 
         const editable = !isHeader && cell.editable !== false;
@@ -2417,21 +2482,35 @@ class CellManager {
         const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
 
         let contentHTML;
-        if (cell.isHeader || cell.isFilter || !cell.column.format) {
+        if (isHeader || isFilter || !cell.column.format) {
             contentHTML = cell.content;
         } else {
             contentHTML = cell.column.format(cell.content, cell);
         }
 
+        if (!(isHeader || isFilter) && cell.indent !== undefined) {
+            const nextRow = this.datamanager.getRow(cell.rowIndex + 1);
+            const addToggle = nextRow && nextRow.meta.indent > cell.indent;
+
+            // Add toggle and indent in the first column
+            const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
+            if (firstColumnIndex === cell.colIndex) {
+                const padding = ((cell.indent || 0) + 1) * 1.5;
+                const toggleHTML = addToggle ? `<span class="toggle" style="left: ${padding - 1.5}rem"></span>` : '';
+                contentHTML = `<span class="tree-node" style="padding-left: ${padding}rem">
+                    ${toggleHTML}${contentHTML}</span>`;
+            }
+        }
+
         return `
-      <div class="content ellipsis">
-        ${(contentHTML)}
-        ${sortIndicator}
-        ${resizeColumn}
-        ${dropdown}
-      </div>
-      ${editCellHTML}
-    `;
+            <div class="content ellipsis">
+                ${contentHTML}
+                ${sortIndicator}
+                ${resizeColumn}
+                ${dropdown}
+            </div>
+            ${editCellHTML}
+        `;
     }
 
     getEditCellHTML() {
@@ -2441,7 +2520,7 @@ class CellManager {
     }
 
     cellSelector(colIndex, rowIndex) {
-        return `.data-table-col[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
+        return `.data-table-cell[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
     }
 }
 
@@ -2474,8 +2553,8 @@ class RowManager {
         // map of checked rows
         this.checkMap = [];
 
-        $.on(this.wrapper, 'click', '.data-table-col[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
-            const $cell = $checkbox.closest('.data-table-col');
+        $.on(this.wrapper, 'click', '.data-table-cell[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
+            const $cell = $checkbox.closest('.data-table-cell');
             const {
                 rowIndex,
                 isHeader
@@ -2528,7 +2607,7 @@ class RowManager {
     checkRow(rowIndex, toggle) {
         const value = toggle ? 1 : 0;
         const selector = rowIndex =>
-            `.data-table-col[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
+            `.data-table-cell[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
         // update internal map
         this.checkMap[rowIndex] = value;
         // set checkbox value explicitly
@@ -2550,7 +2629,7 @@ class RowManager {
             this.checkMap = [];
         }
         // set checkbox value
-        $.each('.data-table-col[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
+        $.each('.data-table-cell[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
             .map(input => {
                 input.checked = toggle;
             });
@@ -2595,8 +2674,32 @@ class RowManager {
         }
     }
 
+    hideRows(rowIndices) {
+        rowIndices.map(rowIndex => {
+            const $tr = this.getRow$(rowIndex);
+            $tr.classList.add('hide');
+        });
+    }
+
+    showRows(rowIndices) {
+        rowIndices.map(rowIndex => {
+            const $tr = this.getRow$(rowIndex);
+            $tr.classList.remove('hide');
+        });
+    }
+
+    openTreeNode(rowIndex) {
+        const rowsToShow = this.datamanager.getChildrenIndices(rowIndex);
+        this.showRows(rowsToShow);
+    }
+
+    closeTreeNode(rowIndex) {
+        const rowsToHide = this.datamanager.getChildrenIndices(rowIndex);
+        this.hideRows(rowsToHide);
+    }
+
     getRow$(rowIndex) {
-        return $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
+        return $(this.selector(rowIndex), this.bodyScrollable);
     }
 
     getTotalRows() {
@@ -2662,6 +2765,10 @@ class RowManager {
         const dataAttr = makeDataAttributeString(props);
         return `<input class="data-table-filter input-style" type="text" ${dataAttr} />`;
     }
+
+    selector(rowIndex) {
+        return `.data-table-row[data-row-index="${rowIndex}"]`;
+    }
 }
 
 class BodyRenderer {
@@ -2685,7 +2792,7 @@ class BodyRenderer {
     }
 
     renderBodyHTML() {
-        const rows = this.datamanager.getRows();
+        const rows = this.datamanager.getRowsForView();
 
         this.bodyScrollable.innerHTML = `
             <table class="data-table-body">
@@ -2698,7 +2805,7 @@ class BodyRenderer {
 
     renderBodyWithClusterize() {
         // first page
-        const rows = this.datamanager.getRows(0, 20);
+        const rows = this.datamanager.getRowsForView(0, 20);
         const initialData = this.getDataForClusterize(rows);
 
         if (!this.clusterize) {
@@ -2742,7 +2849,7 @@ class BodyRenderer {
     }
 
     appendRemainingData() {
-        const rows = this.datamanager.getRows(20);
+        const rows = this.datamanager.getRowsForView(20);
         const data = this.getDataForClusterize(rows);
         this.clusterize.append(data);
     }
@@ -2859,7 +2966,7 @@ class Style {
     }
 
     setupMinWidth() {
-        $.each('.data-table-col[data-is-header]', this.header).map(col => {
+        $.each('.data-table-cell[data-is-header]', this.header).map(col => {
             const width = $.style($('.content', col), 'width');
             const {
                 colIndex
@@ -2877,7 +2984,7 @@ class Style {
         if (!$('.data-table-row')) return;
 
         // set initial width as naturally calculated by table's first row
-        $.each('.data-table-row[data-row-index="0"] .data-table-col', this.bodyScrollable).map($cell => {
+        $.each('.data-table-row[data-row-index="0"] .data-table-cell', this.bodyScrollable).map($cell => {
             const {
                 colIndex
             } = $.data($cell);
@@ -2926,7 +3033,7 @@ class Style {
     setDefaultCellHeight() {
         if (this.__cellHeightSet) return;
         const height = this.options.cellHeight ||
-            $.style($('.data-table-col', this.instance.datatableWrapper), 'height');
+            $.style($('.data-table-cell', this.instance.datatableWrapper), 'height');
         if (height) {
             this.setCellHeight(height);
             this.__cellHeightSet = true;
@@ -2934,10 +3041,10 @@ class Style {
     }
 
     setCellHeight(height) {
-        this.setStyle('.data-table-col .content', {
+        this.setStyle('.data-table-cell .content', {
             height: height + 'px'
         });
-        this.setStyle('.data-table-col .edit-cell', {
+        this.setStyle('.data-table-cell .edit-cell', {
             height: height + 'px'
         });
     }
@@ -2986,7 +3093,7 @@ class Style {
     getColumnHeaderElement(colIndex) {
         colIndex = +colIndex;
         if (colIndex < 0) return null;
-        return $(`.data-table-col[data-col-index="${colIndex}"]`, this.header);
+        return $(`.data-table-cell[data-col-index="${colIndex}"]`, this.header);
     }
 
     getRowIndexColumnWidth(baseWidth) {

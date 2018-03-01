@@ -12,7 +12,8 @@ let datatable1 = new DataTable('.datatable-1', {
 });
 
 let datatable2 = new DataTable('.datatable-2', Object.assign(getTreeData(), {
-    enableInlineFilters: true
+    enableInlineFilters: true,
+    addCheckboxColumn: true
 }));
 
 function getSampleData(multiplier) {

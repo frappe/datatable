@@ -501,6 +501,26 @@ export default class DataManager {
         return this.getRow(rowIndex)[colIndex];
     }
 
+    getChildrenIndices(parentRowIndex) {
+        parentRowIndex = +parentRowIndex;
+        const parentIndent = this.getRow(parentRowIndex).meta.indent;
+        const out = [];
+
+        let i = parentRowIndex + 1;
+        let nextRow = this.getRow(i);
+        let nextIndent = nextRow ? (nextRow.meta.indent || 0) : -1;
+
+        while (nextIndent > parentIndent) {
+            out.push(i);
+
+            i++;
+            nextRow = this.getRow(i);
+            nextIndent = nextRow ? (nextRow.meta.indent || 0) : -1;
+        }
+
+        return out;
+    }
+
     get() {
         return {
             columns: this.columns,

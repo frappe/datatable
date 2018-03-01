@@ -32,11 +32,11 @@ export default class ColumnManager {
 
     refreshHeader() {
         const columns = this.datamanager.getColumns();
-        const $cols = $.each('.data-table-col[data-is-header]', this.header);
+        const $cols = $.each('.data-table-cell[data-is-header]', this.header);
 
         const refreshHTML =
             // first init
-            !$('.data-table-col', this.header) ||
+            !$('.data-table-cell', this.header) ||
             // deleted column
             columns.length < $cols.length;
 
@@ -45,7 +45,9 @@ export default class ColumnManager {
             $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
 
             this.$filterRow = $('.data-table-row[data-is-filter]', this.header);
-            $.style(this.$filterRow, { display: 'none' });
+            if (this.$filterRow) {
+                $.style(this.$filterRow, { display: 'none' });
+            }
         } else {
             // update data-attributes
             $cols.map(($col, i) => {
@@ -108,7 +110,7 @@ export default class ColumnManager {
         const dropdownItems = this.options.headerDropdown;
 
         $.on(this.header, 'click', '.data-table-dropdown-list > div', (e, $item) => {
-            const $col = $.closest('.data-table-col', $item);
+            const $col = $.closest('.data-table-cell', $item);
             const {
                 index
             } = $.data($item);
@@ -130,7 +132,7 @@ export default class ColumnManager {
         let isDragging = false;
         let $resizingCell, startWidth, startX;
 
-        $.on(this.header, 'mousedown', '.data-table-col .column-resizer', (e, $handle) => {
+        $.on(this.header, 'mousedown', '.data-table-cell .column-resizer', (e, $handle) => {
             document.body.classList.add('data-table-resize');
             const $cell = $handle.parentNode.parentNode;
             $resizingCell = $cell;
@@ -187,7 +189,7 @@ export default class ColumnManager {
                 $.off(document.body, 'mousemove', initialize);
                 return;
             }
-            const ready = $('.data-table-col', this.header);
+            const ready = $('.data-table-cell', this.header);
             if (!ready) return;
 
             const $parent = $('.data-table-row', this.header);
@@ -217,8 +219,8 @@ export default class ColumnManager {
 
     bindSortColumn() {
 
-        $.on(this.header, 'click', '.data-table-col .column-title', (e, span) => {
-            const $cell = span.closest('.data-table-col');
+        $.on(this.header, 'click', '.data-table-cell .column-title', (e, span) => {
+            const $cell = span.closest('.data-table-cell');
             let {
                 colIndex,
                 sortOrder
@@ -232,7 +234,7 @@ export default class ColumnManager {
 
             // reset sort indicator
             $('.sort-indicator', this.header).textContent = '';
-            $.each('.data-table-col', this.header).map($cell => {
+            $.each('.data-table-cell', this.header).map($cell => {
                 $.data($cell, {
                     sortOrder: 'none'
                 });
@@ -333,7 +335,7 @@ export default class ColumnManager {
     bindFilter() {
         if (!this.options.enableInlineFilters) return;
         const handler = e => {
-            const $filterCell = $.closest('.data-table-col', e.target);
+            const $filterCell = $.closest('.data-table-cell', e.target);
             const {
                 colIndex
             } = $.data($filterCell);
@@ -344,14 +346,8 @@ export default class ColumnManager {
                     rowsToHide,
                     rowsToShow
                 }) => {
-                    rowsToHide.map(rowIndex => {
-                        const $tr = $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
-                        $tr.classList.add('hide');
-                    });
-                    rowsToShow.map(rowIndex => {
-                        const $tr = $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
-                        $tr.classList.remove('hide');
-                    });
+                    this.rowmanager.hideRows(rowsToHide);
+                    this.rowmanager.showRows(rowsToShow);
                 });
         };
         $.on(this.header, 'keydown', '.data-table-filter', debounce(handler, 300));
@@ -422,7 +418,7 @@ export default class ColumnManager {
     }
 
     getHeaderCell$(colIndex) {
-        return $(`.data-table-col[data-col-index="${colIndex}"]`, this.header);
+        return $(`.data-table-cell[data-col-index="${colIndex}"]`, this.header);
     }
 
     getLastColumnIndex() {

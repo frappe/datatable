@@ -54,3 +54,5 @@ export default class Keyboard {
         });
     }
 }
+
+export let keyCode = KEYCODES;

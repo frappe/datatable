@@ -29,6 +29,7 @@ export default class CellManager {
         this.bindKeyboardSelection();
         this.bindCopyCellContents();
         this.bindMouseEvents();
+        this.bindTreeEvents();
     }
 
     bindFocusCell() {
@@ -38,7 +39,7 @@ export default class CellManager {
     bindEditCell() {
         this.$editingCell = null;
 
-        $.on(this.bodyScrollable, 'dblclick', '.data-table-col', (e, cell) => {
+        $.on(this.bodyScrollable, 'dblclick', '.data-table-cell', (e, cell) => {
             this.activateEditing(cell);
         });
 
@@ -115,7 +116,7 @@ export default class CellManager {
 
         if (this.options.enableInlineFilters) {
             this.keyboard.on('ctrl+f', (e) => {
-                const $cell = $.closest('.data-table-col', e.target);
+                const $cell = $.closest('.data-table-cell', e.target);
                 let {
                     colIndex
                 } = $.data($cell);
@@ -158,7 +159,7 @@ export default class CellManager {
     bindMouseEvents() {
         let mouseDown = null;
 
-        $.on(this.bodyScrollable, 'mousedown', '.data-table-col', (e) => {
+        $.on(this.bodyScrollable, 'mousedown', '.data-table-cell', (e) => {
             mouseDown = true;
             this.focusCell($(e.delegatedTarget));
         });
@@ -172,7 +173,39 @@ export default class CellManager {
             this.selectArea($(e.delegatedTarget));
         };
 
-        $.on(this.bodyScrollable, 'mousemove', '.data-table-col', throttle(selectArea, 50));
+        $.on(this.bodyScrollable, 'mousemove', '.data-table-cell', throttle(selectArea, 50));
+    }
+
+    bindTreeEvents() {
+        $.on(this.bodyScrollable, 'click', '.toggle', (e, $toggle) => {
+            const $cell = $.closest('.data-table-cell', $toggle);
+            const { rowIndex } = $.data($cell);
+
+            if ($cell.classList.contains('tree-close')) {
+                this.rowmanager.openTreeNode(rowIndex);
+                $cell.classList.remove('tree-close');
+            } else {
+                this.rowmanager.closeTreeNode(rowIndex);
+                $cell.classList.add('tree-close');
+            }
+        });
+
+        // this.keyboard.on('left, right', (e) => {
+        //     const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
+        //     if (e.target.matches('.data-table-cell')) {
+        //         const $cell = e.target;
+        //         const { colIndex, rowIndex } = $.data($cell);
+        //         if (+colIndex === firstColumnIndex) {
+        //             if (keyCode[e.keyCode] === 'left') {
+        //                 this.rowmanager.closeTreeNode(rowIndex);
+        //             }
+        //             if (keyCode[e.keyCode] === 'right') {
+        //                 this.rowmanager.openTreeNode(rowIndex);
+        //             }
+        //             return false;
+        //         }
+        //     }
+        // });
     }
 
     focusCell($cell, {
@@ -222,8 +255,8 @@ export default class CellManager {
             rowIndex
         } = $.data($cell);
         const _colIndex = this.datamanager.getColumnIndexById('_rowIndex');
-        const colHeaderSelector = `.data-table-header .data-table-col[data-col-index="${colIndex}"]`;
-        const rowHeaderSelector = `.data-table-col[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
+        const colHeaderSelector = `.data-table-header .data-table-cell[data-col-index="${colIndex}"]`;
+        const rowHeaderSelector = `.data-table-cell[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
 
         if (this.lastHeaders) {
             $.removeStyle(this.lastHeaders, 'backgroundColor');
@@ -349,7 +382,7 @@ export default class CellManager {
     }
 
     clearSelection() {
-        $.each('.data-table-col.highlight', this.bodyScrollable)
+        $.each('.data-table-cell.highlight', this.bodyScrollable)
             .map(cell => cell.classList.remove('highlight'));
 
         this.$selectionCursor = null;
@@ -621,15 +654,16 @@ export default class CellManager {
         });
 
         return `
-      <td class="data-table-col noselect" ${dataAttr} tabindex="0">
-        ${this.getCellContent(cell)}
-      </td>
-    `;
+            <td class="data-table-cell noselect" ${dataAttr} tabindex="0">
+                ${this.getCellContent(cell)}
+            </td>
+        `;
     }
 
     getCellContent(cell) {
         const {
-            isHeader
+            isHeader,
+            isFilter
         } = cell;
 
         const editable = !isHeader && cell.editable !== false;
@@ -645,21 +679,35 @@ export default class CellManager {
         const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
 
         let contentHTML;
-        if (cell.isHeader || cell.isFilter || !cell.column.format) {
+        if (isHeader || isFilter || !cell.column.format) {
             contentHTML = cell.content;
         } else {
             contentHTML = cell.column.format(cell.content, cell);
         }
 
+        if (!(isHeader || isFilter) && cell.indent !== undefined) {
+            const nextRow = this.datamanager.getRow(cell.rowIndex + 1);
+            const addToggle = nextRow && nextRow.meta.indent > cell.indent;
+
+            // Add toggle and indent in the first column
+            const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
+            if (firstColumnIndex === cell.colIndex) {
+                const padding = ((cell.indent || 0) + 1) * 1.5;
+                const toggleHTML = addToggle ? `<span class="toggle" style="left: ${padding - 1.5}rem"></span>` : '';
+                contentHTML = `<span class="tree-node" style="padding-left: ${padding}rem">
+                    ${toggleHTML}${contentHTML}</span>`;
+            }
+        }
+
         return `
-      <div class="content ellipsis">
-        ${(contentHTML)}
-        ${sortIndicator}
-        ${resizeColumn}
-        ${dropdown}
-      </div>
-      ${editCellHTML}
-    `;
+            <div class="content ellipsis">
+                ${contentHTML}
+                ${sortIndicator}
+                ${resizeColumn}
+                ${dropdown}
+            </div>
+            ${editCellHTML}
+        `;
     }
 
     getEditCellHTML() {
@@ -669,6 +717,6 @@ export default class CellManager {
     }
 
     cellSelector(colIndex, rowIndex) {
-        return `.data-table-col[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
+        return `.data-table-cell[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
     }
 }

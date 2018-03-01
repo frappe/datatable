@@ -33,8 +33,8 @@ export default class RowManager {
         // map of checked rows
         this.checkMap = [];
 
-        $.on(this.wrapper, 'click', '.data-table-col[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
-            const $cell = $checkbox.closest('.data-table-col');
+        $.on(this.wrapper, 'click', '.data-table-cell[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
+            const $cell = $checkbox.closest('.data-table-cell');
             const {
                 rowIndex,
                 isHeader
@@ -87,7 +87,7 @@ export default class RowManager {
     checkRow(rowIndex, toggle) {
         const value = toggle ? 1 : 0;
         const selector = rowIndex =>
-            `.data-table-col[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
+            `.data-table-cell[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
         // update internal map
         this.checkMap[rowIndex] = value;
         // set checkbox value explicitly
@@ -109,7 +109,7 @@ export default class RowManager {
             this.checkMap = [];
         }
         // set checkbox value
-        $.each('.data-table-col[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
+        $.each('.data-table-cell[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
             .map(input => {
                 input.checked = toggle;
             });
@@ -154,8 +154,32 @@ export default class RowManager {
         }
     }
 
+    hideRows(rowIndices) {
+        rowIndices.map(rowIndex => {
+            const $tr = this.getRow$(rowIndex);
+            $tr.classList.add('hide');
+        });
+    }
+
+    showRows(rowIndices) {
+        rowIndices.map(rowIndex => {
+            const $tr = this.getRow$(rowIndex);
+            $tr.classList.remove('hide');
+        });
+    }
+
+    openTreeNode(rowIndex) {
+        const rowsToShow = this.datamanager.getChildrenIndices(rowIndex);
+        this.showRows(rowsToShow);
+    }
+
+    closeTreeNode(rowIndex) {
+        const rowsToHide = this.datamanager.getChildrenIndices(rowIndex);
+        this.hideRows(rowsToHide);
+    }
+
     getRow$(rowIndex) {
-        return $(`.data-table-row[data-row-index="${rowIndex}"]`, this.bodyScrollable);
+        return $(this.selector(rowIndex), this.bodyScrollable);
     }
 
     getTotalRows() {
@@ -220,5 +244,9 @@ export default class RowManager {
     getFilterInput(props) {
         const dataAttr = makeDataAttributeString(props);
         return `<input class="data-table-filter input-style" type="text" ${dataAttr} />`;
+    }
+
+    selector(rowIndex) {
+        return `.data-table-row[data-row-index="${rowIndex}"]`;
     }
 }

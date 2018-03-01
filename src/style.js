@@ -104,7 +104,7 @@ export default class Style {
     }
 
     setupMinWidth() {
-        $.each('.data-table-col[data-is-header]', this.header).map(col => {
+        $.each('.data-table-cell[data-is-header]', this.header).map(col => {
             const width = $.style($('.content', col), 'width');
             const {
                 colIndex
@@ -122,7 +122,7 @@ export default class Style {
         if (!$('.data-table-row')) return;
 
         // set initial width as naturally calculated by table's first row
-        $.each('.data-table-row[data-row-index="0"] .data-table-col', this.bodyScrollable).map($cell => {
+        $.each('.data-table-row[data-row-index="0"] .data-table-cell', this.bodyScrollable).map($cell => {
             const {
                 colIndex
             } = $.data($cell);
@@ -171,7 +171,7 @@ export default class Style {
     setDefaultCellHeight() {
         if (this.__cellHeightSet) return;
         const height = this.options.cellHeight ||
-            $.style($('.data-table-col', this.instance.datatableWrapper), 'height');
+            $.style($('.data-table-cell', this.instance.datatableWrapper), 'height');
         if (height) {
             this.setCellHeight(height);
             this.__cellHeightSet = true;
@@ -179,10 +179,10 @@ export default class Style {
     }
 
     setCellHeight(height) {
-        this.setStyle('.data-table-col .content', {
+        this.setStyle('.data-table-cell .content', {
             height: height + 'px'
         });
-        this.setStyle('.data-table-col .edit-cell', {
+        this.setStyle('.data-table-cell .edit-cell', {
             height: height + 'px'
         });
     }
@@ -231,7 +231,7 @@ export default class Style {
     getColumnHeaderElement(colIndex) {
         colIndex = +colIndex;
         if (colIndex < 0) return null;
-        return $(`.data-table-col[data-col-index="${colIndex}"]`, this.header);
+        return $(`.data-table-cell[data-col-index="${colIndex}"]`, this.header);
     }
 
     getRowIndexColumnWidth(baseWidth) {
