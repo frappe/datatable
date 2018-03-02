@@ -7,6 +7,7 @@
 	--light-bg: #f5f7fa;
 	--light-red: #FD8B8B;
 	--text-color: #000000;
+	--text-light: #dfe2e5;
 
 	--spacer-1: 0.25rem;
 	--spacer-2: 0.5rem;
@@ -41,7 +42,6 @@
 	}
 
 	/* styling */
-	width: 100%;
 	position: relative;
 	overflow: auto;
 
@@ -78,18 +78,23 @@
 		}
 	}
 
-	.trash-container {
-		position: absolute;
-		bottom: 0;
-		left: 30%;
-		right: 30%;
-		height: 70px;
-		background: palevioletred;
-		opacity: 0.5;
-	}
-
 	.hide {
 		display: none;
+	}
+
+	.toast-message {
+		position: absolute;
+		bottom: var(--spacer-3);
+		left: 50%;
+		transform: translateX(-50%);
+
+		span {
+			display: inline-block;
+			background-color: rgba(0, 0, 0, 0.8);
+			color: var(--text-light);
+			border-radius: 3px;
+			padding: var(--spacer-2) var(--spacer-3);
+		}
 	}
 }
 

@@ -12,7 +12,8 @@ export default class RowManager {
         linkProperties(this, this.instance, [
             'options',
             'wrapper',
-            'bodyScrollable'
+            'bodyScrollable',
+            'bodyRenderer'
         ]);
 
         this.bindEvents();
@@ -71,16 +72,15 @@ export default class RowManager {
             return [];
         }
 
-        return this.checkMap
-            .map((c, rowIndex) => {
-                if (c) {
-                    return rowIndex;
-                }
-                return null;
-            })
-            .filter(c => {
-                return c !== null || c !== undefined;
-            });
+        let out = [];
+        for (let rowIndex in this.checkMap) {
+            const checked = this.checkMap[rowIndex];
+            if (checked === 1) {
+                out.push(rowIndex)
+            }
+        }
+
+        return out;
     }
 
     highlightCheckedRows() {
@@ -101,6 +101,7 @@ export default class RowManager {
             });
         // highlight row
         this.highlightRow(rowIndex, toggle);
+        this.showCheckStatus();
     }
 
     checkAll(toggle) {
@@ -119,6 +120,16 @@ export default class RowManager {
             });
         // highlight all
         this.highlightAll(toggle);
+        this.showCheckStatus();
+    }
+
+    showCheckStatus() {
+        const checkedRows = this.getCheckedRows();
+        if (checkedRows.length > 0) {
+            this.bodyRenderer.showToastMessage(checkedRows.length + ' rows selected');
+        } else {
+            this.bodyRenderer.clearToastMessage();
+        }
     }
 
     highlightRow(rowIndex, toggle = true) {

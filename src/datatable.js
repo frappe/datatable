@@ -52,23 +52,25 @@ class DataTable {
 
     prepareDom() {
         this.wrapper.innerHTML = `
-      <div class="data-table">
-        <table class="data-table-header">
-        </table>
-        <div class="body-scrollable">
-        </div>
-        <div class="freeze-container">
-          <span>${this.options.freezeMessage}</span>
-        </div>
-        <div class="data-table-footer">
-        </div>
-      </div>
-    `;
+            <div class="data-table">
+                <table class="data-table-header">
+                </table>
+                <div class="body-scrollable">
+                </div>
+                <div class="freeze-container">
+                <span>${this.options.freezeMessage}</span>
+                </div>
+                <div class="data-table-footer">
+                </div>
+                <div class="toast-message"></div>
+            </div>
+        `;
 
         this.datatableWrapper = $('.data-table', this.wrapper);
         this.header = $('.data-table-header', this.wrapper);
         this.bodyScrollable = $('.body-scrollable', this.wrapper);
         this.freezeContainer = $('.freeze-container', this.wrapper);
+        this.toastMessage = $('.toast-message', this.wrapper);
     }
 
     refresh(data) {
@@ -106,6 +108,14 @@ class DataTable {
 
     setDimensions() {
         this.style.setDimensions();
+    }
+
+    showToastMessage(message) {
+        this.bodyRenderer.showToastMessage(message);
+    }
+
+    clearToastMessage() {
+        this.bodyRenderer.clearToastMessage();
     }
 
     getColumn(colIndex) {

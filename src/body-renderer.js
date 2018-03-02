@@ -87,6 +87,14 @@ export default class BodyRenderer {
         this.clusterize.append(data);
     }
 
+    showToastMessage(message) {
+        this.instance.toastMessage.innerHTML = `<span>${message}</span>`;
+    }
+
+    clearToastMessage() {
+        this.instance.toastMessage.innerHTML = '';
+    }
+
     getDataForClusterize(rows) {
         return rows.map((row) => this.rowmanager.getRowHTML(row, row.meta));
     }
