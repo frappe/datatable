@@ -1,15 +1,19 @@
 import $ from './dom';
 import {
     makeDataAttributeString,
-    promisify
+    promisify,
+    ensureArray,
+    linkProperties
 } from './utils';
 
 export default class RowManager {
     constructor(instance) {
         this.instance = instance;
-        this.options = this.instance.options;
-        this.wrapper = this.instance.wrapper;
-        this.bodyScrollable = this.instance.bodyScrollable;
+        linkProperties(this, this.instance, [
+            'options',
+            'wrapper',
+            'bodyScrollable'
+        ]);
 
         this.bindEvents();
         this.refreshRows = promisify(this.refreshRows, this);
@@ -155,6 +159,7 @@ export default class RowManager {
     }
 
     hideRows(rowIndices) {
+        rowIndices = ensureArray(rowIndices);
         rowIndices.map(rowIndex => {
             const $tr = this.getRow$(rowIndex);
             $tr.classList.add('hide');
@@ -162,20 +167,33 @@ export default class RowManager {
     }
 
     showRows(rowIndices) {
+        rowIndices = ensureArray(rowIndices);
         rowIndices.map(rowIndex => {
             const $tr = this.getRow$(rowIndex);
             $tr.classList.remove('hide');
         });
     }
 
-    openTreeNode(rowIndex) {
-        const rowsToShow = this.datamanager.getChildrenIndices(rowIndex);
+    openSingleNode(rowIndex) {
+        const rowsToShow = this.datamanager.getImmediateChildren(rowIndex);
         this.showRows(rowsToShow);
+        this.cellmanager.toggleTreeButton(rowIndex, true);
     }
 
-    closeTreeNode(rowIndex) {
-        const rowsToHide = this.datamanager.getChildrenIndices(rowIndex);
-        this.hideRows(rowsToHide);
+    closeSingleNode(rowIndex) {
+        const children = this.datamanager.getImmediateChildren(rowIndex);
+        children.forEach(childIndex => {
+            const row = this.datamanager.getRow(childIndex);
+            if (row.meta.isLeaf) {
+                // close
+                this.hideRows(childIndex);
+                this.cellmanager.toggleTreeButton(childIndex, false);
+            } else {
+                this.closeSingleNode(childIndex);
+                this.hideRows(childIndex);
+            }
+        });
+        this.cellmanager.toggleTreeButton(rowIndex, false);
     }
 
     getRow$(rowIndex) {

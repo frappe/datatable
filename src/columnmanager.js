@@ -406,15 +406,7 @@ export default class ColumnManager {
     }
 
     getFirstColumnIndex() {
-        if (this.options.addCheckboxColumn && this.options.addSerialNoColumn) {
-            return 2;
-        }
-
-        if (this.options.addCheckboxColumn || this.options.addSerialNoColumn) {
-            return 1;
-        }
-
-        return 0;
+        return this.datamanager.getColumnIndexById('_rowIndex') + 1;
     }
 
     getHeaderCell$(colIndex) {

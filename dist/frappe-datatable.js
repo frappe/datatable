@@ -824,6 +824,25 @@ function linkProperties(target, source, properties) {
     Object.defineProperties(target, props);
 }
 
+function isSet(val) {
+    return val !== undefined || val !== null;
+}
+
+function notSet(val) {
+    return !isSet(val);
+}
+
+function isNumber(val) {
+    return !isNaN(val);
+}
+
+function ensureArray(val) {
+    if (!Array.isArray(val)) {
+        return [val];
+    }
+    return val;
+}
+
 class DataManager {
     constructor(options) {
         this.options = options;
@@ -846,6 +865,7 @@ class DataManager {
 
         this.prepareColumns();
         this.prepareRows();
+        this.prepareTreeRows();
         this.prepareRowView();
 
         this.prepareNumericColumns();
@@ -994,10 +1014,22 @@ class DataManager {
                     }
                 }
 
-                meta.indent = d.indent;
+                meta.indent = d.indent || 0;
             }
 
             return this.prepareRow(row, meta);
+        });
+    }
+
+    prepareTreeRows() {
+        this.rows.forEach((row, i) => {
+            if (isNumber(row.meta.indent)) {
+                // if (i === 36) debugger;
+                const nextRow = this.getRow(i + 1);
+                row.meta.isLeaf = !nextRow ||
+                    notSet(nextRow.meta.indent) ||
+                    nextRow.meta.indent <= row.meta.indent;
+            }
         });
     }
 
@@ -1322,21 +1354,44 @@ class DataManager {
         return this.getRow(rowIndex)[colIndex];
     }
 
-    getChildrenIndices(parentRowIndex) {
+    getChildren(parentRowIndex) {
         parentRowIndex = +parentRowIndex;
         const parentIndent = this.getRow(parentRowIndex).meta.indent;
         const out = [];
 
-        let i = parentRowIndex + 1;
-        let nextRow = this.getRow(i);
-        let nextIndent = nextRow ? (nextRow.meta.indent || 0) : -1;
+        for (let i = parentRowIndex + 1; i < this.rowCount; i++) {
+            const row = this.getRow(i);
+            if (isNaN(row.meta.indent)) continue;
 
-        while (nextIndent > parentIndent) {
-            out.push(i);
+            if (row.meta.indent > parentIndent) {
+                out.push(i);
+            }
 
-            i++;
-            nextRow = this.getRow(i);
-            nextIndent = nextRow ? (nextRow.meta.indent || 0) : -1;
+            if (row.meta.indent === parentIndent) {
+                break;
+            }
+        }
+
+        return out;
+    }
+
+    getImmediateChildren(parentRowIndex) {
+        parentRowIndex = +parentRowIndex;
+        const parentIndent = this.getRow(parentRowIndex).meta.indent;
+        const out = [];
+        const childIndent = parentIndent + 1;
+
+        for (let i = parentRowIndex + 1; i < this.rowCount; i++) {
+            const row = this.getRow(i);
+            if (isNaN(row.meta.indent) || row.meta.indent > childIndent) continue;
+
+            if (row.meta.indent === childIndent) {
+                out.push(i);
+            }
+
+            if (row.meta.indent === parentIndent) {
+                break;
+            }
         }
 
         return out;
@@ -1773,15 +1828,7 @@ class ColumnManager {
     }
 
     getFirstColumnIndex() {
-        if (this.options.addCheckboxColumn && this.options.addSerialNoColumn) {
-            return 2;
-        }
-
-        if (this.options.addCheckboxColumn || this.options.addSerialNoColumn) {
-            return 1;
-        }
-
-        return 0;
+        return this.datamanager.getColumnIndexById('_rowIndex') + 1;
     }
 
     getHeaderCell$(colIndex) {
@@ -1814,14 +1861,16 @@ var getDropdownHTML = function getDropdownHTML(dropdownButton = 'v') {
 class CellManager {
     constructor(instance) {
         this.instance = instance;
-        this.wrapper = this.instance.wrapper;
-        this.options = this.instance.options;
-        this.style = this.instance.style;
-        this.bodyScrollable = this.instance.bodyScrollable;
-        this.columnmanager = this.instance.columnmanager;
-        this.rowmanager = this.instance.rowmanager;
-        this.datamanager = this.instance.datamanager;
-        this.keyboard = this.instance.keyboard;
+        linkProperties(this, this.instance, [
+            'wrapper',
+            'options',
+            'style',
+            'bodyScrollable',
+            'columnmanager',
+            'rowmanager',
+            'datamanager',
+            'keyboard'
+        ]);
 
         this.bindEvents();
     }
@@ -1985,30 +2034,11 @@ class CellManager {
             const { rowIndex } = $.data($cell);
 
             if ($cell.classList.contains('tree-close')) {
-                this.rowmanager.openTreeNode(rowIndex);
-                $cell.classList.remove('tree-close');
+                this.rowmanager.openSingleNode(rowIndex);
             } else {
-                this.rowmanager.closeTreeNode(rowIndex);
-                $cell.classList.add('tree-close');
+                this.rowmanager.closeSingleNode(rowIndex);
             }
         });
-
-        // this.keyboard.on('left, right', (e) => {
-        //     const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
-        //     if (e.target.matches('.data-table-cell')) {
-        //         const $cell = e.target;
-        //         const { colIndex, rowIndex } = $.data($cell);
-        //         if (+colIndex === firstColumnIndex) {
-        //             if (keyCode[e.keyCode] === 'left') {
-        //                 this.rowmanager.closeTreeNode(rowIndex);
-        //             }
-        //             if (keyCode[e.keyCode] === 'right') {
-        //                 this.rowmanager.openTreeNode(rowIndex);
-        //             }
-        //             return false;
-        //         }
-        //     }
-        // });
     }
 
     focusCell($cell, {
@@ -2361,8 +2391,16 @@ class CellManager {
     }
 
     refreshCell(cell) {
-        const $cell = $(this.cellSelector(cell.colIndex, cell.rowIndex), this.bodyScrollable);
+        const $cell = $(this.selector(cell.colIndex, cell.rowIndex), this.bodyScrollable);
         $cell.innerHTML = this.getCellContent(cell);
+    }
+
+    toggleTreeButton(rowIndex, flag) {
+        const colIndex = this.columnmanager.getFirstColumnIndex();
+        const $cell = this.getCell$(colIndex, rowIndex);
+        if ($cell) {
+            $cell.classList[flag ? 'remove' : 'add']('tree-close');
+        }
     }
 
     isStandardCell(colIndex) {
@@ -2371,7 +2409,7 @@ class CellManager {
     }
 
     getCell$(colIndex, rowIndex) {
-        return $(this.cellSelector(colIndex, rowIndex), this.bodyScrollable);
+        return $(this.selector(colIndex, rowIndex), this.bodyScrollable);
     }
 
     getAboveCell$($cell) {
@@ -2519,7 +2557,7 @@ class CellManager {
     `;
     }
 
-    cellSelector(colIndex, rowIndex) {
+    selector(colIndex, rowIndex) {
         return `.data-table-cell[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
     }
 }
@@ -2527,9 +2565,11 @@ class CellManager {
 class RowManager {
     constructor(instance) {
         this.instance = instance;
-        this.options = this.instance.options;
-        this.wrapper = this.instance.wrapper;
-        this.bodyScrollable = this.instance.bodyScrollable;
+        linkProperties(this, this.instance, [
+            'options',
+            'wrapper',
+            'bodyScrollable'
+        ]);
 
         this.bindEvents();
         this.refreshRows = promisify(this.refreshRows, this);
@@ -2675,6 +2715,7 @@ class RowManager {
     }
 
     hideRows(rowIndices) {
+        rowIndices = ensureArray(rowIndices);
         rowIndices.map(rowIndex => {
             const $tr = this.getRow$(rowIndex);
             $tr.classList.add('hide');
@@ -2682,20 +2723,33 @@ class RowManager {
     }
 
     showRows(rowIndices) {
+        rowIndices = ensureArray(rowIndices);
         rowIndices.map(rowIndex => {
             const $tr = this.getRow$(rowIndex);
             $tr.classList.remove('hide');
         });
     }
 
-    openTreeNode(rowIndex) {
-        const rowsToShow = this.datamanager.getChildrenIndices(rowIndex);
+    openSingleNode(rowIndex) {
+        const rowsToShow = this.datamanager.getImmediateChildren(rowIndex);
         this.showRows(rowsToShow);
+        this.cellmanager.toggleTreeButton(rowIndex, true);
     }
 
-    closeTreeNode(rowIndex) {
-        const rowsToHide = this.datamanager.getChildrenIndices(rowIndex);
-        this.hideRows(rowsToHide);
+    closeSingleNode(rowIndex) {
+        const children = this.datamanager.getImmediateChildren(rowIndex);
+        children.forEach(childIndex => {
+            const row = this.datamanager.getRow(childIndex);
+            if (row.meta.isLeaf) {
+                // close
+                this.hideRows(childIndex);
+                this.cellmanager.toggleTreeButton(childIndex, false);
+            } else {
+                this.closeSingleNode(childIndex);
+                this.hideRows(childIndex);
+            }
+        });
+        this.cellmanager.toggleTreeButton(rowIndex, false);
     }
 
     getRow$(rowIndex) {

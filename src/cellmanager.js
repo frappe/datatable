@@ -1,7 +1,8 @@
 import {
     copyTextToClipboard,
     makeDataAttributeString,
-    throttle
+    throttle,
+    linkProperties
 } from './utils';
 import $ from './dom';
 import {
@@ -11,14 +12,16 @@ import {
 export default class CellManager {
     constructor(instance) {
         this.instance = instance;
-        this.wrapper = this.instance.wrapper;
-        this.options = this.instance.options;
-        this.style = this.instance.style;
-        this.bodyScrollable = this.instance.bodyScrollable;
-        this.columnmanager = this.instance.columnmanager;
-        this.rowmanager = this.instance.rowmanager;
-        this.datamanager = this.instance.datamanager;
-        this.keyboard = this.instance.keyboard;
+        linkProperties(this, this.instance, [
+            'wrapper',
+            'options',
+            'style',
+            'bodyScrollable',
+            'columnmanager',
+            'rowmanager',
+            'datamanager',
+            'keyboard'
+        ]);
 
         this.bindEvents();
     }
@@ -182,30 +185,11 @@ export default class CellManager {
             const { rowIndex } = $.data($cell);
 
             if ($cell.classList.contains('tree-close')) {
-                this.rowmanager.openTreeNode(rowIndex);
-                $cell.classList.remove('tree-close');
+                this.rowmanager.openSingleNode(rowIndex);
             } else {
-                this.rowmanager.closeTreeNode(rowIndex);
-                $cell.classList.add('tree-close');
+                this.rowmanager.closeSingleNode(rowIndex);
             }
         });
-
-        // this.keyboard.on('left, right', (e) => {
-        //     const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
-        //     if (e.target.matches('.data-table-cell')) {
-        //         const $cell = e.target;
-        //         const { colIndex, rowIndex } = $.data($cell);
-        //         if (+colIndex === firstColumnIndex) {
-        //             if (keyCode[e.keyCode] === 'left') {
-        //                 this.rowmanager.closeTreeNode(rowIndex);
-        //             }
-        //             if (keyCode[e.keyCode] === 'right') {
-        //                 this.rowmanager.openTreeNode(rowIndex);
-        //             }
-        //             return false;
-        //         }
-        //     }
-        // });
     }
 
     focusCell($cell, {
@@ -558,8 +542,16 @@ export default class CellManager {
     }
 
     refreshCell(cell) {
-        const $cell = $(this.cellSelector(cell.colIndex, cell.rowIndex), this.bodyScrollable);
+        const $cell = $(this.selector(cell.colIndex, cell.rowIndex), this.bodyScrollable);
         $cell.innerHTML = this.getCellContent(cell);
+    }
+
+    toggleTreeButton(rowIndex, flag) {
+        const colIndex = this.columnmanager.getFirstColumnIndex();
+        const $cell = this.getCell$(colIndex, rowIndex);
+        if ($cell) {
+            $cell.classList[flag ? 'remove' : 'add']('tree-close');
+        }
     }
 
     isStandardCell(colIndex) {
@@ -568,7 +560,7 @@ export default class CellManager {
     }
 
     getCell$(colIndex, rowIndex) {
-        return $(this.cellSelector(colIndex, rowIndex), this.bodyScrollable);
+        return $(this.selector(colIndex, rowIndex), this.bodyScrollable);
     }
 
     getAboveCell$($cell) {
@@ -716,7 +708,7 @@ export default class CellManager {
     `;
     }
 
-    cellSelector(colIndex, rowIndex) {
+    selector(colIndex, rowIndex) {
         return `.data-table-cell[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
     }
 }

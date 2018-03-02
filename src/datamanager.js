@@ -1,6 +1,8 @@
 import {
     isNumeric,
-    promisify
+    promisify,
+    isNumber,
+    notSet
 } from './utils';
 
 export default class DataManager {
@@ -25,6 +27,7 @@ export default class DataManager {
 
         this.prepareColumns();
         this.prepareRows();
+        this.prepareTreeRows();
         this.prepareRowView();
 
         this.prepareNumericColumns();
@@ -173,10 +176,22 @@ export default class DataManager {
                     }
                 }
 
-                meta.indent = d.indent;
+                meta.indent = d.indent || 0;
             }
 
             return this.prepareRow(row, meta);
+        });
+    }
+
+    prepareTreeRows() {
+        this.rows.forEach((row, i) => {
+            if (isNumber(row.meta.indent)) {
+                // if (i === 36) debugger;
+                const nextRow = this.getRow(i + 1);
+                row.meta.isLeaf = !nextRow ||
+                    notSet(nextRow.meta.indent) ||
+                    nextRow.meta.indent <= row.meta.indent;
+            }
         });
     }
 
@@ -501,21 +516,44 @@ export default class DataManager {
         return this.getRow(rowIndex)[colIndex];
     }
 
-    getChildrenIndices(parentRowIndex) {
+    getChildren(parentRowIndex) {
         parentRowIndex = +parentRowIndex;
         const parentIndent = this.getRow(parentRowIndex).meta.indent;
         const out = [];
 
-        let i = parentRowIndex + 1;
-        let nextRow = this.getRow(i);
-        let nextIndent = nextRow ? (nextRow.meta.indent || 0) : -1;
+        for (let i = parentRowIndex + 1; i < this.rowCount; i++) {
+            const row = this.getRow(i);
+            if (isNaN(row.meta.indent)) continue;
 
-        while (nextIndent > parentIndent) {
-            out.push(i);
+            if (row.meta.indent > parentIndent) {
+                out.push(i);
+            }
 
-            i++;
-            nextRow = this.getRow(i);
-            nextIndent = nextRow ? (nextRow.meta.indent || 0) : -1;
+            if (row.meta.indent === parentIndent) {
+                break;
+            }
+        }
+
+        return out;
+    }
+
+    getImmediateChildren(parentRowIndex) {
+        parentRowIndex = +parentRowIndex;
+        const parentIndent = this.getRow(parentRowIndex).meta.indent;
+        const out = [];
+        const childIndent = parentIndent + 1;
+
+        for (let i = parentRowIndex + 1; i < this.rowCount; i++) {
+            const row = this.getRow(i);
+            if (isNaN(row.meta.indent) || row.meta.indent > childIndent) continue;
+
+            if (row.meta.indent === childIndent) {
+                out.push(i);
+            }
+
+            if (row.meta.indent === parentIndent) {
+                break;
+            }
         }
 
         return out;

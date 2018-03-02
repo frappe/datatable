@@ -183,3 +183,22 @@ export function linkProperties(target, source, properties) {
     }, {});
     Object.defineProperties(target, props);
 };
+
+export function isSet(val) {
+    return val !== undefined || val !== null;
+}
+
+export function notSet(val) {
+    return !isSet(val);
+}
+
+export function isNumber(val) {
+    return !isNaN(val);
+}
+
+export function ensureArray(val) {
+    if (!Array.isArray(val)) {
+        return [val];
+    }
+    return val;
+}
