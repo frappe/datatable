@@ -567,8 +567,13 @@ export default class CellManager {
         const {
             colIndex
         } = $.data($cell);
-        const $aboveRow = $cell.parentElement.previousElementSibling;
 
+        let $aboveRow = $cell.parentElement.previousElementSibling;
+        while ($aboveRow && $aboveRow.classList.contains('hide')) {
+            $aboveRow = $aboveRow.previousElementSibling;
+        }
+
+        if (!$aboveRow) return $cell;
         return $(`[data-col-index="${colIndex}"]`, $aboveRow);
     }
 
@@ -576,8 +581,13 @@ export default class CellManager {
         const {
             colIndex
         } = $.data($cell);
-        const $belowRow = $cell.parentElement.nextElementSibling;
 
+        let $belowRow = $cell.parentElement.nextElementSibling;
+        while ($belowRow && $belowRow.classList.contains('hide')) {
+            $belowRow = $belowRow.nextElementSibling;
+        }
+
+        if (!$belowRow) return $cell;
         return $(`[data-col-index="${colIndex}"]`, $belowRow);
     }
 
