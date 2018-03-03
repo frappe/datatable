@@ -5,23 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Frappe DataTable - A simple, modern datatable library for the web</title>
-    <link href="frappe-datatable.css" rel="stylesheet">
-    <link href="index.css" rel="stylesheet">
+    <link href="assets/frappe-datatable.css" rel="stylesheet">
+    <link href="assets/hljs-default.css" rel="stylesheet">
+    <link href="assets/index.css" rel="stylesheet">
 </head>
 <body>
     <section class="hero showcase">
         <h1>Frappe DataTable</h1>
         <p>A simple, modern and interactive datatable for the web</p>
-        <div class="datatable-1"></div>
+        <div class="example-1">
+            <div class="target"></div>
+        </div>
+    </section>
+    <section class="showcase">
+        <h2>Format Cells</h2>
+        <p>Show custom formatted cells based on context</p>
+        <div class="example-2"></div>
+    </section>
+    <section class="showcase">
+        <h2>Inline Filters</h2>
+        <p>Filter rows based on search text per column</p>
+        <div class="example-3"></div>
+    </section>
+    <section class="showcase">
+        <h2>Keyboard Navigation</h2>
+        <p>Full Keyboard Navigation support</p>
+        <div class="example-4"></div>
     </section>
     <section class="showcase">
         <h2>Tree Structure</h2>
         <p>Show tree structured rows in your table</p>
-        <div class="datatable-2"></div>
+        <div class="example-5"></div>
     </section>
-    <script src="../node_modules/clusterize.js/clusterize.js"></script>
-	<script src="../node_modules/sortablejs/Sortable.js"></script>
-    <script src="frappe-datatable.js"></script>
-    <script src="index.js"></script>
+    <section class="showcase installation">
+        <h2>Installation</h2>
+        <div class="code">
+<pre><code>// Install using yarn
+yarn add frappe-datatable
+
+// or npm
+npm install frappe-datatable</code></pre>
+    </section>
+    <section class="showcase installation">
+        <h2>Usage</h2>
+        <div class="code">
+            <pre><code>    let datatable = new DataTable({
+        columns: ['Name', 'Position', ...],
+        data: [
+            ['Tiger Nixon', 'System Architect', ...],
+            ['Garrett Winters', 'Accountant', ...],
+            ...
+        ]
+    })
+</code>
+            </pre>
+        </div>
+    </section>
+    <section class="showcase installation">
+        <h2>List of configurable options</h2>
+        <div class="code">
+            <pre><code>{
+    columns: [],
+    data: [],
+    dropdownButton: '▼',
+    headerDropdown: [
+        {
+            label: 'Custom Action',
+            action: console.log
+        }
+    ],
+    events: {
+        onRemoveColumn(column) {
+
+        },
+        onSwitchColumn(column1, column2) {
+
+        },
+        onSortColumn(column) {
+
+        }
+    },
+    sortIndicator: {
+        asc: '↑',
+        desc: '↓',
+        none: ''
+    },
+    freezeMessage: '',
+    getEditor: () => {
+
+    },
+    addSerialNoColumn: true,
+    addCheckboxColumn: false,
+    enableClusterize: true,
+    enableLogs: false,
+    layout: 'fixed', // fixed, fluid
+    noDataMessage: 'No Data',
+    cellHeight: null,
+    enableInlineFilters: false
+};</code></pre>
+        </div>
+    </section>
+    <section class="showcase">
+        <div class="padding-1">
+            <a href="https://github.com/frappe/datatable">View on GitHub</a>
+        </div>
+        <div class="padding-1">
+            <span>MIT License</span>
+        </div>
+    </section>
+    <footer class="showcase">
+        <section>Made with ❤️ by Frappe</section>
+    </footer>
+    <script src="assets/clusterize.min.js"></script>
+	<script src="assets/Sortable.min.js"></script>
+    <script src="assets/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src="assets/frappe-datatable.js"></script>
+    <script src="assets/index.js"></script>
 </body>
 </html>

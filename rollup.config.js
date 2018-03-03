@@ -18,7 +18,7 @@ const dev = {
             'clusterize.js': 'Clusterize'
         }
     }, {
-        file: 'docs/frappe-datatable.js',
+        file: 'docs/assets/frappe-datatable.js',
         format: 'iife',
         name: 'DataTable',
         globals: {
@@ -31,7 +31,7 @@ const dev = {
         nodeResolve(),
         commonjs(),
         postcss({
-            extract: ['dist/frappe-datatable.css', 'docs/frappe-datatable.css'],
+            extract: 'dist/frappe-datatable.css',
             plugins: [
                 nested(),
                 cssnext()

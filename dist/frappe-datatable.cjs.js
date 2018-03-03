@@ -2417,8 +2417,13 @@ class CellManager {
         const {
             colIndex
         } = $.data($cell);
-        const $aboveRow = $cell.parentElement.previousElementSibling;
 
+        let $aboveRow = $cell.parentElement.previousElementSibling;
+        while ($aboveRow && $aboveRow.classList.contains('hide')) {
+            $aboveRow = $aboveRow.previousElementSibling;
+        }
+
+        if (!$aboveRow) return $cell;
         return $(`[data-col-index="${colIndex}"]`, $aboveRow);
     }
 
@@ -2426,8 +2431,13 @@ class CellManager {
         const {
             colIndex
         } = $.data($cell);
-        const $belowRow = $cell.parentElement.nextElementSibling;
 
+        let $belowRow = $cell.parentElement.nextElementSibling;
+        while ($belowRow && $belowRow.classList.contains('hide')) {
+            $belowRow = $belowRow.nextElementSibling;
+        }
+
+        if (!$belowRow) return $cell;
         return $(`[data-col-index="${colIndex}"]`, $belowRow);
     }
 
@@ -2569,7 +2579,8 @@ class RowManager {
         linkProperties(this, this.instance, [
             'options',
             'wrapper',
-            'bodyScrollable'
+            'bodyScrollable',
+            'bodyRenderer'
         ]);
 
         this.bindEvents();
@@ -2628,16 +2639,15 @@ class RowManager {
             return [];
         }
 
-        return this.checkMap
-            .map((c, rowIndex) => {
-                if (c) {
-                    return rowIndex;
-                }
-                return null;
-            })
-            .filter(c => {
-                return c !== null || c !== undefined;
-            });
+        let out = [];
+        for (let rowIndex in this.checkMap) {
+            const checked = this.checkMap[rowIndex];
+            if (checked === 1) {
+                out.push(rowIndex);
+            }
+        }
+
+        return out;
     }
 
     highlightCheckedRows() {
@@ -2658,6 +2668,7 @@ class RowManager {
             });
         // highlight row
         this.highlightRow(rowIndex, toggle);
+        this.showCheckStatus();
     }
 
     checkAll(toggle) {
@@ -2676,6 +2687,16 @@ class RowManager {
             });
         // highlight all
         this.highlightAll(toggle);
+        this.showCheckStatus();
+    }
+
+    showCheckStatus() {
+        const checkedRows = this.getCheckedRows();
+        if (checkedRows.length > 0) {
+            this.bodyRenderer.showToastMessage(checkedRows.length + ' rows selected');
+        } else {
+            this.bodyRenderer.clearToastMessage();
+        }
     }
 
     highlightRow(rowIndex, toggle = true) {
@@ -2907,6 +2928,14 @@ class BodyRenderer {
         const rows = this.datamanager.getRowsForView(20);
         const data = this.getDataForClusterize(rows);
         this.clusterize.append(data);
+    }
+
+    showToastMessage(message) {
+        this.instance.toastMessage.innerHTML = `<span>${message}</span>`;
+    }
+
+    clearToastMessage() {
+        this.instance.toastMessage.innerHTML = '';
     }
 
     getDataForClusterize(rows) {
@@ -3315,23 +3344,25 @@ class DataTable {
 
     prepareDom() {
         this.wrapper.innerHTML = `
-      <div class="data-table">
-        <table class="data-table-header">
-        </table>
-        <div class="body-scrollable">
-        </div>
-        <div class="freeze-container">
-          <span>${this.options.freezeMessage}</span>
-        </div>
-        <div class="data-table-footer">
-        </div>
-      </div>
-    `;
+            <div class="data-table">
+                <table class="data-table-header">
+                </table>
+                <div class="body-scrollable">
+                </div>
+                <div class="freeze-container">
+                <span>${this.options.freezeMessage}</span>
+                </div>
+                <div class="data-table-footer">
+                </div>
+                <div class="toast-message"></div>
+            </div>
+        `;
 
         this.datatableWrapper = $('.data-table', this.wrapper);
         this.header = $('.data-table-header', this.wrapper);
         this.bodyScrollable = $('.body-scrollable', this.wrapper);
         this.freezeContainer = $('.freeze-container', this.wrapper);
+        this.toastMessage = $('.toast-message', this.wrapper);
     }
 
     refresh(data) {
@@ -3369,6 +3400,14 @@ class DataTable {
 
     setDimensions() {
         this.style.setDimensions();
+    }
+
+    showToastMessage(message) {
+        this.bodyRenderer.showToastMessage(message);
+    }
+
+    clearToastMessage() {
+        this.bodyRenderer.clearToastMessage();
     }
 
     getColumn(colIndex) {

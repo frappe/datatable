@@ -4,7 +4,6 @@
 .data-table {
 
 	/* styling */
-	width: 100%;
 	position: relative;
 	overflow: auto;
 }
@@ -77,19 +76,27 @@
 			        transform: translateY(-50%);
 		}
 
-.data-table .trash-container {
-		position: absolute;
-		bottom: 0;
-		left: 30%;
-		right: 30%;
-		height: 70px;
-		background: palevioletred;
-		opacity: 0.5;
-	}
-
 .data-table .hide {
 		display: none;
 	}
+
+.data-table .toast-message {
+		position: absolute;
+		bottom: 16px;
+		bottom: 1rem;
+		left: 50%;
+		-webkit-transform: translateX(-50%);
+		        transform: translateX(-50%);
+	}
+
+.data-table .toast-message span {
+			display: inline-block;
+			background-color: rgba(0, 0, 0, .8);
+			color: #dfe2e5;
+			border-radius: 3px;
+			padding: 8px 16px;
+			padding: 0.5rem 1rem;
+		}
 
 .body-scrollable {
 	max-height: 500px;
