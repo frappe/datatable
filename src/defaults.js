@@ -47,5 +47,6 @@ export default {
     layout: 'ratio', // fixed, fluid, ratio
     noDataMessage: 'No Data',
     cellHeight: null,
-    enableInlineFilters: false
+    enableInlineFilters: false,
+    enableTreeView: false
 };

@@ -687,7 +687,7 @@ export default class CellManager {
             contentHTML = cell.column.format(cell.content, cell);
         }
 
-        if (!(isHeader || isFilter) && cell.indent !== undefined) {
+        if (this.options.enableTreeView && !(isHeader || isFilter) && cell.indent !== undefined) {
             const nextRow = this.datamanager.getRow(cell.rowIndex + 1);
             const addToggle = nextRow && nextRow.meta.indent > cell.indent;
 
