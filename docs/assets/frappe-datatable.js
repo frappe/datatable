@@ -897,7 +897,7 @@ class DataManager {
                 sortable: false,
                 focusable: false,
                 dropdown: false,
-                width: 25
+                width: 32
             };
             this.columns.push(cell);
         }
@@ -1341,6 +1341,10 @@ class DataManager {
     getColumn(colIndex) {
         colIndex = +colIndex;
         return this.columns.find(col => col.colIndex === colIndex);
+    }
+
+    getColumnById(id) {
+        return this.columns.find(col => col.id === id);
     }
 
     getRow(rowIndex) {
@@ -2956,7 +2960,8 @@ class Style {
 
         linkProperties(this, this.instance, [
             'options', 'datamanager', 'columnmanager',
-            'header', 'bodyScrollable', 'getColumn'
+            'header', 'bodyScrollable', 'datatableWrapper',
+            'getColumn'
         ]);
 
         this.scopeClass = 'datatable-instance-' + instance.constructor.instances;
@@ -3077,6 +3082,7 @@ class Style {
 
             if (column.id === '_rowIndex') {
                 naturalWidth = this.getRowIndexColumnWidth(naturalWidth);
+                column.width = naturalWidth;
             }
 
             column.naturalWidth = naturalWidth;
@@ -3084,15 +3090,50 @@ class Style {
     }
 
     setupColumnWidth() {
-        this.datamanager.getColumns()
-            .map(column => {
-                if (!column.width) {
-                    column.width = column.naturalWidth;
-                }
-                if (column.width < column.minWidth) {
-                    column.width = column.minWidth;
-                }
-            });
+        if (this.options.layout === 'ratio') {
+            let totalWidth = $.style(this.datatableWrapper, 'width');
+
+            if (this.options.addSerialNoColumn) {
+                const rowIndexColumn = this.datamanager.getColumnById('_rowIndex');
+                totalWidth = totalWidth - rowIndexColumn.width - 1;
+            }
+
+            if (this.options.addCheckboxColumn) {
+                const rowIndexColumn = this.datamanager.getColumnById('_checkbox');
+                totalWidth = totalWidth - rowIndexColumn.width - 1;
+            }
+
+            const totalParts = this.datamanager.getColumns()
+                .map(column => {
+                    if (column.id === '_rowIndex' || column.id === '_checkbox') {
+                        return 0;
+                    }
+                    if (!column.width) {
+                        column.width = 1;
+                    }
+                    column.ratioWidth = parseInt(column.width, 10);
+                    return column.ratioWidth;
+                })
+                .reduce((a, c) => a + c);
+
+            const onePart = totalWidth / totalParts;
+
+            this.datamanager.getColumns()
+                .map(column => {
+                    if (column.id === '_rowIndex' || column.id === '_checkbox') return;
+                    column.width = Math.floor(onePart * column.ratioWidth) - 1;
+                });
+        } else {
+            this.datamanager.getColumns()
+                .map(column => {
+                    if (!column.width) {
+                        column.width = column.naturalWidth;
+                    }
+                    if (column.width < column.minWidth) {
+                        column.width = column.minWidth;
+                    }
+                });
+        }
     }
 
     distributeRemainingWidth() {
@@ -3294,7 +3335,7 @@ var DEFAULT_OPTIONS = {
     addCheckboxColumn: false,
     enableClusterize: true,
     enableLogs: false,
-    layout: 'fixed', // fixed, fluid
+    layout: 'ratio', // fixed, fluid, ratio
     noDataMessage: 'No Data',
     cellHeight: null,
     enableInlineFilters: false

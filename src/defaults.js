@@ -44,7 +44,7 @@ export default {
     addCheckboxColumn: false,
     enableClusterize: true,
     enableLogs: false,
-    layout: 'fixed', // fixed, fluid
+    layout: 'ratio', // fixed, fluid, ratio
     noDataMessage: 'No Data',
     cellHeight: null,
     enableInlineFilters: false

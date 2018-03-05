@@ -59,7 +59,7 @@ export default class DataManager {
                 sortable: false,
                 focusable: false,
                 dropdown: false,
-                width: 25
+                width: 32
             };
             this.columns.push(cell);
         }
@@ -503,6 +503,10 @@ export default class DataManager {
     getColumn(colIndex) {
         colIndex = +colIndex;
         return this.columns.find(col => col.colIndex === colIndex);
+    }
+
+    getColumnById(id) {
+        return this.columns.find(col => col.id === id);
     }
 
     getRow(rowIndex) {
