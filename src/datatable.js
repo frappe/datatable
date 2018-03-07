@@ -73,8 +73,8 @@ class DataTable {
         this.toastMessage = $('.toast-message', this.wrapper);
     }
 
-    refresh(data) {
-        this.datamanager.init(data);
+    refresh(data, columns) {
+        this.datamanager.init(data, columns);
         this.render();
         this.setDimensions();
     }

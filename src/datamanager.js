@@ -14,9 +14,12 @@ export default class DataManager {
         this.filterRows = promisify(this.filterRows, this);
     }
 
-    init(data) {
+    init(data, columns) {
         if (!data) {
             data = this.options.data;
+        }
+        if (columns) {
+            this.options.columns = columns;
         }
 
         this.data = data;

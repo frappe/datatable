@@ -852,9 +852,12 @@ class DataManager {
         this.filterRows = promisify(this.filterRows, this);
     }
 
-    init(data) {
+    init(data, columns) {
         if (!data) {
             data = this.options.data;
+        }
+        if (columns) {
+            this.options.columns = columns;
         }
 
         this.data = data;
@@ -3419,8 +3422,8 @@ class DataTable {
         this.toastMessage = $('.toast-message', this.wrapper);
     }
 
-    refresh(data) {
-        this.datamanager.init(data);
+    refresh(data, columns) {
+        this.datamanager.init(data, columns);
         this.render();
         this.setDimensions();
     }

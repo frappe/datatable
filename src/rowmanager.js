@@ -76,7 +76,7 @@ export default class RowManager {
         for (let rowIndex in this.checkMap) {
             const checked = this.checkMap[rowIndex];
             if (checked === 1) {
-                out.push(rowIndex)
+                out.push(rowIndex);
             }
         }
 
