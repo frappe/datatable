@@ -39,7 +39,7 @@ export default {
         none: ''
     },
     freezeMessage: '',
-    getEditor: () => {},
+    getEditor: null,
     addSerialNoColumn: true,
     addCheckboxColumn: false,
     enableClusterize: true,

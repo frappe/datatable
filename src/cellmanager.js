@@ -430,11 +430,25 @@ export default class CellManager {
     }
 
     getEditor(colIndex, rowIndex, value, parent) {
-        // debugger;
-        const obj = this.options.getEditor(colIndex, rowIndex, value, parent);
-        if (obj && obj.setValue) return obj;
+        const column = this.datamanager.getColumn(colIndex);
+        const row = this.datamanager.getRow(rowIndex);
+        let editor = this.options.getEditor ?
+            this.options.getEditor(colIndex, rowIndex, value, parent, column, row) :
+            this.getDefaultEditor(parent);
 
-        // editing fallback
+        if (editor === false) {
+            // explicitly returned false
+            return false;
+        }
+        if (editor === undefined) {
+            // didn't return editor, fallback to default
+            editor = this.getDefaultEditor(parent);
+        }
+
+        return editor;
+    }
+
+    getDefaultEditor(parent) {
         const $input = $.create('input', {
             class: 'input-style',
             type: 'text',
