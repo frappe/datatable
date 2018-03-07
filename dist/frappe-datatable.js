@@ -2548,7 +2548,7 @@ class CellManager {
         if (isHeader || isFilter || !cell.column.format) {
             contentHTML = cell.content;
         } else {
-            const row = this.rowmanager.getRow(cell.rowIndex);
+            const row = this.datamanager.getRow(cell.rowIndex);
             const data = this.datamanager.getData(cell.rowIndex);
             contentHTML = cell.column.format(cell.content, row, cell.column, data);
         }
