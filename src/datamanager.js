@@ -570,6 +570,17 @@ export default class DataManager {
         };
     }
 
+    /**
+     * Returns the original data which was passed
+     * based on rowIndex
+     * @param {Number} rowIndex
+     * @returns Array|Object
+     * @memberof DataManager
+     */
+    getData(rowIndex) {
+        return this.data[rowIndex];
+    }
+
     hasColumn(name) {
         return Boolean(this.columns.find(col => col.content === name));
     }

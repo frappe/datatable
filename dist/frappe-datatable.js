@@ -1408,6 +1408,17 @@ class DataManager {
         };
     }
 
+    /**
+     * Returns the original data which was passed
+     * based on rowIndex
+     * @param {Number} rowIndex
+     * @returns Array|Object
+     * @memberof DataManager
+     */
+    getData(rowIndex) {
+        return this.data[rowIndex];
+    }
+
     hasColumn(name) {
         return Boolean(this.columns.find(col => col.content === name));
     }
@@ -2537,7 +2548,9 @@ class CellManager {
         if (isHeader || isFilter || !cell.column.format) {
             contentHTML = cell.content;
         } else {
-            contentHTML = cell.column.format(cell.content, cell);
+            const row = this.rowmanager.getRow(cell.rowIndex);
+            const data = this.datamanager.getData(cell.rowIndex);
+            contentHTML = cell.column.format(cell.content, row, cell.column, data);
         }
 
         if (this.options.enableTreeView && !(isHeader || isFilter) && cell.indent !== undefined) {
