@@ -432,8 +432,9 @@ export default class CellManager {
     getEditor(colIndex, rowIndex, value, parent) {
         const column = this.datamanager.getColumn(colIndex);
         const row = this.datamanager.getRow(rowIndex);
+        const data = this.datamanager.getData(rowIndex);
         let editor = this.options.getEditor ?
-            this.options.getEditor(colIndex, rowIndex, value, parent, column, row) :
+            this.options.getEditor(colIndex, rowIndex, value, parent, column, row, data) :
             this.getDefaultEditor(parent);
 
         if (editor === false) {
