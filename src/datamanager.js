@@ -104,6 +104,7 @@ export default class DataManager {
             .map((cell, i) => this.prepareCell(cell, i))
             .map(col => Object.assign({}, baseCell, col))
             .map(col => {
+                col.content = col.content || col.name || '';
                 col.id = col.id || col.content;
                 return col;
             });
