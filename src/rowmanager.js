@@ -11,6 +11,7 @@ export default class RowManager {
         this.instance = instance;
         linkProperties(this, this.instance, [
             'options',
+            'fireEvent',
             'wrapper',
             'bodyScrollable',
             'bodyRenderer'
@@ -102,6 +103,7 @@ export default class RowManager {
         // highlight row
         this.highlightRow(rowIndex, toggle);
         this.showCheckStatus();
+        this.fireEvent('onCheckRow', this.datamanager.getRow(rowIndex));
     }
 
     checkAll(toggle) {

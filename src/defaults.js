@@ -31,7 +31,8 @@ export default {
     events: {
         onRemoveColumn(column) {},
         onSwitchColumn(column1, column2) {},
-        onSortColumn(column) {}
+        onSortColumn(column) {},
+        onCheckRow(row) {}
     },
     sortIndicator: {
         asc: '↑',
