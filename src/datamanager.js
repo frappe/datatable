@@ -53,7 +53,7 @@ export default class DataManager {
     }
 
     prepareDefaultColumns() {
-        if (this.options.addCheckboxColumn && !this.hasColumnById('_checkbox')) {
+        if (this.options.checkboxColumn && !this.hasColumnById('_checkbox')) {
             const cell = {
                 id: '_checkbox',
                 content: this.getCheckboxHTML(),
@@ -67,7 +67,7 @@ export default class DataManager {
             this.columns.push(cell);
         }
 
-        if (this.options.addSerialNoColumn && !this.hasColumnById('_rowIndex')) {
+        if (this.options.serialNoColumn && !this.hasColumnById('_rowIndex')) {
             let cell = {
                 id: '_rowIndex',
                 content: '',
@@ -156,10 +156,10 @@ export default class DataManager {
 
             if (Array.isArray(d)) {
                 // row is an array
-                if (this.options.addCheckboxColumn) {
+                if (this.options.checkboxColumn) {
                     row.push(this.getCheckboxHTML());
                 }
-                if (this.options.addSerialNoColumn) {
+                if (this.options.serialNoColumn) {
                     row.push((index + 1) + '');
                 }
                 row = row.concat(d);
@@ -483,11 +483,11 @@ export default class DataManager {
     }
 
     getStandardColumnCount() {
-        if (this.options.addCheckboxColumn && this.options.addSerialNoColumn) {
+        if (this.options.checkboxColumn && this.options.serialNoColumn) {
             return 2;
         }
 
-        if (this.options.addCheckboxColumn || this.options.addSerialNoColumn) {
+        if (this.options.checkboxColumn || this.options.serialNoColumn) {
             return 1;
         }
 

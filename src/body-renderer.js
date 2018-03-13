@@ -17,7 +17,7 @@ export default class BodyRenderer {
     }
 
     render() {
-        if (this.options.enableClusterize) {
+        if (this.options.clusterize) {
             this.renderBodyWithClusterize();
         } else {
             this.renderBodyHTML();

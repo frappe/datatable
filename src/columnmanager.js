@@ -73,7 +73,7 @@ export default class ColumnManager {
         let html = this.rowmanager.getRowHTML(columns, {
             isHeader: 1
         });
-        if (this.options.enableInlineFilters) {
+        if (this.options.inlineFilters) {
             html += this.rowmanager.getRowHTML(columns, {
                 isFilter: 1
             });
@@ -333,7 +333,7 @@ export default class ColumnManager {
     }
 
     bindFilter() {
-        if (!this.options.enableInlineFilters) return;
+        if (!this.options.inlineFilters) return;
         const handler = e => {
             const $filterCell = $.closest('.data-table-cell', e.target);
             const {

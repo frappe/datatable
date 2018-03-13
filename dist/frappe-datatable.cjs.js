@@ -221,12 +221,10 @@ var isObject_1 = isObject;
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-/** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
 
 var _freeGlobal = freeGlobal;
 
-/** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
 
 /** Used as a reference to the global object. */
@@ -234,34 +232,16 @@ var root = _freeGlobal || freeSelf || Function('return this')();
 
 var _root = root;
 
-/**
- * Gets the timestamp of the number of milliseconds that have elapsed since
- * the Unix epoch (1 January 1970 00:00:00 UTC).
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Date
- * @returns {number} Returns the timestamp.
- * @example
- *
- * _.defer(function(stamp) {
- *   console.log(_.now() - stamp);
- * }, _.now());
- * // => Logs the number of milliseconds it took for the deferred invocation.
- */
 var now = function() {
   return _root.Date.now();
 };
 
 var now_1 = now;
 
-/** Built-in value references. */
 var Symbol = _root.Symbol;
 
 var _Symbol = Symbol;
 
-/** Used for built-in method references. */
 var objectProto = Object.prototype;
 
 /** Used to check objects for own properties. */
@@ -329,7 +309,6 @@ function objectToString(value) {
 
 var _objectToString = objectToString;
 
-/** `Object#toString` result references. */
 var nullTag = '[object Null]';
 var undefinedTag = '[object Undefined]';
 
@@ -384,7 +363,6 @@ function isObjectLike(value) {
 
 var isObjectLike_1 = isObjectLike;
 
-/** `Object#toString` result references. */
 var symbolTag = '[object Symbol]';
 
 /**
@@ -411,7 +389,6 @@ function isSymbol(value) {
 
 var isSymbol_1 = isSymbol;
 
-/** Used as references for various `Number` constants. */
 var NAN = 0 / 0;
 
 /** Used to match leading and trailing whitespace. */
@@ -475,7 +452,6 @@ function toNumber(value) {
 
 var toNumber_1 = toNumber;
 
-/** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
@@ -662,7 +638,6 @@ function debounce(func, wait, options) {
 
 var debounce_1 = debounce;
 
-/** Error message constants. */
 var FUNC_ERROR_TEXT$1 = 'Expected a function';
 
 /**
@@ -917,7 +892,7 @@ class DataManager {
     }
 
     prepareDefaultColumns() {
-        if (this.options.addCheckboxColumn && !this.hasColumnById('_checkbox')) {
+        if (this.options.checkboxColumn && !this.hasColumnById('_checkbox')) {
             const cell = {
                 id: '_checkbox',
                 content: this.getCheckboxHTML(),
@@ -931,7 +906,7 @@ class DataManager {
             this.columns.push(cell);
         }
 
-        if (this.options.addSerialNoColumn && !this.hasColumnById('_rowIndex')) {
+        if (this.options.serialNoColumn && !this.hasColumnById('_rowIndex')) {
             let cell = {
                 id: '_rowIndex',
                 content: '',
@@ -1020,10 +995,10 @@ class DataManager {
 
             if (Array.isArray(d)) {
                 // row is an array
-                if (this.options.addCheckboxColumn) {
+                if (this.options.checkboxColumn) {
                     row.push(this.getCheckboxHTML());
                 }
-                if (this.options.addSerialNoColumn) {
+                if (this.options.serialNoColumn) {
                     row.push((index + 1) + '');
                 }
                 row = row.concat(d);
@@ -1347,11 +1322,11 @@ class DataManager {
     }
 
     getStandardColumnCount() {
-        if (this.options.addCheckboxColumn && this.options.addSerialNoColumn) {
+        if (this.options.checkboxColumn && this.options.serialNoColumn) {
             return 2;
         }
 
-        if (this.options.addCheckboxColumn || this.options.addSerialNoColumn) {
+        if (this.options.checkboxColumn || this.options.serialNoColumn) {
             return 1;
         }
 
@@ -1540,7 +1515,7 @@ class ColumnManager {
         let html = this.rowmanager.getRowHTML(columns, {
             isHeader: 1
         });
-        if (this.options.enableInlineFilters) {
+        if (this.options.inlineFilters) {
             html += this.rowmanager.getRowHTML(columns, {
                 isFilter: 1
             });
@@ -1800,7 +1775,7 @@ class ColumnManager {
     }
 
     bindFilter() {
-        if (!this.options.enableInlineFilters) return;
+        if (!this.options.inlineFilters) return;
         const handler = e => {
             const $filterCell = $.closest('.data-table-cell', e.target);
             const {
@@ -2011,7 +1986,7 @@ class CellManager {
             this.deactivateEditing();
         });
 
-        if (this.options.enableInlineFilters) {
+        if (this.options.inlineFilters) {
             this.keyboard.on('ctrl+f', (e) => {
                 const $cell = $.closest('.data-table-cell', e.target);
                 let {
@@ -2598,7 +2573,7 @@ class CellManager {
             contentHTML = cell.column.format(cell.content, row, cell.column, data);
         }
 
-        if (this.options.enableTreeView && !(isHeader || isFilter) && cell.indent !== undefined) {
+        if (this.options.treeView && !(isHeader || isFilter) && cell.indent !== undefined) {
             const nextRow = this.datamanager.getRow(cell.rowIndex + 1);
             const addToggle = nextRow && nextRow.meta.indent > cell.indent;
 
@@ -2661,7 +2636,7 @@ class RowManager {
     }
 
     bindCheckbox() {
-        if (!this.options.addCheckboxColumn) return;
+        if (!this.options.checkboxColumn) return;
 
         // map of checked rows
         this.checkMap = [];
@@ -2752,9 +2727,11 @@ class RowManager {
     }
 
     showCheckStatus() {
+        if (!this.options.checkedRowStatus) return;
         const checkedRows = this.getCheckedRows();
-        if (checkedRows.length > 0) {
-            this.bodyRenderer.showToastMessage(checkedRows.length + ' rows selected');
+        const count = checkedRows.length;
+        if (count > 0) {
+            this.bodyRenderer.showToastMessage(`${count} row${count > 1 ? 's' : ''} selected`);
         } else {
             this.bodyRenderer.clearToastMessage();
         }
@@ -2921,7 +2898,7 @@ class BodyRenderer {
     }
 
     render() {
-        if (this.options.enableClusterize) {
+        if (this.options.clusterize) {
             this.renderBodyWithClusterize();
         } else {
             this.renderBodyHTML();
@@ -3151,12 +3128,12 @@ class Style {
         if (this.options.layout === 'ratio') {
             let totalWidth = $.style(this.datatableWrapper, 'width');
 
-            if (this.options.addSerialNoColumn) {
+            if (this.options.serialNoColumn) {
                 const rowIndexColumn = this.datamanager.getColumnById('_rowIndex');
                 totalWidth = totalWidth - rowIndexColumn.width - 1;
             }
 
-            if (this.options.addCheckboxColumn) {
+            if (this.options.checkboxColumn) {
                 const rowIndexColumn = this.datamanager.getColumnById('_checkbox');
                 totalWidth = totalWidth - rowIndexColumn.width - 1;
             }
@@ -3389,15 +3366,16 @@ var DEFAULT_OPTIONS = {
     },
     freezeMessage: '',
     getEditor: null,
-    addSerialNoColumn: true,
-    addCheckboxColumn: false,
-    enableClusterize: true,
-    enableLogs: false,
-    layout: 'ratio', // fixed, fluid, ratio
+    serialNoColumn: true,
+    checkboxColumn: false,
+    clusterize: true,
+    logs: false,
+    layout: 'fixed', // fixed, fluid, ratio
     noDataMessage: 'No Data',
     cellHeight: null,
-    enableInlineFilters: false,
-    enableTreeView: false
+    inlineFilters: false,
+    treeView: false,
+    checkedRowStatus: true
 };
 
 class DataTable {
@@ -3566,7 +3544,7 @@ class DataTable {
     }
 
     log() {
-        if (this.options.enableLogs) {
+        if (this.options.logs) {
             console.log.apply(console, arguments);
         }
     }

@@ -73,13 +73,12 @@
 
 				const start = performance.now();
 				var datatable = new DataTable('section', {
-					addCheckboxColumn: true,
-					addSerialNoColumn: true,
-					enableClusterize: true,
+					checkboxColumn: true,
+					serialNoColumn: true,
 					layout: 'fluid',
 					columns,
 					data,
-					enableInlineFilters: true,
+					inlineFilters: true,
 					getEditor(colIndex, rowIndex, value, parent) {
 						// editing obj only for date field
 						if (colIndex != 6) return;

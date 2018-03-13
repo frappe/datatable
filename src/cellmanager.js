@@ -117,7 +117,7 @@ export default class CellManager {
             this.deactivateEditing();
         });
 
-        if (this.options.enableInlineFilters) {
+        if (this.options.inlineFilters) {
             this.keyboard.on('ctrl+f', (e) => {
                 const $cell = $.closest('.data-table-cell', e.target);
                 let {
@@ -704,7 +704,7 @@ export default class CellManager {
             contentHTML = cell.column.format(cell.content, row, cell.column, data);
         }
 
-        if (this.options.enableTreeView && !(isHeader || isFilter) && cell.indent !== undefined) {
+        if (this.options.treeView && !(isHeader || isFilter) && cell.indent !== undefined) {
             const nextRow = this.datamanager.getRow(cell.rowIndex + 1);
             const addToggle = nextRow && nextRow.meta.indent > cell.indent;
 

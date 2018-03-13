@@ -175,7 +175,7 @@ class DataTable {
     }
 
     log() {
-        if (this.options.enableLogs) {
+        if (this.options.logs) {
             console.log.apply(console, arguments);
         }
     }

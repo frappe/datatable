@@ -40,13 +40,14 @@ export default {
     },
     freezeMessage: '',
     getEditor: null,
-    addSerialNoColumn: true,
-    addCheckboxColumn: false,
-    enableClusterize: true,
-    enableLogs: false,
-    layout: 'ratio', // fixed, fluid, ratio
+    serialNoColumn: true,
+    checkboxColumn: false,
+    clusterize: true,
+    logs: false,
+    layout: 'fixed', // fixed, fluid, ratio
     noDataMessage: 'No Data',
     cellHeight: null,
-    enableInlineFilters: false,
-    enableTreeView: false
+    inlineFilters: false,
+    treeView: false,
+    checkedRowStatus: true
 };

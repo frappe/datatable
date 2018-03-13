@@ -144,12 +144,12 @@ export default class Style {
         if (this.options.layout === 'ratio') {
             let totalWidth = $.style(this.datatableWrapper, 'width');
 
-            if (this.options.addSerialNoColumn) {
+            if (this.options.serialNoColumn) {
                 const rowIndexColumn = this.datamanager.getColumnById('_rowIndex');
                 totalWidth = totalWidth - rowIndexColumn.width - 1;
             }
 
-            if (this.options.addCheckboxColumn) {
+            if (this.options.checkboxColumn) {
                 const rowIndexColumn = this.datamanager.getColumnById('_checkbox');
                 totalWidth = totalWidth - rowIndexColumn.width - 1;
             }
