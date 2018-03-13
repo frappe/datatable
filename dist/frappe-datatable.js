@@ -220,12 +220,10 @@ var isObject_1 = isObject;
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-/** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
 
 var _freeGlobal = freeGlobal;
 
-/** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
 
 /** Used as a reference to the global object. */
@@ -233,34 +231,16 @@ var root = _freeGlobal || freeSelf || Function('return this')();
 
 var _root = root;
 
-/**
- * Gets the timestamp of the number of milliseconds that have elapsed since
- * the Unix epoch (1 January 1970 00:00:00 UTC).
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Date
- * @returns {number} Returns the timestamp.
- * @example
- *
- * _.defer(function(stamp) {
- *   console.log(_.now() - stamp);
- * }, _.now());
- * // => Logs the number of milliseconds it took for the deferred invocation.
- */
 var now = function() {
   return _root.Date.now();
 };
 
 var now_1 = now;
 
-/** Built-in value references. */
 var Symbol = _root.Symbol;
 
 var _Symbol = Symbol;
 
-/** Used for built-in method references. */
 var objectProto = Object.prototype;
 
 /** Used to check objects for own properties. */
@@ -328,7 +308,6 @@ function objectToString(value) {
 
 var _objectToString = objectToString;
 
-/** `Object#toString` result references. */
 var nullTag = '[object Null]';
 var undefinedTag = '[object Undefined]';
 
@@ -383,7 +362,6 @@ function isObjectLike(value) {
 
 var isObjectLike_1 = isObjectLike;
 
-/** `Object#toString` result references. */
 var symbolTag = '[object Symbol]';
 
 /**
@@ -410,7 +388,6 @@ function isSymbol(value) {
 
 var isSymbol_1 = isSymbol;
 
-/** Used as references for various `Number` constants. */
 var NAN = 0 / 0;
 
 /** Used to match leading and trailing whitespace. */
@@ -474,7 +451,6 @@ function toNumber(value) {
 
 var toNumber_1 = toNumber;
 
-/** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
@@ -661,7 +637,6 @@ function debounce(func, wait, options) {
 
 var debounce_1 = debounce;
 
-/** Error message constants. */
 var FUNC_ERROR_TEXT$1 = 'Expected a function';
 
 /**
@@ -3418,14 +3393,7 @@ class DataTable {
             throw new Error('Invalid argument given for `wrapper`');
         }
 
-        this.options = Object.assign({}, DEFAULT_OPTIONS, options);
-        this.options.headerDropdown =
-            DEFAULT_OPTIONS.headerDropdown
-            .concat(options.headerDropdown || []);
-        // custom user events
-        this.events = Object.assign({}, DEFAULT_OPTIONS.events, options.events || {});
-        this.fireEvent = this.fireEvent.bind(this);
-
+        this.buildOptions(options);
         this.prepare();
 
         this.style = new Style(this);
@@ -3439,6 +3407,30 @@ class DataTable {
         if (this.options.data) {
             this.refresh();
         }
+    }
+
+    buildOptions(options) {
+        this.options = this.options || {};
+
+        this.options = Object.assign(
+            {}, DEFAULT_OPTIONS,
+            this.options || {}, options
+        );
+
+        this.options.headerDropdown =
+            DEFAULT_OPTIONS.headerDropdown
+                .concat(
+                    this.options.headerDropdown || [],
+                    options.headerDropdown || []
+                );
+
+        // custom user events
+        this.events = Object.assign(
+            {}, DEFAULT_OPTIONS.events,
+            this.options.events || {},
+            options.events || {}
+        );
+        this.fireEvent = this.fireEvent.bind(this);
     }
 
     prepare() {
@@ -3564,6 +3556,10 @@ class DataTable {
         $.style(this.freezeContainer, {
             display: 'none'
         });
+    }
+
+    updateOptions(options) {
+        this.buildOptions(options);
     }
 
     fireEvent(eventName, ...args) {

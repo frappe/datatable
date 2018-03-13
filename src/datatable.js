@@ -22,14 +22,7 @@ class DataTable {
             throw new Error('Invalid argument given for `wrapper`');
         }
 
-        this.options = Object.assign({}, DEFAULT_OPTIONS, options);
-        this.options.headerDropdown =
-            DEFAULT_OPTIONS.headerDropdown
-            .concat(options.headerDropdown || []);
-        // custom user events
-        this.events = Object.assign({}, DEFAULT_OPTIONS.events, options.events || {});
-        this.fireEvent = this.fireEvent.bind(this);
-
+        this.buildOptions(options);
         this.prepare();
 
         this.style = new Style(this);
@@ -43,6 +36,30 @@ class DataTable {
         if (this.options.data) {
             this.refresh();
         }
+    }
+
+    buildOptions(options) {
+        this.options = this.options || {};
+
+        this.options = Object.assign(
+            {}, DEFAULT_OPTIONS,
+            this.options || {}, options
+        );
+
+        this.options.headerDropdown =
+            DEFAULT_OPTIONS.headerDropdown
+                .concat(
+                    this.options.headerDropdown || [],
+                    options.headerDropdown || []
+                );
+
+        // custom user events
+        this.events = Object.assign(
+            {}, DEFAULT_OPTIONS.events,
+            this.options.events || {},
+            options.events || {}
+        );
+        this.fireEvent = this.fireEvent.bind(this);
     }
 
     prepare() {
@@ -168,6 +185,10 @@ class DataTable {
         $.style(this.freezeContainer, {
             display: 'none'
         });
+    }
+
+    updateOptions(options) {
+        this.buildOptions(options);
     }
 
     fireEvent(eventName, ...args) {
