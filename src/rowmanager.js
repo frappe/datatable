@@ -33,7 +33,7 @@ export default class RowManager {
     }
 
     bindCheckbox() {
-        if (!this.options.addCheckboxColumn) return;
+        if (!this.options.checkboxColumn) return;
 
         // map of checked rows
         this.checkMap = [];
@@ -124,9 +124,11 @@ export default class RowManager {
     }
 
     showCheckStatus() {
+        if (!this.options.checkedRowStatus) return;
         const checkedRows = this.getCheckedRows();
-        if (checkedRows.length > 0) {
-            this.bodyRenderer.showToastMessage(checkedRows.length + ' rows selected');
+        const count = checkedRows.length;
+        if (count > 0) {
+            this.bodyRenderer.showToastMessage(`${count} row${count > 1 ? 's' : ''} selected`);
         } else {
             this.bodyRenderer.clearToastMessage();
         }
