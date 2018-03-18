@@ -12,6 +12,8 @@
 	--spacer-1: 0.25rem;
 	--spacer-2: 0.5rem;
 	--spacer-3: 1rem;
+
+	--border-radius: 3px;
 }
 
 .data-table {
@@ -92,7 +94,7 @@
 			display: inline-block;
 			background-color: rgba(0, 0, 0, 0.8);
 			color: var(--text-light);
-			border-radius: 3px;
+			border-radius: var(--border-radius);
 			padding: var(--spacer-2) var(--spacer-3);
 		}
 	}
@@ -164,7 +166,7 @@
 		right: 0;
 		z-index: 1;
 		background-color: white;
-		border-radius: 3px;
+		border-radius: var(--border-radius);
 		box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
 		padding-bottom: var(--spacer-2);
 		padding-top: var(--spacer-2);
