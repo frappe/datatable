@@ -31,6 +31,7 @@ export default class Style {
             $.on(window, 'resize', throttle(() => {
                 this.distributeRemainingWidth();
                 this.refreshColumnWidth();
+                this.compensateScrollbarWidth();
                 this.setBodyStyle();
             }, 300));
         }
@@ -72,9 +73,10 @@ export default class Style {
         this.setupMinWidth();
         this.setupNaturalColumnWidth();
         this.setupColumnWidth();
-
         this.distributeRemainingWidth();
         this.setColumnStyle();
+        this.compensateScrollbarWidth();
+
         this.setDefaultCellHeight();
         this.setBodyStyle();
     }
@@ -185,6 +187,13 @@ export default class Style {
                     }
                 });
         }
+    }
+
+    compensateScrollbarWidth() {
+        const scrollbarWidth = $.scrollbarWidth();
+        const lastCol = this.datamanager.getColumn(-1);
+        const width = lastCol.width - scrollbarWidth;
+        this.columnmanager.setColumnWidth(lastCol.colIndex, width);
     }
 
     distributeRemainingWidth() {

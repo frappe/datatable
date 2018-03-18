@@ -187,6 +187,27 @@ $.scrollTop = function scrollTop(element, pixels) {
     });
 };
 
+$.scrollbarWidth = function scrollbarWidth() {
+    // Create the measurement node
+    const scrollDiv = document.createElement('div');
+    $.style(scrollDiv, {
+        width: '100px',
+        height: '100px',
+        overflow: 'scroll',
+        position: 'absolute',
+        top: '-9999px'
+    });
+    document.body.appendChild(scrollDiv);
+
+    // Get the scrollbar width
+    const scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+
+    // Delete the DIV
+    document.body.removeChild(scrollDiv);
+
+    return scrollbarWidth;
+};
+
 /**
  * Checks if `value` is the
  * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
@@ -723,20 +744,6 @@ function makeDataAttributeString(props) {
         .trim();
 }
 
-function getDefault(a, b) {
-    return a !== undefined ? a : b;
-}
-
-
-
-
-
-
-
-
-
-
-
 function copyTextToClipboard(text) {
     // https://stackoverflow.com/a/30810322/5353542
     var textArea = document.createElement('textarea');
@@ -800,18 +807,24 @@ let throttle$1 = throttle_1;
 
 let debounce$2 = debounce_1;
 
-function promisify(fn, context = null) {
+function nextTick(fn, context = null) {
     return (...args) => {
         return new Promise(resolve => {
-            setTimeout(() => {
+            const execute = () => {
                 const out = fn.apply(context, args);
                 resolve(out);
-            }, 0);
+            };
+
+            if (window.setImmediate) {
+                setImmediate(execute);
+            } else if (window.requestAnimationFrame) {
+                requestAnimationFrame(execute);
+            } else {
+                setTimeout(execute);
+            }
         });
     };
 }
-
-
 
 function linkProperties(target, source, properties) {
     const props = properties.reduce((acc, prop) => {
@@ -847,10 +860,10 @@ function ensureArray(val) {
 class DataManager {
     constructor(options) {
         this.options = options;
-        this.sortRows = promisify(this.sortRows, this);
-        this.switchColumn = promisify(this.switchColumn, this);
-        this.removeColumn = promisify(this.removeColumn, this);
-        this.filterRows = promisify(this.filterRows, this);
+        this.sortRows = nextTick(this.sortRows, this);
+        this.switchColumn = nextTick(this.switchColumn, this);
+        this.removeColumn = nextTick(this.removeColumn, this);
+        this.filterRows = nextTick(this.filterRows, this);
     }
 
     init(data, columns) {
@@ -1345,6 +1358,12 @@ class DataManager {
 
     getColumn(colIndex) {
         colIndex = +colIndex;
+
+        if (colIndex < 0) {
+            // negative indexes
+            colIndex = this.columns.length + colIndex;
+        }
+
         return this.columns.find(col => col.colIndex === colIndex);
     }
 
@@ -1665,9 +1684,8 @@ class ColumnManager {
             const $cell = span.closest('.data-table-cell');
             let {
                 colIndex,
-                sortOrder
+                sortOrder = 'none'
             } = $.data($cell);
-            sortOrder = getDefault(sortOrder, 'none');
             const col = this.getColumn(colIndex);
 
             if (col && col.sortable === false) {
@@ -1807,18 +1825,16 @@ class ColumnManager {
         return this.datamanager.getColumns();
     }
 
-    setColumnWidth(colIndex) {
+    setColumnWidth(colIndex, width) {
         colIndex = +colIndex;
         this._columnWidthMap = this._columnWidthMap || [];
 
-        const {
-            width
-        } = this.getColumn(colIndex);
+        let columnWidth = width || this.getColumn(colIndex).width;
 
         let index = this._columnWidthMap[colIndex];
         const selector = `[data-col-index="${colIndex}"] .content, [data-col-index="${colIndex}"] .edit-cell`;
         const styles = {
-            width: width + 'px'
+            width: columnWidth + 'px'
         };
 
         index = this.style.setStyle(selector, styles, index);
@@ -2621,7 +2637,7 @@ class RowManager {
         ]);
 
         this.bindEvents();
-        this.refreshRows = promisify(this.refreshRows, this);
+        this.refreshRows = nextTick(this.refreshRows, this);
     }
 
     get datamanager() {
@@ -2896,7 +2912,7 @@ class BodyRenderer {
         this.cellmanager = instance.cellmanager;
         this.bodyScrollable = instance.bodyScrollable;
         this.log = instance.log;
-        this.appendRemainingData = promisify(this.appendRemainingData, this);
+        this.appendRemainingData = nextTick(this.appendRemainingData, this);
     }
 
     render() {
@@ -3017,6 +3033,7 @@ class Style {
             $.on(window, 'resize', throttle$1(() => {
                 this.distributeRemainingWidth();
                 this.refreshColumnWidth();
+                this.compensateScrollbarWidth();
                 this.setBodyStyle();
             }, 300));
         }
@@ -3058,9 +3075,10 @@ class Style {
         this.setupMinWidth();
         this.setupNaturalColumnWidth();
         this.setupColumnWidth();
-
         this.distributeRemainingWidth();
         this.setColumnStyle();
+        this.compensateScrollbarWidth();
+
         this.setDefaultCellHeight();
         this.setBodyStyle();
     }
@@ -3171,6 +3189,13 @@ class Style {
                     }
                 });
         }
+    }
+
+    compensateScrollbarWidth() {
+        const scrollbarWidth = $.scrollbarWidth();
+        const lastCol = this.datamanager.getColumn(-1);
+        const width = lastCol.width - scrollbarWidth;
+        this.columnmanager.setColumnWidth(lastCol.colIndex, width);
     }
 
     distributeRemainingWidth() {
@@ -3580,7 +3605,7 @@ var name = "frappe-datatable";
 var version = "0.0.2";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
-var scripts = {"start":"npm run dev","build":"rollup -c","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js","test:watch":"mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js"};
+var scripts = {"start":"yarn run dev","build":"rollup -c","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js","test:watch":"mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js"};
 var devDependencies = {"chai":"3.5.0","cssnano":"^3.10.0","deepmerge":"^2.0.1","eslint":"3.19.0","eslint-loader":"1.7.1","mocha":"3.3.0","postcss-cssnext":"^3.1.0","postcss-nested":"^3.0.0","precss":"^3.1.0","rollup-plugin-commonjs":"^8.3.0","rollup-plugin-json":"^2.3.0","rollup-plugin-node-resolve":"^3.0.3","rollup-plugin-postcss":"^1.2.8","rollup-plugin-uglify":"^3.0.0"};
 var repository = {"type":"git","url":"https://github.com/frappe/datatable.git"};
 var keywords = ["datatable","data","grid","table"];

@@ -1,7 +1,6 @@
 import $ from './dom';
 import Sortable from 'sortablejs';
 import {
-    getDefault,
     linkProperties,
     debounce
 } from './utils';
@@ -223,9 +222,8 @@ export default class ColumnManager {
             const $cell = span.closest('.data-table-cell');
             let {
                 colIndex,
-                sortOrder
+                sortOrder = 'none'
             } = $.data($cell);
-            sortOrder = getDefault(sortOrder, 'none');
             const col = this.getColumn(colIndex);
 
             if (col && col.sortable === false) {
@@ -365,18 +363,16 @@ export default class ColumnManager {
         return this.datamanager.getColumns();
     }
 
-    setColumnWidth(colIndex) {
+    setColumnWidth(colIndex, width) {
         colIndex = +colIndex;
         this._columnWidthMap = this._columnWidthMap || [];
 
-        const {
-            width
-        } = this.getColumn(colIndex);
+        let columnWidth = width || this.getColumn(colIndex).width;
 
         let index = this._columnWidthMap[colIndex];
         const selector = `[data-col-index="${colIndex}"] .content, [data-col-index="${colIndex}"] .edit-cell`;
         const styles = {
-            width: width + 'px'
+            width: columnWidth + 'px'
         };
 
         index = this.style.setStyle(selector, styles, index);

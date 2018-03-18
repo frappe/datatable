@@ -179,3 +179,24 @@ $.scrollTop = function scrollTop(element, pixels) {
         element.scrollTop = pixels;
     });
 };
+
+$.scrollbarWidth = function scrollbarWidth() {
+    // Create the measurement node
+    const scrollDiv = document.createElement('div');
+    $.style(scrollDiv, {
+        width: '100px',
+        height: '100px',
+        overflow: 'scroll',
+        position: 'absolute',
+        top: '-9999px'
+    });
+    document.body.appendChild(scrollDiv);
+
+    // Get the scrollbar width
+    const scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+
+    // Delete the DIV
+    document.body.removeChild(scrollDiv);
+
+    return scrollbarWidth;
+};
