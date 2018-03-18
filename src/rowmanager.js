@@ -1,7 +1,7 @@
 import $ from './dom';
 import {
     makeDataAttributeString,
-    promisify,
+    nextTick,
     ensureArray,
     linkProperties
 } from './utils';
@@ -18,7 +18,7 @@ export default class RowManager {
         ]);
 
         this.bindEvents();
-        this.refreshRows = promisify(this.refreshRows, this);
+        this.refreshRows = nextTick(this.refreshRows, this);
     }
 
     get datamanager() {

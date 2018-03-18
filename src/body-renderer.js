@@ -1,7 +1,7 @@
 import $ from './dom';
 import Clusterize from 'clusterize.js';
 import {
-    promisify
+    nextTick
 } from './utils';
 
 export default class BodyRenderer {
@@ -13,7 +13,7 @@ export default class BodyRenderer {
         this.cellmanager = instance.cellmanager;
         this.bodyScrollable = instance.bodyScrollable;
         this.log = instance.log;
-        this.appendRemainingData = promisify(this.appendRemainingData, this);
+        this.appendRemainingData = nextTick(this.appendRemainingData, this);
     }
 
     render() {

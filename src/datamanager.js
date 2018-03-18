@@ -1,6 +1,6 @@
 import {
     isNumeric,
-    promisify,
+    nextTick,
     isNumber,
     notSet
 } from './utils';
@@ -8,10 +8,10 @@ import {
 export default class DataManager {
     constructor(options) {
         this.options = options;
-        this.sortRows = promisify(this.sortRows, this);
-        this.switchColumn = promisify(this.switchColumn, this);
-        this.removeColumn = promisify(this.removeColumn, this);
-        this.filterRows = promisify(this.filterRows, this);
+        this.sortRows = nextTick(this.sortRows, this);
+        this.switchColumn = nextTick(this.switchColumn, this);
+        this.removeColumn = nextTick(this.removeColumn, this);
+        this.filterRows = nextTick(this.filterRows, this);
     }
 
     init(data, columns) {
@@ -506,6 +506,12 @@ export default class DataManager {
 
     getColumn(colIndex) {
         colIndex = +colIndex;
+
+        if (colIndex < 0) {
+            // negative indexes
+            colIndex = this.columns.length + colIndex;
+        }
+
         return this.columns.find(col => col.colIndex === colIndex);
     }
 

@@ -20,78 +20,6 @@ export function makeDataAttributeString(props) {
         .trim();
 }
 
-export function getDefault(a, b) {
-    return a !== undefined ? a : b;
-}
-
-export function escapeRegExp(str) {
-    // https://stackoverflow.com/a/6969486
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-}
-
-export function getCSSString(styleMap) {
-    let style = '';
-
-    for (const prop in styleMap) {
-        if (styleMap.hasOwnProperty(prop)) {
-            style += `${prop}: ${styleMap[prop]}; `;
-        }
-    }
-
-    return style.trim();
-}
-
-export function getCSSRuleBlock(rule, styleMap) {
-    return `${rule} { ${getCSSString(styleMap)} }`;
-}
-
-export function buildCSSRule(rule, styleMap, cssRulesString = '') {
-    // build css rules efficiently,
-    // append new rule if doesnt exist,
-    // update existing ones
-
-    const rulePatternStr = `${escapeRegExp(rule)} {([^}]*)}`;
-    const rulePattern = new RegExp(rulePatternStr, 'g');
-
-    if (cssRulesString && cssRulesString.match(rulePattern)) {
-        for (const property in styleMap) {
-            const value = styleMap[property];
-            const propPattern = new RegExp(`${escapeRegExp(property)}:([^;]*);`);
-
-            cssRulesString = cssRulesString.replace(rulePattern, function (match, propertyStr) {
-                if (propertyStr.match(propPattern)) {
-                    // property exists, replace value with new value
-                    propertyStr = propertyStr.replace(propPattern, (match, valueStr) => {
-                        return `${property}: ${value};`;
-                    });
-                }
-                propertyStr = propertyStr.trim();
-
-                const replacer =
-                    `${rule} { ${propertyStr} }`;
-
-                return replacer;
-            });
-        }
-
-        return cssRulesString;
-    }
-    // no match, append new rule block
-    return `${cssRulesString}${getCSSRuleBlock(rule, styleMap)}`;
-}
-
-export function removeCSSRule(rule, cssRulesString = '') {
-    const rulePatternStr = `${escapeRegExp(rule)} {([^}]*)}`;
-    const rulePattern = new RegExp(rulePatternStr, 'g');
-    let output = cssRulesString;
-
-    if (cssRulesString && cssRulesString.match(rulePattern)) {
-        output = cssRulesString.replace(rulePattern, '');
-    }
-
-    return output.trim();
-}
-
 export function copyTextToClipboard(text) {
     // https://stackoverflow.com/a/30810322/5353542
     var textArea = document.createElement('textarea');
@@ -155,21 +83,23 @@ export let throttle = _throttle;
 
 export let debounce = _debounce;
 
-export function promisify(fn, context = null) {
+export function nextTick(fn, context = null) {
     return (...args) => {
         return new Promise(resolve => {
-            setTimeout(() => {
+            const execute = () => {
                 const out = fn.apply(context, args);
                 resolve(out);
-            }, 0);
+            };
+
+            if (window.setImmediate) {
+                setImmediate(execute);
+            } else if (window.requestAnimationFrame) {
+                requestAnimationFrame(execute);
+            } else {
+                setTimeout(execute);
+            }
         });
     };
-};
-
-export function chainPromises(promises) {
-    return promises.reduce(
-        (prev, cur) => prev.then(cur), Promise.resolve()
-    );
 };
 
 export function linkProperties(target, source, properties) {
