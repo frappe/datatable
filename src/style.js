@@ -217,7 +217,7 @@ export default class Style {
     setDefaultCellHeight() {
         if (this.__cellHeightSet) return;
         const height = this.options.cellHeight ||
-            $.style($('.data-table-cell', this.instance.datatableWrapper), 'height');
+            $.style($('.data-table-cell', this.instance.bodyScrollable), 'height');
         if (height) {
             this.setCellHeight(height);
             this.__cellHeightSet = true;
