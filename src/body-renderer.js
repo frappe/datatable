@@ -39,7 +39,11 @@ export default class BodyRenderer {
     renderBodyWithClusterize() {
         // first page
         const rows = this.datamanager.getRowsForView(0, 20);
-        const initialData = this.getDataForClusterize(rows);
+        let initialData = this.getDataForClusterize(rows);
+
+        if (initialData.length === 0) {
+            initialData = [`<tr class="no-data"><td>${this.options.noDataMessage}</td></tr>`];
+        }
 
         if (!this.clusterize) {
             // empty body
@@ -61,8 +65,7 @@ export default class BodyRenderer {
                     }
                 },
                 /* eslint-disable */
-                no_data_text: this.options.noDataMessage,
-                no_data_class: 'empty-state'
+                show_no_data_row: false,
                 /* eslint-enable */
             });
 

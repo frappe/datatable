@@ -108,6 +108,11 @@
 	&.row-highlight-all .data-table-row:not(.row-unhighlight) {
 		background-color: var(--light-bg);
 	}
+
+	.no-data td {
+		text-align: center;
+		padding: var(--spacer-2);
+	}
 }
 
 .data-table-header {

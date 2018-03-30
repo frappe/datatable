@@ -376,7 +376,10 @@ export default class ColumnManager {
         };
 
         index = this.style.setStyle(selector, styles, index);
-        this._columnWidthMap[colIndex] = index;
+
+        if (index !== undefined) {
+            this._columnWidthMap[colIndex] = index;
+        }
     }
 
     setColumnHeaderWidth(colIndex) {

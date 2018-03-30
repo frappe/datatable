@@ -21,9 +21,12 @@ export default class Style {
         const styleEl = document.createElement('style');
         instance.wrapper.insertBefore(styleEl, instance.datatableWrapper);
         this.styleEl = styleEl;
-        this.styleSheet = styleEl.sheet;
 
         this.bindResizeWindow();
+    }
+
+    get stylesheet() {
+        return this.styleEl.sheet;
     }
 
     bindResizeWindow() {
@@ -57,14 +60,16 @@ export default class Style {
 
         let ruleString = `${prefixedSelector} { ${styles} }`;
 
-        let _index = this.styleSheet.cssRules.length;
+        if (!this.stylesheet) return;
+
+        let _index = this.stylesheet.cssRules.length;
         if (index !== -1) {
-            this.styleSheet.deleteRule(index);
+            this.stylesheet.deleteRule(index);
             _index = index;
         }
 
-        this.styleSheet.insertRule(ruleString, _index);
-        return _index;
+        this.stylesheet.insertRule(ruleString, _index);
+        return _index; // eslint-disable-line
     }
 
     setDimensions() {
@@ -216,8 +221,10 @@ export default class Style {
 
     setDefaultCellHeight() {
         if (this.__cellHeightSet) return;
-        const height = this.options.cellHeight ||
-            $.style($('.data-table-cell', this.instance.bodyScrollable), 'height');
+        const $firstCell = $('.data-table-cell', this.instance.bodyScrollable);
+        if (!$firstCell) return;
+
+        const height = this.options.cellHeight || $.style($firstCell, 'height');
         if (height) {
             this.setCellHeight(height);
             this.__cellHeightSet = true;
@@ -270,7 +277,8 @@ export default class Style {
         });
 
         $.style($('table', this.bodyScrollable), {
-            margin: 0
+            margin: 0,
+            width: '100%'
         });
     }
 

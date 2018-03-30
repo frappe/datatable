@@ -108,6 +108,12 @@
 		background-color: #f5f7fa;
 	}
 
+.body-scrollable .no-data td {
+		text-align: center;
+		padding: 8px;
+		padding: 0.5rem;
+	}
+
 .data-table-header {
 	position: absolute;
 	top: 0;

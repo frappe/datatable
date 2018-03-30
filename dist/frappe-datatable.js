@@ -1837,7 +1837,10 @@ class ColumnManager {
         };
 
         index = this.style.setStyle(selector, styles, index);
-        this._columnWidthMap[colIndex] = index;
+
+        if (index !== undefined) {
+            this._columnWidthMap[colIndex] = index;
+        }
     }
 
     setColumnHeaderWidth(colIndex) {
@@ -2937,7 +2940,11 @@ class BodyRenderer {
     renderBodyWithClusterize() {
         // first page
         const rows = this.datamanager.getRowsForView(0, 20);
-        const initialData = this.getDataForClusterize(rows);
+        let initialData = this.getDataForClusterize(rows);
+
+        if (initialData.length === 0) {
+            initialData = [`<tr class="no-data"><td>${this.options.noDataMessage}</td></tr>`];
+        }
 
         if (!this.clusterize) {
             // empty body
@@ -2959,8 +2966,7 @@ class BodyRenderer {
                     }
                 },
                 /* eslint-disable */
-                no_data_text: this.options.noDataMessage,
-                no_data_class: 'empty-state'
+                show_no_data_row: false,
                 /* eslint-enable */
             });
 
@@ -3022,9 +3028,12 @@ class Style {
         const styleEl = document.createElement('style');
         instance.wrapper.insertBefore(styleEl, instance.datatableWrapper);
         this.styleEl = styleEl;
-        this.styleSheet = styleEl.sheet;
 
         this.bindResizeWindow();
+    }
+
+    get stylesheet() {
+        return this.styleEl.sheet;
     }
 
     bindResizeWindow() {
@@ -3058,14 +3067,16 @@ class Style {
 
         let ruleString = `${prefixedSelector} { ${styles} }`;
 
-        let _index = this.styleSheet.cssRules.length;
+        if (!this.stylesheet) return;
+
+        let _index = this.stylesheet.cssRules.length;
         if (index !== -1) {
-            this.styleSheet.deleteRule(index);
+            this.stylesheet.deleteRule(index);
             _index = index;
         }
 
-        this.styleSheet.insertRule(ruleString, _index);
-        return _index;
+        this.stylesheet.insertRule(ruleString, _index);
+        return _index; // eslint-disable-line
     }
 
     setDimensions() {
@@ -3217,8 +3228,10 @@ class Style {
 
     setDefaultCellHeight() {
         if (this.__cellHeightSet) return;
-        const height = this.options.cellHeight ||
-            $.style($('.data-table-cell', this.instance.datatableWrapper), 'height');
+        const $firstCell = $('.data-table-cell', this.instance.bodyScrollable);
+        if (!$firstCell) return;
+
+        const height = this.options.cellHeight || $.style($firstCell, 'height');
         if (height) {
             this.setCellHeight(height);
             this.__cellHeightSet = true;
@@ -3271,7 +3284,8 @@ class Style {
         });
 
         $.style($('table', this.bodyScrollable), {
-            margin: 0
+            margin: 0,
+            width: '100%'
         });
     }
 
@@ -3442,12 +3456,8 @@ class DataTable {
             this.options || {}, options
         );
 
-        this.options.headerDropdown =
-            DEFAULT_OPTIONS.headerDropdown
-                .concat(
-                    this.options.headerDropdown || [],
-                    options.headerDropdown || []
-                );
+        this.options.headerDropdown
+            .push(...(options.headerDropdown || []));
 
         // custom user events
         this.events = Object.assign(
@@ -3601,7 +3611,7 @@ class DataTable {
 DataTable.instances = 0;
 
 var name = "frappe-datatable";
-var version = "0.0.2";
+var version = "0.0.3";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
 var scripts = {"start":"yarn run dev","build":"rollup -c","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js","test:watch":"mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js"};
