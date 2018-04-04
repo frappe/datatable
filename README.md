@@ -1,6 +1,11 @@
-# Frappé DataTable
-
-A modern datatable library for the web
+<div align="center">
+    <img src="https://github.com/frappe/design/blob/master/logos/data-table-logo.svg" height="128">
+    <h2>Frappe DataTables</h2>
+    <p align="center">
+    <p>
+    A modern datatable library for the web
+    </p>
+</div>
 
 ## Features
 
