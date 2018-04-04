@@ -2582,13 +2582,15 @@ class CellManager {
         const hasDropdown = isHeader && cell.dropdown !== false;
         const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
 
+        const customFormatter = cell.column.format || cell.format || null;
+
         let contentHTML;
-        if (isHeader || isFilter || !cell.column.format) {
+        if (isHeader || isFilter || !customFormatter) {
             contentHTML = cell.content;
         } else {
             const row = this.datamanager.getRow(cell.rowIndex);
             const data = this.datamanager.getData(cell.rowIndex);
-            contentHTML = cell.column.format(cell.content, row, cell.column, data);
+            contentHTML = customFormatter(cell.content, row, cell.column, data);
         }
 
         if (this.options.treeView && !(isHeader || isFilter) && cell.indent !== undefined) {
