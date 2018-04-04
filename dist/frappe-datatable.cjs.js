@@ -2583,7 +2583,7 @@ class CellManager {
         const hasDropdown = isHeader && cell.dropdown !== false;
         const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
 
-        const customFormatter = (cell.column && cell.column.format) || cell.format || null;
+        const customFormatter = cell.format || (cell.column && cell.column.format) || null;
 
         let contentHTML;
         if (isHeader || isFilter || !customFormatter) {
