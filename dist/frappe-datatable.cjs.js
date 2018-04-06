@@ -3230,8 +3230,9 @@ class Style {
     }
 
     setDefaultCellHeight() {
+        if (this.options.dynamicRowHeight) return;
         if (this.__cellHeightSet) return;
-        const $firstCell = $('.data-table-cell', this.instance.bodyScrollable);
+        const $firstCell = $('.data-table-cell[data-is-header]', this.instance.header);
         if (!$firstCell) return;
 
         const height = this.options.cellHeight || $.style($firstCell, 'height');
@@ -3281,6 +3282,14 @@ class Style {
         $.style(this.bodyScrollable, {
             width: width + 'px'
         });
+
+        const $body = $('.data-table-body', this.bodyScrollable);
+
+        if ($body) {
+            $.style($body, {
+                height: '0px'
+            });
+        }
 
         $.style(this.bodyScrollable, {
             marginTop: $.style(this.header, 'height') + 'px'
@@ -3419,7 +3428,8 @@ var DEFAULT_OPTIONS = {
     cellHeight: null,
     inlineFilters: false,
     treeView: false,
-    checkedRowStatus: true
+    checkedRowStatus: true,
+    dynamicRowHeight: false
 };
 
 class DataTable {
@@ -3614,7 +3624,7 @@ class DataTable {
 DataTable.instances = 0;
 
 var name = "frappe-datatable";
-var version = "0.0.3";
+var version = "0.0.4";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
 var scripts = {"start":"yarn run dev","build":"rollup -c","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js","test:watch":"mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js"};

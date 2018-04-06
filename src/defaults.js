@@ -50,5 +50,6 @@ export default {
     cellHeight: null,
     inlineFilters: false,
     treeView: false,
-    checkedRowStatus: true
+    checkedRowStatus: true,
+    dynamicRowHeight: false
 };

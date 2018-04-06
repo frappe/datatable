@@ -220,8 +220,9 @@ export default class Style {
     }
 
     setDefaultCellHeight() {
+        if (this.options.dynamicRowHeight) return;
         if (this.__cellHeightSet) return;
-        const $firstCell = $('.data-table-cell', this.instance.bodyScrollable);
+        const $firstCell = $('.data-table-cell[data-is-header]', this.instance.header);
         if (!$firstCell) return;
 
         const height = this.options.cellHeight || $.style($firstCell, 'height');
@@ -271,6 +272,14 @@ export default class Style {
         $.style(this.bodyScrollable, {
             width: width + 'px'
         });
+
+        const $body = $('.data-table-body', this.bodyScrollable);
+
+        if ($body) {
+            $.style($body, {
+                height: '0px'
+            });
+        }
 
         $.style(this.bodyScrollable, {
             marginTop: $.style(this.header, 'height') + 'px'

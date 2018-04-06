@@ -201,6 +201,7 @@
 	.content {
 		padding: var(--spacer-2);
 		border: 2px solid transparent;
+		height: 100%;
 
 		&.ellipsis {
 			text-overflow: ellipsis;

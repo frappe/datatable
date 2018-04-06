@@ -209,6 +209,7 @@
 		padding: 8px;
 		padding: 0.5rem;
 		border: 2px solid transparent;
+		height: 100%;
 	}
 
 .data-table-cell .content.ellipsis {
