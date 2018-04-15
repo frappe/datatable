@@ -1,8 +1,6 @@
-import $ from './dom';
 import Clusterize from 'clusterize.js';
-import {
-    nextTick
-} from './utils';
+import $ from './dom';
+import { nextTick } from './utils';
 
 export default class BodyRenderer {
     constructor(instance) {
@@ -60,9 +58,7 @@ export default class BodyRenderer {
                 scrollElem: this.bodyScrollable,
                 contentElem: $('tbody', this.bodyScrollable),
                 callbacks: {
-                    clusterChanged: () => {
-                        this.restoreState();
-                    }
+                    clusterChanged: () => this.restoreState()
                 },
                 /* eslint-disable */
                 show_no_data_row: false,
@@ -99,7 +95,7 @@ export default class BodyRenderer {
     }
 
     getDataForClusterize(rows) {
-        return rows.map((row) => this.rowmanager.getRowHTML(row, row.meta));
+        return rows.map(row => this.rowmanager.getRowHTML(row, row.meta));
     }
 
     getBodyHTML(rows) {
@@ -109,4 +105,4 @@ export default class BodyRenderer {
             </tbody>
         `;
     }
-};
+}

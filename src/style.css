@@ -6,6 +6,7 @@
 	--primary-color: rgb(82, 146, 247);
 	--light-bg: #f5f7fa;
 	--light-red: #FD8B8B;
+	--orange: rgb(255, 160, 10);
 	--text-color: #000000;
 	--text-light: #dfe2e5;
 
@@ -213,7 +214,7 @@
 	.edit-cell {
 		display: none;
 		padding: var(--spacer-2);
-		background: #fff;
+		background-color: #fff;
 		z-index: 1;
 		height: 100%;
 	}
@@ -228,7 +229,7 @@
 		}
 
 		.edit-cell {
-			border: 2px solid var(--primary-color);
+			border: 2px solid var(--orange);
 			display: block;
 		}
 	}

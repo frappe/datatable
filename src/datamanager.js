@@ -113,7 +113,6 @@ export default class DataManager {
     prepareCell(content, i) {
         const cell = {
             content: '',
-            align: 'left',
             sortOrder: 'none',
             colIndex: i,
             column: this.columns[i]

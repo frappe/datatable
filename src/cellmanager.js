@@ -5,9 +5,7 @@ import {
     linkProperties
 } from './utils';
 import $ from './dom';
-import {
-    getDropdownHTML
-} from './columnmanager';
+import { getDropdownHTML } from './columnmanager';
 
 export default class CellManager {
     constructor(instance) {
@@ -46,7 +44,7 @@ export default class CellManager {
             this.activateEditing(cell);
         });
 
-        this.keyboard.on('enter', (e) => {
+        this.keyboard.on('enter', () => {
             if (this.$focusedCell && !this.$editingCell) {
                 // enter keypress on focused cell
                 this.activateEditing(this.$focusedCell);
@@ -105,13 +103,11 @@ export default class CellManager {
             return true;
         };
 
-        ['left', 'right', 'up', 'down', 'tab', 'shift+tab'].map(
-            direction => this.keyboard.on(direction, () => focusCell(direction))
-        );
+        ['left', 'right', 'up', 'down', 'tab', 'shift+tab']
+            .map(direction => this.keyboard.on(direction, () => focusCell(direction)));
 
-        ['left', 'right', 'up', 'down'].map(
-            direction => this.keyboard.on('ctrl+' + direction, () => focusLastCell(direction))
-        );
+        ['left', 'right', 'up', 'down']
+            .map(direction => this.keyboard.on(`ctrl+${direction}`, () => focusLastCell(direction)));
 
         this.keyboard.on('esc', () => {
             this.deactivateEditing();
@@ -120,9 +116,7 @@ export default class CellManager {
         if (this.options.inlineFilters) {
             this.keyboard.on('ctrl+f', (e) => {
                 const $cell = $.closest('.data-table-cell', e.target);
-                let {
-                    colIndex
-                } = $.data($cell);
+                const { colIndex } = $.data($cell);
 
                 this.activateFilter(colIndex);
                 return true;
@@ -147,10 +141,9 @@ export default class CellManager {
             return $selectionCursor;
         };
 
-        ['left', 'right', 'up', 'down'].map(
-            direction => this.keyboard.on('shift+' + direction,
-                () => this.selectArea(getNextSelectionCursor(direction)))
-        );
+        ['left', 'right', 'up', 'down']
+            .map(direction =>
+                this.keyboard.on(`shift+${direction}`, () => this.selectArea(getNextSelectionCursor(direction))));
     }
 
     bindCopyCellContents() {
@@ -298,7 +291,7 @@ export default class CellManager {
             // valid selection
             this.$selectionCursor = $selectionCursor;
         }
-    };
+    }
 
     _selectArea($cell1, $cell2) {
         if ($cell1 === $cell2) return false;
@@ -318,7 +311,6 @@ export default class CellManager {
             [colIndex1, rowIndex1, colIndex2, rowIndex2] = arguments;
         } else
         if (typeof $cell1 === 'object') {
-
             if (!($cell1 && $cell2)) {
                 return false;
             }
@@ -344,17 +336,17 @@ export default class CellManager {
             return false;
         }
 
-        let cells = [];
+        const cells = [];
         let colIndex = colIndex1;
         let rowIndex = rowIndex1;
-        let rowIndices = [];
+        const rowIndices = [];
 
         while (rowIndex <= rowIndex2) {
             rowIndices.push(rowIndex);
-            rowIndex++;
+            rowIndex += 1;
         }
 
-        rowIndices.map(rowIndex => {
+        rowIndices.map((rowIndex) => {
             while (colIndex <= colIndex2) {
                 cells.push([colIndex, rowIndex]);
                 colIndex++;
