@@ -222,7 +222,7 @@
 		display: none;
 		padding: 8px;
 		padding: 0.5rem;
-		background: #fff;
+		background-color: #fff;
 		z-index: 1;
 		height: 100%;
 	}
@@ -236,7 +236,7 @@
 		}
 
 .data-table-cell.editing .edit-cell {
-			border: 2px solid rgb(82, 146, 247);
+			border: 2px solid rgb(255, 160, 10);
 			display: block;
 		}
 

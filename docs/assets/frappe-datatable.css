@@ -108,6 +108,12 @@
 		background-color: #f5f7fa;
 	}
 
+.body-scrollable .no-data td {
+		text-align: center;
+		padding: 8px;
+		padding: 0.5rem;
+	}
+
 .data-table-header {
 	position: absolute;
 	top: 0;
@@ -203,6 +209,7 @@
 		padding: 8px;
 		padding: 0.5rem;
 		border: 2px solid transparent;
+		height: 100%;
 	}
 
 .data-table-cell .content.ellipsis {
@@ -215,7 +222,7 @@
 		display: none;
 		padding: 8px;
 		padding: 0.5rem;
-		background: #fff;
+		background-color: #fff;
 		z-index: 1;
 		height: 100%;
 	}
@@ -229,7 +236,7 @@
 		}
 
 .data-table-cell.editing .edit-cell {
-			border: 2px solid rgb(82, 146, 247);
+			border: 2px solid rgb(255, 160, 10);
 			display: block;
 		}
 
