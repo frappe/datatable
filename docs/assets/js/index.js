@@ -7,40 +7,40 @@ const {
 } = getSampleData();
 
 // Hero
-let datatable1 = new DataTable('.example-1 .target', {
+let datatable1 = new DataTable('.example-1', {
     columns,
     data,
     checkboxColumn: true
 });
 
-// Formatted Cells
-let datatable2 = new DataTable('.example-2', {
-    columns: ['Name', 'Position', 'Office', 'Extn.', 'Start Date',
-        { content: 'Salary', format: val => '$' + val, align: 'right' }],
-    data
-});
+// // Formatted Cells
+// let datatable2 = new DataTable('.example-2', {
+//     columns: ['Name', 'Position', 'Office', 'Extn.', 'Start Date',
+//         { content: 'Salary', format: val => '$' + val, align: 'right' }],
+//     data
+// });
 
-// Inline Filters
-let datatable3 = new DataTable('.example-3', {
-    columns,
-    data,
-    enableInlineFilters: true
-});
-datatable3.showToastMessage('Click on a cell and press Ctrl/Cmd + F');
+// // Inline Filters
+// let datatable3 = new DataTable('.example-3', {
+//     columns,
+//     data,
+//     enableInlineFilters: true
+// });
+// datatable3.showToastMessage('Click on a cell and press Ctrl/Cmd + F');
 
-// Keyboard
-let datatable4 = new DataTable('.example-4', {
-    columns,
-    data
-});
-datatable4.showToastMessage('Double click to edit');
+// // Keyboard
+// let datatable4 = new DataTable('.example-4', {
+//     columns,
+//     data
+// });
+// datatable4.showToastMessage('Double click to edit');
 
-// Tree Structured Rows
-let datatable5 = new DataTable('.example-5', getTreeData());
-datatable5.showToastMessage('Expand/Collapse tree nodes');
+// // Tree Structured Rows
+// let datatable5 = new DataTable('.example-5', getTreeData());
+// datatable5.showToastMessage('Expand/Collapse tree nodes');
 
 function getSampleData(multiplier) {
-    let columns = ['Name', 'Position', 'Office', {name: 'Extn.', width: 75}, 'Start Date', 'Salary'];
+    let columns = ['Name', 'Position', 'Office', {name: 'Extn.', width: 120}, 'Start Date', 'Salary'];
     let data = [
         ['Tiger Nixon', 'System Architect', 'Edinburgh', 5421, '2011/04/25', '320,800'],
         ['Garrett Winters', 'Accountant', 'Tokyo', 8422, '2011/07/25', '170,750'],

@@ -5,66 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Frappe DataTable - A simple, modern datatable library for the web</title>
-    <link href="assets/frappe-datatable.css" rel="stylesheet">
-    <link href="assets/hljs-default.css" rel="stylesheet">
-    <link href="assets/index.css" rel="stylesheet">
+    <link href="assets/css/frappe-datatable.css" rel="stylesheet">
+    <link href="assets/css/hljs-default.css" rel="stylesheet">
+    <link href="assets/css/index.css" rel="stylesheet">
 </head>
 <body>
-    <section class="hero showcase">
-        <h1>Frappe DataTable</h1>
-        <p>A simple, modern and interactive datatable for the web</p>
-        <div class="example-1">
-            <div class="target"></div>
+    <nav class="navbar">
+        <div class="container">
+            <h3>Frappe DataTable</h3>
+            <div class="navbar-links">
+                <a href="https://github.com/frappe/datatable">GitHub</a>
+            </div>
         </div>
-    </section>
-    <section class="showcase">
-        <h2>Format Cells</h2>
-        <p>Show custom formatted cells based on context</p>
-        <div class="example-2"></div>
-    </section>
-    <section class="showcase">
-        <h2>Inline Filters</h2>
-        <p>Filter rows based on search text per column</p>
-        <div class="example-3"></div>
-    </section>
-    <section class="showcase">
-        <h2>Keyboard Navigation</h2>
-        <p>Full Keyboard Navigation support</p>
-        <div class="example-4"></div>
-    </section>
-    <section class="showcase">
-        <h2>Tree Structure</h2>
-        <p>Show tree structured rows in your table</p>
-        <div class="example-5"></div>
-    </section>
-    <section class="showcase installation">
-        <h2>Installation</h2>
-        <div class="code">
-<pre><code>// Install using yarn
-yarn add frappe-datatable
+    </nav>
+    <div class="container">
 
-// or npm
-npm install frappe-datatable</code></pre>
-    </section>
-    <section class="showcase installation">
-        <h2>Usage</h2>
-        <div class="code">
-            <pre><code>    let datatable = new DataTable({
-        columns: ['Name', 'Position', ...],
-        data: [
-            ['Tiger Nixon', 'System Architect', ...],
-            ['Garrett Winters', 'Accountant', ...],
-            ...
-        ]
-    })
-</code>
-            </pre>
-        </div>
-    </section>
-    <section class="showcase installation">
-        <h2>List of configurable options</h2>
-        <div class="code">
-            <pre><code>{
+        <section class="showcase align-center">
+            <img class="logo" src="assets/img/data-table-logo.svg" />
+            <h1 class="text-center">A simple, modern and interactive<br> datatable for the web</h1>
+            <div class="example-1"></div>
+        </section>
+
+        <section class="showcase installation">
+                <h3>Installation</h3>
+                <div class="code">
+        <pre><code class="shell"># Install using yarn
+$ yarn add frappe-datatable
+
+# or npm
+$ npm install frappe-datatable</code></pre>
+        </section>
+
+        <section class="showcase installation">
+                <h3>Usage</h3>
+                <div class="code">
+        <pre><code>import DataTable from 'frappe-datatable';
+
+// or add
+// &lt;script src="frappe-datatable.js" &gt;&lt;/script&gt;
+// in your html
+
+let datatable = new DataTable({
+    columns: ['Name', 'Position', ...],
+    data: [
+        ['Tiger Nixon', 'System Architect', ...],
+        ['Garrett Winters', 'Accountant', ...],
+        ...
+    ]
+});</code></pre>
+        </section>
+        <section class="showcase feature">
+            <h3>Cell Features</h3>
+            <div class="features">
+                <ul>
+                    <li>Custom Formatters</li>
+                    <li>Inline Editing</li>
+                    <li>Mouse Selection</li>
+                </ul>
+                <ul>
+                    <li>Copy Cells</li>
+                    <li>Keyboard Navigation</li>
+                    <li>Custom Cell Editor</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="showcase feature">
+            <h3>Column Features</h3>
+            <div class="features">
+                <ul>
+                    <li>Reorder Columns</li>
+                    <li>Sort by Column</li>
+                    <li>Remove / Hide Column</li>
+                </ul>
+                <ul>
+                    <li>Custom Actions</li>
+                    <li>Resize Column</li>
+                    <li>Flexible Layout</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="showcase feature">
+            <h3>Row Features</h3>
+
+            <div class="features">
+                <ul>
+                    <li>Row Selection</li>
+                    <li>Tree Structured Rows</li>
+                    <li>Inline Filters</li>
+                </ul>
+                <ul>
+                    <li>Large Number of Rows</li>
+                    <li>Dynamic Row Height</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="showcase installation">
+            <h3>List of configurable options</h3>
+            <div class="code">
+                <pre><code>{
     columns: [],
     data: [],
     dropdownButton: '▼',
@@ -102,25 +143,30 @@ npm install frappe-datatable</code></pre>
     noDataMessage: 'No Data',
     cellHeight: null,
     enableInlineFilters: false
-};</code></pre>
-        </div>
-    </section>
-    <section class="showcase">
-        <div class="padding-1">
-            <a href="https://github.com/frappe/datatable">View on GitHub</a>
-        </div>
-        <div class="padding-1">
-            <span>MIT License</span>
-        </div>
-    </section>
-    <footer class="showcase">
-        <section>Made with ❤️ by Frappe</section>
+}</code></pre>
+            </div>
+        </section>
+        <section class="showcase align-center">
+            <p>
+                <button class="download-button">Download</button>
+            </p>
+            <p>
+                <a href="https://github.com/frappe/datatable">View on GitHub</a>
+            </p>
+            <p>
+                <span>MIT License</span>
+            </p>
+        </section>
+    </div>
+    <footer class="showcase align-center">
+        <img class="footer-logo" src="assets/img/frappe-bird-grey.svg" alt="Frappe Logo">
+        <section>Made with ❤️ by <a>Frappe</a></section>
     </footer>
-    <script src="assets/clusterize.min.js"></script>
-	<script src="assets/Sortable.min.js"></script>
-    <script src="assets/highlight.pack.js"></script>
+    <script src="assets/js/clusterize.min.js"></script>
+	<script src="assets/js/Sortable.min.js"></script>
+    <script src="assets/js/highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
-    <script src="assets/frappe-datatable.js"></script>
-    <script src="assets/index.js"></script>
+    <script src="assets/js/frappe-datatable.js"></script>
+    <script src="assets/js/index.js"></script>
 </body>
 </html>
