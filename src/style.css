@@ -200,7 +200,7 @@
 	position: relative;
 
 	.content {
-		padding: var(--spacer-2);
+		padding: var(--spacer-1);
 		border: 2px solid transparent;
 		height: 100%;
 
