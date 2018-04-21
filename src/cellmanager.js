@@ -5,7 +5,6 @@ import {
     linkProperties
 } from './utils';
 import $ from './dom';
-import { getDropdownHTML } from './columnmanager';
 
 export default class CellManager {
     constructor(instance) {
@@ -40,7 +39,7 @@ export default class CellManager {
     bindEditCell() {
         this.$editingCell = null;
 
-        $.on(this.bodyScrollable, 'dblclick', '.data-table-cell', (e, cell) => {
+        $.on(this.bodyScrollable, 'dblclick', '.dt-cell', (e, cell) => {
             this.activateEditing(cell);
         });
 
@@ -115,7 +114,7 @@ export default class CellManager {
 
         if (this.options.inlineFilters) {
             this.keyboard.on('ctrl+f', (e) => {
-                const $cell = $.closest('.data-table-cell', e.target);
+                const $cell = $.closest('.dt-cell', e.target);
                 const { colIndex } = $.data($cell);
 
                 this.activateFilter(colIndex);
@@ -155,7 +154,7 @@ export default class CellManager {
     bindMouseEvents() {
         let mouseDown = null;
 
-        $.on(this.bodyScrollable, 'mousedown', '.data-table-cell', (e) => {
+        $.on(this.bodyScrollable, 'mousedown', '.dt-cell', (e) => {
             mouseDown = true;
             this.focusCell($(e.delegatedTarget));
         });
@@ -169,15 +168,15 @@ export default class CellManager {
             this.selectArea($(e.delegatedTarget));
         };
 
-        $.on(this.bodyScrollable, 'mousemove', '.data-table-cell', throttle(selectArea, 50));
+        $.on(this.bodyScrollable, 'mousemove', '.dt-cell', throttle(selectArea, 50));
     }
 
     bindTreeEvents() {
-        $.on(this.bodyScrollable, 'click', '.toggle', (e, $toggle) => {
-            const $cell = $.closest('.data-table-cell', $toggle);
+        $.on(this.bodyScrollable, 'click', '.dt-tree-node__toggle', (e, $toggle) => {
+            const $cell = $.closest('.dt-cell', $toggle);
             const { rowIndex } = $.data($cell);
 
-            if ($cell.classList.contains('tree-close')) {
+            if ($cell.classList.contains('dt-cell--tree-close')) {
                 this.rowmanager.openSingleNode(rowIndex);
             } else {
                 this.rowmanager.closeSingleNode(rowIndex);
@@ -214,11 +213,11 @@ export default class CellManager {
         }
 
         if (this.$focusedCell) {
-            this.$focusedCell.classList.remove('selected');
+            this.$focusedCell.classList.remove('dt-cell--focus');
         }
 
         this.$focusedCell = $cell;
-        $cell.classList.add('selected');
+        $cell.classList.add('dt-cell--focus');
 
         // so that keyboard nav works
         $cell.focus();
@@ -232,8 +231,8 @@ export default class CellManager {
             rowIndex
         } = $.data($cell);
         const _colIndex = this.datamanager.getColumnIndexById('_rowIndex');
-        const colHeaderSelector = `.data-table-header .data-table-cell[data-col-index="${colIndex}"]`;
-        const rowHeaderSelector = `.data-table-cell[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
+        const colHeaderSelector = `.dt-header .dt-cell[data-col-index="${colIndex}"]`;
+        const rowHeaderSelector = `.dt-cell[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
 
         if (this.lastHeaders) {
             $.removeStyle(this.lastHeaders, 'backgroundColor');
@@ -300,7 +299,7 @@ export default class CellManager {
         if (!cells) return false;
 
         this.clearSelection();
-        cells.map(index => this.getCell$(...index)).map($cell => $cell.classList.add('highlight'));
+        cells.map(index => this.getCell$(...index)).map($cell => $cell.classList.add('dt-cell--highlight'));
         return true;
     }
 
@@ -358,8 +357,8 @@ export default class CellManager {
     }
 
     clearSelection() {
-        $.each('.data-table-cell.highlight', this.bodyScrollable)
-            .map(cell => cell.classList.remove('highlight'));
+        $.each('.dt-cell--highlight', this.bodyScrollable)
+            .map(cell => cell.classList.remove('dt-cell--highlight'));
 
         this.$selectionCursor = null;
     }
@@ -398,9 +397,9 @@ export default class CellManager {
         }
 
         this.$editingCell = $cell;
-        $cell.classList.add('editing');
+        $cell.classList.add('dt-cell--editing');
 
-        const $editCell = $('.edit-cell', $cell);
+        const $editCell = $('.dt-cell__edit', $cell);
         $editCell.innerHTML = '';
 
         const editor = this.getEditor(colIndex, rowIndex, cell.content, $editCell);
@@ -417,7 +416,7 @@ export default class CellManager {
         if (this.$focusedCell) this.$focusedCell.focus();
 
         if (!this.$editingCell) return;
-        this.$editingCell.classList.remove('editing');
+        this.$editingCell.classList.remove('dt-cell--editing');
         this.$editingCell = null;
     }
 
@@ -443,7 +442,7 @@ export default class CellManager {
 
     getDefaultEditor(parent) {
         const $input = $.create('input', {
-            class: 'input-style',
+            class: 'dt-input',
             type: 'text',
             inside: parent
         });
@@ -557,7 +556,7 @@ export default class CellManager {
         const colIndex = this.columnmanager.getFirstColumnIndex();
         const $cell = this.getCell$(colIndex, rowIndex);
         if ($cell) {
-            $cell.classList[flag ? 'remove' : 'add']('tree-close');
+            $cell.classList[flag ? 'remove' : 'add']('dt-cell--tree-close');
         }
     }
 
@@ -576,7 +575,7 @@ export default class CellManager {
         } = $.data($cell);
 
         let $aboveRow = $cell.parentElement.previousElementSibling;
-        while ($aboveRow && $aboveRow.classList.contains('hide')) {
+        while ($aboveRow && $aboveRow.classList.contains('dt-row--hide')) {
             $aboveRow = $aboveRow.previousElementSibling;
         }
 
@@ -590,7 +589,7 @@ export default class CellManager {
         } = $.data($cell);
 
         let $belowRow = $cell.parentElement.nextElementSibling;
-        while ($belowRow && $belowRow.classList.contains('hide')) {
+        while ($belowRow && $belowRow.classList.contains('dt-row--hide')) {
             $belowRow = $belowRow.nextElementSibling;
         }
 
@@ -631,7 +630,7 @@ export default class CellManager {
     }
 
     getRowHeight() {
-        return $.style($('.data-table-row', this.bodyScrollable), 'height');
+        return $.style($('.dt-row', this.bodyScrollable), 'height');
     }
 
     scrollToCell($cell) {
@@ -662,8 +661,13 @@ export default class CellManager {
             isFilter
         });
 
+        const className = [
+            'dt-cell',
+            isHeader ? 'dt-cell--header' : ''
+        ].join(' ');
+
         return `
-            <td class="data-table-cell noselect" ${dataAttr} tabindex="0">
+            <td class="${className}" ${dataAttr} tabindex="0">
                 ${this.getCellContent(cell)}
             </td>
         `;
@@ -682,10 +686,10 @@ export default class CellManager {
         const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
 
         const resizable = isHeader && cell.resizable !== false;
-        const resizeColumn = resizable ? '<span class="column-resizer"></span>' : '';
+        const resizeColumn = resizable ? '<span class="dt-cell__resize-handle"></span>' : '';
 
         const hasDropdown = isHeader && cell.dropdown !== false;
-        const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
+        const dropdown = hasDropdown ? this.columnmanager.getDropdownHTML() : '';
 
         const customFormatter = cell.format || (cell.column && cell.column.format) || null;
 
@@ -706,14 +710,15 @@ export default class CellManager {
             const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
             if (firstColumnIndex === cell.colIndex) {
                 const padding = ((cell.indent || 0) + 1) * 1.5;
-                const toggleHTML = addToggle ? `<span class="toggle" style="left: ${padding - 1.5}rem"></span>` : '';
-                contentHTML = `<span class="tree-node" style="padding-left: ${padding}rem">
+                const toggleHTML = addToggle ?
+                    `<span class="dt-tree-node__toggle" style="left: ${padding - 1.5}rem"></span>` : '';
+                contentHTML = `<span class="dt-tree-node" style="padding-left: ${padding}rem">
                     ${toggleHTML}${contentHTML}</span>`;
             }
         }
 
         return `
-            <div class="content ellipsis">
+            <div class="dt-cell__content">
                 ${contentHTML}
                 ${sortIndicator}
                 ${resizeColumn}
@@ -724,12 +729,10 @@ export default class CellManager {
     }
 
     getEditCellHTML() {
-        return `
-      <div class="edit-cell"></div>
-    `;
+        return '<div class="dt-cell__edit"></div>';
     }
 
     selector(colIndex, rowIndex) {
-        return `.data-table-cell[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
+        return `.dt-cell[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
     }
 }

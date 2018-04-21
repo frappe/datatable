@@ -39,8 +39,8 @@ export default class RowManager {
         // map of checked rows
         this.checkMap = [];
 
-        $.on(this.wrapper, 'click', '.data-table-cell[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
-            const $cell = $checkbox.closest('.data-table-cell');
+        $.on(this.wrapper, 'click', '.dt-cell[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
+            const $cell = $checkbox.closest('.dt-cell');
             const {
                 rowIndex,
                 isHeader
@@ -92,7 +92,7 @@ export default class RowManager {
     checkRow(rowIndex, toggle) {
         const value = toggle ? 1 : 0;
         const selector = rowIndex =>
-            `.data-table-cell[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
+            `.dt-cell[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
         // update internal map
         this.checkMap[rowIndex] = value;
         // set checkbox value explicitly
@@ -116,7 +116,7 @@ export default class RowManager {
             this.checkMap = [];
         }
         // set checkbox value
-        $.each('.data-table-cell[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
+        $.each('.dt-cell[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
             .map(input => {
                 input.checked = toggle;
             });
@@ -140,34 +140,34 @@ export default class RowManager {
         const $row = this.getRow$(rowIndex);
         if (!$row) return;
 
-        if (!toggle && this.bodyScrollable.classList.contains('row-highlight-all')) {
-            $row.classList.add('row-unhighlight');
+        if (!toggle && this.bodyScrollable.classList.contains('dt-scrollable--highlight-all')) {
+            $row.classList.add('dt-row--unhighlight');
             return;
         }
 
-        if (toggle && $row.classList.contains('row-unhighlight')) {
-            $row.classList.remove('row-unhighlight');
+        if (toggle && $row.classList.contains('dt-row--unhighlight')) {
+            $row.classList.remove('dt-row--unhighlight');
         }
 
         this._highlightedRows = this._highlightedRows || {};
 
         if (toggle) {
-            $row.classList.add('row-highlight');
+            $row.classList.add('dt-row--highlight');
             this._highlightedRows[rowIndex] = $row;
         } else {
-            $row.classList.remove('row-highlight');
+            $row.classList.remove('dt-row--highlight');
             delete this._highlightedRows[rowIndex];
         }
     }
 
     highlightAll(toggle = true) {
         if (toggle) {
-            this.bodyScrollable.classList.add('row-highlight-all');
+            this.bodyScrollable.classList.add('dt-scrollable--highlight-all');
         } else {
-            this.bodyScrollable.classList.remove('row-highlight-all');
+            this.bodyScrollable.classList.remove('dt-scrollable--highlight-all');
             for (const rowIndex in this._highlightedRows) {
                 const $row = this._highlightedRows[rowIndex];
-                $row.classList.remove('row-highlight');
+                $row.classList.remove('dt-row--highlight');
             }
             this._highlightedRows = {};
         }
@@ -177,7 +177,7 @@ export default class RowManager {
         rowIndices = ensureArray(rowIndices);
         rowIndices.map(rowIndex => {
             const $tr = this.getRow$(rowIndex);
-            $tr.classList.add('hide');
+            $tr.classList.add('dt-row--hide');
         });
     }
 
@@ -185,7 +185,7 @@ export default class RowManager {
         rowIndices = ensureArray(rowIndices);
         rowIndices.map(rowIndex => {
             const $tr = this.getRow$(rowIndex);
-            $tr.classList.remove('hide');
+            $tr.classList.remove('dt-row--hide');
         });
     }
 
@@ -268,7 +268,7 @@ export default class RowManager {
         }
 
         return `
-            <tr class="data-table-row" ${dataAttr}>
+            <tr class="dt-row" ${dataAttr}>
                 ${row.map(cell => this.cellmanager.getCellHTML(cell)).join('')}
             </tr>
         `;
@@ -276,10 +276,10 @@ export default class RowManager {
 
     getFilterInput(props) {
         const dataAttr = makeDataAttributeString(props);
-        return `<input class="data-table-filter input-style" type="text" ${dataAttr} />`;
+        return `<input class="dt-filter dt-input" type="text" ${dataAttr} />`;
     }
 
     selector(rowIndex) {
-        return `.data-table-row[data-row-index="${rowIndex}"]`;
+        return `.dt-row[data-row-index="${rowIndex}"]`;
     }
 }

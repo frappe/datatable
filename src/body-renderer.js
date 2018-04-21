@@ -26,7 +26,7 @@ export default class BodyRenderer {
         const rows = this.datamanager.getRowsForView();
 
         this.bodyScrollable.innerHTML = `
-            <table class="data-table-body">
+            <table class="dt-body">
                 ${this.getBodyHTML(rows)}
             </table>
         `;
@@ -40,13 +40,13 @@ export default class BodyRenderer {
         let initialData = this.getDataForClusterize(rows);
 
         if (initialData.length === 0) {
-            initialData = [`<tr class="no-data"><td>${this.options.noDataMessage}</td></tr>`];
+            initialData = [`<div class="dt-scrollable__no-data">${this.options.noDataMessage}</div>`];
         }
 
         if (!this.clusterize) {
             // empty body
             this.bodyScrollable.innerHTML = `
-                <table class="data-table-body">
+                <table class="dt-body">
                     ${this.getBodyHTML([])}
                 </table>
             `;
@@ -87,7 +87,7 @@ export default class BodyRenderer {
     }
 
     showToastMessage(message) {
-        this.instance.toastMessage.innerHTML = `<span>${message}</span>`;
+        this.instance.toastMessage.innerHTML = `<span class="dt-toast__message">${message}</span>`;
     }
 
     clearToastMessage() {

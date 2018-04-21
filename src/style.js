@@ -15,7 +15,7 @@ export default class Style {
             'getColumn'
         ]);
 
-        this.scopeClass = 'datatable-instance-' + instance.constructor.instances;
+        this.scopeClass = 'dt-instance-' + instance.constructor.instances;
         instance.datatableWrapper.classList.add(this.scopeClass);
 
         const styleEl = document.createElement('style');
@@ -103,7 +103,7 @@ export default class Style {
         const nonResizableColumnsSelector = this.datamanager.getColumns()
             .filter(col => col.resizable === false)
             .map(col => col.colIndex)
-            .map(i => `.data-table-header [data-col-index="${i}"]`)
+            .map(i => `.dt-header [data-col-index="${i}"]`)
             .join();
 
         this.setStyle(nonResizableColumnsSelector, {
@@ -112,8 +112,8 @@ export default class Style {
     }
 
     setupMinWidth() {
-        $.each('.data-table-cell[data-is-header]', this.header).map(col => {
-            const width = $.style($('.content', col), 'width');
+        $.each('.dt-cell[data-is-header]', this.header).map(col => {
+            const width = $.style($('.dt-cell__content', col), 'width');
             const {
                 colIndex
             } = $.data(col);
@@ -127,16 +127,16 @@ export default class Style {
     }
 
     setupNaturalColumnWidth() {
-        if (!$('.data-table-row')) return;
+        if (!$('.dt-row')) return;
 
         // set initial width as naturally calculated by table's first row
-        $.each('.data-table-row[data-row-index="0"] .data-table-cell', this.bodyScrollable).map($cell => {
+        $.each('.dt-row[data-row-index="0"] .dt-cell', this.bodyScrollable).map($cell => {
             const {
                 colIndex
             } = $.data($cell);
             const column = this.datamanager.getColumn(colIndex);
 
-            let naturalWidth = $.style($('.content', $cell), 'width');
+            let naturalWidth = $.style($('.dt-cell__content', $cell), 'width');
 
             if (column.id === '_rowIndex') {
                 naturalWidth = this.getRowIndexColumnWidth(naturalWidth);
@@ -222,7 +222,7 @@ export default class Style {
     setDefaultCellHeight() {
         if (this.options.dynamicRowHeight) return;
         if (this.__cellHeightSet) return;
-        const $firstCell = $('.data-table-cell[data-is-header]', this.instance.header);
+        const $firstCell = $('.dt-cell[data-is-header]', this.instance.header);
         if (!$firstCell) return;
 
         const height = this.options.cellHeight || $.style($firstCell, 'height');
@@ -233,10 +233,10 @@ export default class Style {
     }
 
     setCellHeight(height) {
-        this.setStyle('.data-table-cell .content', {
+        this.setStyle('.dt-cell .dt-cell__content', {
             height: height + 'px'
         });
-        this.setStyle('.data-table-cell .edit-cell', {
+        this.setStyle('.dt-cell .dt-cell__edit', {
             height: height + 'px'
         });
     }
@@ -273,7 +273,7 @@ export default class Style {
             width: width + 'px'
         });
 
-        const $body = $('.data-table-body', this.bodyScrollable);
+        const $body = $('.dt-body', this.bodyScrollable);
 
         if ($body) {
             $.style($body, {
@@ -294,7 +294,7 @@ export default class Style {
     getColumnHeaderElement(colIndex) {
         colIndex = +colIndex;
         if (colIndex < 0) return null;
-        return $(`.data-table-cell[data-col-index="${colIndex}"]`, this.header);
+        return $(`.dt-cell[data-col-index="${colIndex}"]`, this.header);
     }
 
     getRowIndexColumnWidth(baseWidth) {

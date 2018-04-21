@@ -88,13 +88,13 @@ const prodCSS = merge(devCSS, {
 // docs
 const docJS = merge(devIIFE, {
     output: {
-        file: 'docs/assets/frappe-datatable.js'
+        file: 'docs/assets/js/frappe-datatable.js'
     }
 });
 
 const docCSS = merge(devCSS, {
     output: {
-        file: 'docs/assets/frappe-datatable.css'
+        file: 'docs/assets/css/frappe-datatable.css'
     }
 });
 

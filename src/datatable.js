@@ -64,25 +64,25 @@ class DataTable {
 
     prepareDom() {
         this.wrapper.innerHTML = `
-            <div class="data-table">
-                <table class="data-table-header">
+            <div class="datatable">
+                <table class="dt-header">
                 </table>
-                <div class="body-scrollable">
+                <div class="dt-scrollable">
                 </div>
-                <div class="freeze-container">
-                <span>${this.options.freezeMessage}</span>
+                <div class="dt-freeze">
+                    <span class="dt-freeze__message">
+                        ${this.options.freezeMessage}
+                    </span>
                 </div>
-                <div class="data-table-footer">
-                </div>
-                <div class="toast-message"></div>
+                <div class="dt-toast"></div>
             </div>
         `;
 
-        this.datatableWrapper = $('.data-table', this.wrapper);
-        this.header = $('.data-table-header', this.wrapper);
-        this.bodyScrollable = $('.body-scrollable', this.wrapper);
-        this.freezeContainer = $('.freeze-container', this.wrapper);
-        this.toastMessage = $('.toast-message', this.wrapper);
+        this.datatableWrapper = $('.datatable', this.wrapper);
+        this.header = $('.dt-header', this.wrapper);
+        this.bodyScrollable = $('.dt-scrollable', this.wrapper);
+        this.freezeContainer = $('.dt-freeze', this.wrapper);
+        this.toastMessage = $('.dt-toast', this.wrapper);
     }
 
     refresh(data, columns) {
