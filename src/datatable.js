@@ -122,8 +122,8 @@ class DataTable {
         this.style.setDimensions();
     }
 
-    showToastMessage(message) {
-        this.bodyRenderer.showToastMessage(message);
+    showToastMessage(message, hideAfter) {
+        this.bodyRenderer.showToastMessage(message, hideAfter);
     }
 
     clearToastMessage() {

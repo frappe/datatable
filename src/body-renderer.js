@@ -25,11 +25,7 @@ export default class BodyRenderer {
     renderBodyHTML() {
         const rows = this.datamanager.getRowsForView();
 
-        this.bodyScrollable.innerHTML = `
-            <table class="dt-body">
-                ${this.getBodyHTML(rows)}
-            </table>
-        `;
+        this.bodyScrollable.innerHTML = this.getBodyHTML(rows);
         this.instance.setDimensions();
         this.restoreState();
     }
@@ -40,16 +36,12 @@ export default class BodyRenderer {
         let initialData = this.getDataForClusterize(rows);
 
         if (initialData.length === 0) {
-            initialData = [`<div class="dt-scrollable__no-data">${this.options.noDataMessage}</div>`];
+            initialData = [this.getNoDataHTML()];
         }
 
         if (!this.clusterize) {
             // empty body
-            this.bodyScrollable.innerHTML = `
-                <table class="dt-body">
-                    ${this.getBodyHTML([])}
-                </table>
-            `;
+            this.bodyScrollable.innerHTML = this.getBodyHTML([]);
 
             // first 20 rows will appended
             // rest of them in nextTick
@@ -86,8 +78,14 @@ export default class BodyRenderer {
         this.clusterize.append(data);
     }
 
-    showToastMessage(message) {
-        this.instance.toastMessage.innerHTML = `<span class="dt-toast__message">${message}</span>`;
+    showToastMessage(message, hideAfter) {
+        this.instance.toastMessage.innerHTML = this.getToastMessageHTML(message);
+
+        if (hideAfter) {
+            setTimeout(() => {
+                this.clearToastMessage();
+            }, hideAfter * 1000);
+        }
     }
 
     clearToastMessage() {
@@ -100,9 +98,19 @@ export default class BodyRenderer {
 
     getBodyHTML(rows) {
         return `
-            <tbody>
-                ${rows.map(row => this.rowmanager.getRowHTML(row, row.meta)).join('')}
-            </tbody>
+            <table class="dt-body">
+                <tbody>
+                    ${rows.map(row => this.rowmanager.getRowHTML(row, row.meta)).join('')}
+                </tbody>
+            </table>
         `;
+    }
+
+    getNoDataHTML() {
+        return `<div class="dt-scrollable__no-data">${this.options.noDataMessage}</div>`;
+    }
+
+    getToastMessageHTML(message) {
+        return `<span class="dt-toast__message">${message}</span>`;
     }
 }
