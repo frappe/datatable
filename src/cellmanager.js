@@ -301,7 +301,10 @@ export default class CellManager {
         if (!cells) return false;
 
         this.clearSelection();
-        cells.map(index => this.getCell$(...index)).map($cell => $cell.classList.add('dt-cell--highlight'));
+        this._selectedCells = cells.map(index => this.getCell$(...index));
+        requestAnimationFrame(() => {
+            this._selectedCells.map($cell => $cell.classList.add('dt-cell--highlight'));
+        });
         return true;
     }
 
@@ -319,10 +322,10 @@ export default class CellManager {
             const cell1 = $.data($cell1);
             const cell2 = $.data($cell2);
 
-            colIndex1 = cell1.colIndex;
-            rowIndex1 = cell1.rowIndex;
-            colIndex2 = cell2.colIndex;
-            rowIndex2 = cell2.rowIndex;
+            colIndex1 = +cell1.colIndex;
+            rowIndex1 = +cell1.rowIndex;
+            colIndex2 = +cell2.colIndex;
+            rowIndex2 = +cell2.rowIndex;
         }
 
         if (rowIndex1 > rowIndex2) {
@@ -359,9 +362,10 @@ export default class CellManager {
     }
 
     clearSelection() {
-        $.each('.dt-cell--highlight', this.bodyScrollable)
-            .map(cell => cell.classList.remove('dt-cell--highlight'));
+        (this._selectedCells || [])
+            .forEach($cell => $cell.classList.remove('dt-cell--highlight'));
 
+        this._selectedCells = [];
         this.$selectionCursor = null;
     }
 
