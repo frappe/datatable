@@ -98,28 +98,15 @@ export default class Style {
         $.style(this.header, {
             margin: 0
         });
-
-        // don't show resize cursor on nonResizable columns
-        const nonResizableColumnsSelector = this.datamanager.getColumns()
-            .filter(col => col.resizable === false)
-            .map(col => col.colIndex)
-            .map(i => `.dt-header [data-col-index="${i}"]`)
-            .join();
-
-        this.setStyle(nonResizableColumnsSelector, {
-            cursor: 'pointer'
-        });
     }
 
     setupMinWidth() {
         $.each('.dt-cell[data-is-header]', this.header).map(col => {
-            const width = $.style($('.dt-cell__content', col), 'width');
-            const {
-                colIndex
-            } = $.data(col);
+            const { colIndex } = $.data(col);
             const column = this.getColumn(colIndex);
 
             if (!column.minWidth) {
+                const width = $.style($('.dt-cell__content', col), 'width');
                 // only set this once
                 column.minWidth = width;
             }
@@ -195,10 +182,12 @@ export default class Style {
     }
 
     compensateScrollbarWidth() {
-        const scrollbarWidth = $.scrollbarWidth();
-        const lastCol = this.datamanager.getColumn(-1);
-        const width = lastCol.width - scrollbarWidth;
-        this.columnmanager.setColumnWidth(lastCol.colIndex, width);
+        requestAnimationFrame(() => {
+            const scrollbarWidth = $.scrollbarWidth();
+            const lastCol = this.datamanager.getColumn(-1);
+            const width = lastCol.width - scrollbarWidth;
+            this.columnmanager.setColumnWidth(lastCol.colIndex, width);
+        });
     }
 
     distributeRemainingWidth() {
@@ -233,10 +222,7 @@ export default class Style {
     }
 
     setCellHeight(height) {
-        this.setStyle('.dt-cell .dt-cell__content', {
-            height: height + 'px'
-        });
-        this.setStyle('.dt-cell .dt-cell__edit', {
+        this.setStyle('.dt-cell__content, .dt-cell__edit', {
             height: height + 'px'
         });
     }
@@ -247,7 +233,7 @@ export default class Style {
             .map(column => {
                 // alignment
                 if (['left', 'center', 'right'].includes(column.align)) {
-                    this.setStyle(`[data-col-index="${column.colIndex}"]`, {
+                    this.setStyle(`.dt-cell--col-${column.colIndex}`, {
                         'text-align': column.align
                     });
                 }
@@ -267,27 +253,29 @@ export default class Style {
     }
 
     setBodyStyle() {
-        const width = $.style(this.header, 'width');
+        requestAnimationFrame(() => {
+            const width = $.style(this.header, 'width');
 
-        $.style(this.bodyScrollable, {
-            width: width + 'px'
-        });
-
-        const $body = $('.dt-body', this.bodyScrollable);
-
-        if ($body) {
-            $.style($body, {
-                height: '0px'
+            $.style(this.bodyScrollable, {
+                width: width + 'px'
             });
-        }
 
-        $.style(this.bodyScrollable, {
-            marginTop: $.style(this.header, 'height') + 'px'
-        });
+            const $body = $('.dt-body', this.bodyScrollable);
 
-        $.style($('table', this.bodyScrollable), {
-            margin: 0,
-            width: '100%'
+            if ($body) {
+                $.style($body, {
+                    height: '0px'
+                });
+            }
+
+            $.style(this.bodyScrollable, {
+                marginTop: $.style(this.header, 'height') + 'px'
+            });
+
+            $.style($('table', this.bodyScrollable), {
+                margin: 0,
+                width: '100%'
+            });
         });
     }
 
