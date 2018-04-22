@@ -30,7 +30,7 @@ export default class ColumnManager {
 
     refreshHeader() {
         const columns = this.datamanager.getColumns();
-        const $cols = $.each('.dt-cell[data-is-header]', this.header);
+        const $cols = $.each('.dt-cell--header', this.header);
 
         const refreshHTML =
             // first init
@@ -331,8 +331,8 @@ export default class ColumnManager {
 
         let index = this._columnWidthMap[colIndex];
         const selector = [
-            `[data-col-index="${colIndex}"] .dt-cell__content`,
-            `[data-col-index="${colIndex}"] .dt-cell__edit`
+            `.dt-cell__content--col-${colIndex}`,
+            `.dt-cell__edit--col-${colIndex}`
         ].join(', ');
 
         const styles = {
@@ -349,7 +349,7 @@ export default class ColumnManager {
     setColumnHeaderWidth(colIndex) {
         colIndex = +colIndex;
         this.$columnMap = this.$columnMap || [];
-        const selector = `.dt-header [data-col-index="${colIndex}"] .dt-cell__content`;
+        const selector = `.dt-cell__content--header-${colIndex}`;
         const {
             width
         } = this.getColumn(colIndex);
@@ -373,17 +373,11 @@ export default class ColumnManager {
     }
 
     getHeaderCell$(colIndex) {
-        return $(`.dt-cell[data-col-index="${colIndex}"]`, this.header);
+        return $(`.dt-cell--header-${colIndex}`, this.header);
     }
 
     getLastColumnIndex() {
         return this.datamanager.getColumnCount() - 1;
-    }
-
-    getSerialColumnIndex() {
-        const columns = this.datamanager.getColumns();
-
-        return columns.findIndex(column => column.content.includes('Sr. No'));
     }
 
     getDropdownHTML() {
@@ -399,5 +393,5 @@ export default class ColumnManager {
                 </div>
             </div>
       `;
-    };
+    }
 }

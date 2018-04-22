@@ -147,7 +147,11 @@ export default class CellManager {
 
     bindCopyCellContents() {
         this.keyboard.on('ctrl+c', () => {
-            this.copyCellContents(this.$focusedCell, this.$selectionCursor);
+            const noOfCellsCopied = this.copyCellContents(this.$focusedCell, this.$selectionCursor);
+            const message = `${noOfCellsCopied} cell${noOfCellsCopied > 1 ? 's' : ''} copied`;
+            if (noOfCellsCopied) {
+                this.instance.showToastMessage(message, 2);
+            }
         });
     }
 
@@ -230,22 +234,20 @@ export default class CellManager {
             colIndex,
             rowIndex
         } = $.data($cell);
-        const _colIndex = this.datamanager.getColumnIndexById('_rowIndex');
-        const colHeaderSelector = `.dt-header .dt-cell[data-col-index="${colIndex}"]`;
-        const rowHeaderSelector = `.dt-cell[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
+
+        const srNoColIndex = this.datamanager.getColumnIndexById('_rowIndex');
+        const colHeaderSelector = `.dt-cell--header-${colIndex}`;
+        const rowHeaderSelector = `.dt-cell--${srNoColIndex}-${rowIndex}`;
 
         if (this.lastHeaders) {
-            $.removeStyle(this.lastHeaders, 'backgroundColor');
+            this.lastHeaders.forEach(header => header.classList.remove('dt-cell--highlight'));
         }
 
         const colHeader = $(colHeaderSelector, this.wrapper);
         const rowHeader = $(rowHeaderSelector, this.wrapper);
 
-        $.style([colHeader, rowHeader], {
-            backgroundColor: '#f5f7fa' // light-bg
-        });
-
         this.lastHeaders = [colHeader, rowHeader];
+        this.lastHeaders.forEach(header => header.classList.add('dt-cell--highlight'));
     }
 
     selectAreaOnClusterChanged() {
@@ -504,13 +506,13 @@ export default class CellManager {
             } = $.data($cell1);
             const cell = this.getCell(colIndex, rowIndex);
             copyTextToClipboard(cell.content);
-            return;
+            return 1;
         }
         const cells = this.getCellsInRange($cell1, $cell2);
 
-        if (!cells) return;
+        if (!cells) return 0;
 
-        const values = cells
+        const rows = cells
             // get cell objects
             .map(index => this.getCell(...index))
             // convert to array of rows
@@ -521,13 +523,18 @@ export default class CellManager {
                 acc[rowIndex].push(curr.content);
 
                 return acc;
-            }, [])
+            }, []);
+
+        const values = rows
             // join values by tab
             .map(row => row.join('\t'))
             // join rows by newline
             .join('\n');
 
         copyTextToClipboard(values);
+
+        // return no of cells copied
+        return rows.reduce((total, row) => total + row.length, 0);
     }
 
     activateFilter(colIndex) {
@@ -580,7 +587,7 @@ export default class CellManager {
         }
 
         if (!$aboveRow) return $cell;
-        return $(`[data-col-index="${colIndex}"]`, $aboveRow);
+        return $(`.dt-cell--col-${colIndex}`, $aboveRow);
     }
 
     getBelowCell$($cell) {
@@ -594,7 +601,7 @@ export default class CellManager {
         }
 
         if (!$belowRow) return $cell;
-        return $(`[data-col-index="${colIndex}"]`, $belowRow);
+        return $(`.dt-cell--col-${colIndex}`, $belowRow);
     }
 
     getLeftCell$($cell) {
@@ -623,10 +630,6 @@ export default class CellManager {
 
     getCell(colIndex, rowIndex) {
         return this.instance.datamanager.getCell(colIndex, rowIndex);
-    }
-
-    getCellAttr($cell) {
-        return this.instance.getCellAttr($cell);
     }
 
     getRowHeight() {
@@ -661,9 +664,16 @@ export default class CellManager {
             isFilter
         });
 
+        const isBodyCell = !(isHeader || isFilter);
+
         const className = [
             'dt-cell',
-            isHeader ? 'dt-cell--header' : ''
+            'dt-cell--col-' + colIndex,
+            isBodyCell ? `dt-cell--${colIndex}-${rowIndex}` : '',
+            isBodyCell ? 'dt-cell--row-' + rowIndex : '',
+            isHeader ? 'dt-cell--header' : '',
+            isHeader ? `dt-cell--header-${colIndex}` : '',
+            isFilter ? 'dt-cell--filter' : ''
         ].join(' ');
 
         return `
@@ -676,11 +686,12 @@ export default class CellManager {
     getCellContent(cell) {
         const {
             isHeader,
-            isFilter
+            isFilter,
+            colIndex
         } = cell;
 
         const editable = !isHeader && cell.editable !== false;
-        const editCellHTML = editable ? this.getEditCellHTML() : '';
+        const editCellHTML = editable ? this.getEditCellHTML(colIndex) : '';
 
         const sortable = isHeader && cell.sortable !== false;
         const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
@@ -717,8 +728,13 @@ export default class CellManager {
             }
         }
 
+        const className = [
+            'dt-cell__content',
+            isHeader ? `dt-cell__content--header-${colIndex}` : `dt-cell__content--col-${colIndex}`
+        ].join(' ');
+
         return `
-            <div class="dt-cell__content">
+            <div class="${className}">
                 ${contentHTML}
                 ${sortIndicator}
                 ${resizeColumn}
@@ -728,11 +744,11 @@ export default class CellManager {
         `;
     }
 
-    getEditCellHTML() {
-        return '<div class="dt-cell__edit"></div>';
+    getEditCellHTML(colIndex) {
+        return `<div class="dt-cell__edit dt-cell__edit--col-${colIndex}"></div>`;
     }
 
     selector(colIndex, rowIndex) {
-        return `.dt-cell[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
+        return `.dt-cell--${colIndex}-${rowIndex}`;
     }
 }
