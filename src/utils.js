@@ -90,14 +90,7 @@ export function nextTick(fn, context = null) {
                 const out = fn.apply(context, args);
                 resolve(out);
             };
-
-            if (window.setImmediate) {
-                setImmediate(execute);
-            } else if (window.requestAnimationFrame) {
-                requestAnimationFrame(execute);
-            } else {
-                setTimeout(execute);
-            }
+            setTimeout(execute);
         });
     };
 };
