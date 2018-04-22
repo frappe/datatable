@@ -153,6 +153,22 @@ export default class CellManager {
                 this.instance.showToastMessage(message, 2);
             }
         });
+
+        if (this.options.pasteFromClipboard) {
+            this.keyboard.on('ctrl+v', (e) => {
+                // hack
+                // https://stackoverflow.com/a/2177059/5353542
+                this.instance.pasteTarget.focus();
+
+                setTimeout(() => {
+                    const data = this.instance.pasteTarget.value;
+                    this.instance.pasteTarget.value = '';
+                    this.pasteContentInCell(data);
+                }, 10);
+
+                return false;
+            });
+        }
     }
 
     bindMouseEvents() {
@@ -539,6 +555,30 @@ export default class CellManager {
 
         // return no of cells copied
         return rows.reduce((total, row) => total + row.length, 0);
+    }
+
+    pasteContentInCell(data) {
+        if (!this.$focusedCell) return;
+
+        const matrix = data
+            .split('\n')
+            .map(row => row.split('\t'))
+            .filter(row => row.length && row.every(it => it));
+
+        let { colIndex, rowIndex } = $.data(this.$focusedCell);
+
+        let focusedCell = {
+            colIndex: +colIndex,
+            rowIndex: +rowIndex
+        };
+
+        matrix.forEach((row, i) => {
+            let rowIndex = i + focusedCell.rowIndex;
+            row.forEach((cell, j) => {
+                let colIndex = j + focusedCell.colIndex;
+                this.updateCell(colIndex, rowIndex, cell);
+            });
+        });
     }
 
     activateFilter(colIndex) {

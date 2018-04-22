@@ -51,5 +51,6 @@ export default {
     inlineFilters: false,
     treeView: false,
     checkedRowStatus: true,
-    dynamicRowHeight: false
+    dynamicRowHeight: false,
+    pasteFromClipboard: false
 };

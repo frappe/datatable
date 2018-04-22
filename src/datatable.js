@@ -75,6 +75,7 @@ class DataTable {
                     </span>
                 </div>
                 <div class="dt-toast"></div>
+                <textarea class="dt-paste-target"></textarea>
             </div>
         `;
 
@@ -83,6 +84,7 @@ class DataTable {
         this.bodyScrollable = $('.dt-scrollable', this.wrapper);
         this.freezeContainer = $('.dt-freeze', this.wrapper);
         this.toastMessage = $('.dt-toast', this.wrapper);
+        this.pasteTarget = $('.dt-paste-target', this.wrapper);
     }
 
     refresh(data, columns) {

@@ -13,7 +13,8 @@ const KEYCODES = {
     9: 'tab',
     27: 'esc',
     67: 'c',
-    70: 'f'
+    70: 'f',
+    86: 'v'
 };
 
 export default class Keyboard {
