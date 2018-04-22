@@ -242,12 +242,10 @@ var isObject_1 = isObject;
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-/** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
 
 var _freeGlobal = freeGlobal;
 
-/** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
 
 /** Used as a reference to the global object. */
@@ -255,34 +253,16 @@ var root = _freeGlobal || freeSelf || Function('return this')();
 
 var _root = root;
 
-/**
- * Gets the timestamp of the number of milliseconds that have elapsed since
- * the Unix epoch (1 January 1970 00:00:00 UTC).
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Date
- * @returns {number} Returns the timestamp.
- * @example
- *
- * _.defer(function(stamp) {
- *   console.log(_.now() - stamp);
- * }, _.now());
- * // => Logs the number of milliseconds it took for the deferred invocation.
- */
 var now = function() {
   return _root.Date.now();
 };
 
 var now_1 = now;
 
-/** Built-in value references. */
 var Symbol = _root.Symbol;
 
 var _Symbol = Symbol;
 
-/** Used for built-in method references. */
 var objectProto = Object.prototype;
 
 /** Used to check objects for own properties. */
@@ -350,7 +330,6 @@ function objectToString(value) {
 
 var _objectToString = objectToString;
 
-/** `Object#toString` result references. */
 var nullTag = '[object Null]';
 var undefinedTag = '[object Undefined]';
 
@@ -405,7 +384,6 @@ function isObjectLike(value) {
 
 var isObjectLike_1 = isObjectLike;
 
-/** `Object#toString` result references. */
 var symbolTag = '[object Symbol]';
 
 /**
@@ -432,7 +410,6 @@ function isSymbol(value) {
 
 var isSymbol_1 = isSymbol;
 
-/** Used as references for various `Number` constants. */
 var NAN = 0 / 0;
 
 /** Used to match leading and trailing whitespace. */
@@ -496,7 +473,6 @@ function toNumber(value) {
 
 var toNumber_1 = toNumber;
 
-/** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
@@ -683,7 +659,6 @@ function debounce(func, wait, options) {
 
 var debounce_1 = debounce;
 
-/** Error message constants. */
 var FUNC_ERROR_TEXT$1 = 'Expected a function';
 
 /**
@@ -839,14 +814,7 @@ function nextTick(fn, context = null) {
                 const out = fn.apply(context, args);
                 resolve(out);
             };
-
-            if (window.setImmediate) {
-                setImmediate(execute);
-            } else if (window.requestAnimationFrame) {
-                requestAnimationFrame(execute);
-            } else {
-                setTimeout(execute);
-            }
+            setTimeout(execute);
         });
     };
 }
@@ -1491,436 +1459,6 @@ class DataManager {
 // Custom Errors
 class DataError extends TypeError {}
 
-class ColumnManager {
-    constructor(instance) {
-        this.instance = instance;
-
-        linkProperties(this, this.instance, [
-            'options',
-            'fireEvent',
-            'header',
-            'datamanager',
-            'style',
-            'wrapper',
-            'rowmanager',
-            'bodyScrollable'
-        ]);
-
-        this.bindEvents();
-        getDropdownHTML = getDropdownHTML.bind(this, this.options.dropdownButton);
-    }
-
-    renderHeader() {
-        this.header.innerHTML = '<thead></thead>';
-        this.refreshHeader();
-    }
-
-    refreshHeader() {
-        const columns = this.datamanager.getColumns();
-        const $cols = $.each('.data-table-cell[data-is-header]', this.header);
-
-        const refreshHTML =
-            // first init
-            !$('.data-table-cell', this.header) ||
-            // deleted column
-            columns.length < $cols.length;
-
-        if (refreshHTML) {
-            // refresh html
-            $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
-
-            this.$filterRow = $('.data-table-row[data-is-filter]', this.header);
-            if (this.$filterRow) {
-                $.style(this.$filterRow, { display: 'none' });
-            }
-        } else {
-            // update data-attributes
-            $cols.map(($col, i) => {
-                const column = columns[i];
-                // column sorted or order changed
-                // update colIndex of each header cell
-                $.data($col, {
-                    colIndex: column.colIndex
-                });
-
-                // refresh sort indicator
-                const sortIndicator = $('.sort-indicator', $col);
-                if (sortIndicator) {
-                    sortIndicator.innerHTML = this.options.sortIndicator[column.sortOrder];
-                }
-            });
-        }
-        // reset columnMap
-        this.$columnMap = [];
-    }
-
-    getHeaderHTML(columns) {
-        let html = this.rowmanager.getRowHTML(columns, {
-            isHeader: 1
-        });
-        if (this.options.inlineFilters) {
-            html += this.rowmanager.getRowHTML(columns, {
-                isFilter: 1
-            });
-        }
-        return html;
-    }
-
-    bindEvents() {
-        this.bindDropdown();
-        this.bindResizeColumn();
-        this.bindMoveColumn();
-        this.bindFilter();
-    }
-
-    bindDropdown() {
-        let $activeDropdown;
-        $.on(this.header, 'click', '.data-table-dropdown-toggle', (e, $button) => {
-            const $dropdown = $.closest('.data-table-dropdown', $button);
-
-            if (!$dropdown.classList.contains('is-active')) {
-                deactivateDropdown();
-                $dropdown.classList.add('is-active');
-                $activeDropdown = $dropdown;
-            } else {
-                deactivateDropdown();
-            }
-        });
-
-        $.on(document.body, 'click', (e) => {
-            if (e.target.matches('.data-table-dropdown-toggle')) return;
-            deactivateDropdown();
-        });
-
-        const dropdownItems = this.options.headerDropdown;
-
-        $.on(this.header, 'click', '.data-table-dropdown-list > div', (e, $item) => {
-            const $col = $.closest('.data-table-cell', $item);
-            const {
-                index
-            } = $.data($item);
-            const {
-                colIndex
-            } = $.data($col);
-            let callback = dropdownItems[index].action;
-
-            callback && callback.call(this.instance, this.getColumn(colIndex));
-        });
-
-        function deactivateDropdown(e) {
-            $activeDropdown && $activeDropdown.classList.remove('is-active');
-            $activeDropdown = null;
-        }
-    }
-
-    bindResizeColumn() {
-        let isDragging = false;
-        let $resizingCell, startWidth, startX;
-
-        $.on(this.header, 'mousedown', '.data-table-cell .column-resizer', (e, $handle) => {
-            document.body.classList.add('data-table-resize');
-            const $cell = $handle.parentNode.parentNode;
-            $resizingCell = $cell;
-            const {
-                colIndex
-            } = $.data($resizingCell);
-            const col = this.getColumn(colIndex);
-
-            if (col && col.resizable === false) {
-                return;
-            }
-
-            isDragging = true;
-            startWidth = $.style($('.content', $resizingCell), 'width');
-            startX = e.pageX;
-        });
-
-        $.on(document.body, 'mouseup', (e) => {
-            document.body.classList.remove('data-table-resize');
-            if (!$resizingCell) return;
-            isDragging = false;
-
-            const {
-                colIndex
-            } = $.data($resizingCell);
-            this.setColumnWidth(colIndex);
-            this.style.setBodyStyle();
-            $resizingCell = null;
-        });
-
-        $.on(document.body, 'mousemove', (e) => {
-            if (!isDragging) return;
-            const finalWidth = startWidth + (e.pageX - startX);
-            const {
-                colIndex
-            } = $.data($resizingCell);
-
-            if (this.getColumnMinWidth(colIndex) > finalWidth) {
-                // don't resize past minWidth
-                return;
-            }
-            this.datamanager.updateColumn(colIndex, {
-                width: finalWidth
-            });
-            this.setColumnHeaderWidth(colIndex);
-        });
-    }
-
-    bindMoveColumn() {
-        let initialized;
-
-        const initialize = () => {
-            if (initialized) {
-                $.off(document.body, 'mousemove', initialize);
-                return;
-            }
-            const ready = $('.data-table-cell', this.header);
-            if (!ready) return;
-
-            const $parent = $('.data-table-row', this.header);
-
-            this.sortable = Sortable.create($parent, {
-                onEnd: (e) => {
-                    const {
-                        oldIndex,
-                        newIndex
-                    } = e;
-                    const $draggedCell = e.item;
-                    const {
-                        colIndex
-                    } = $.data($draggedCell);
-                    if (+colIndex === newIndex) return;
-
-                    this.switchColumn(oldIndex, newIndex);
-                },
-                preventOnFilter: false,
-                filter: '.column-resizer, .data-table-dropdown',
-                animation: 150
-            });
-        };
-
-        $.on(document.body, 'mousemove', initialize);
-    }
-
-    bindSortColumn() {
-
-        $.on(this.header, 'click', '.data-table-cell .column-title', (e, span) => {
-            const $cell = span.closest('.data-table-cell');
-            let {
-                colIndex,
-                sortOrder = 'none'
-            } = $.data($cell);
-            const col = this.getColumn(colIndex);
-
-            if (col && col.sortable === false) {
-                return;
-            }
-
-            // reset sort indicator
-            $('.sort-indicator', this.header).textContent = '';
-            $.each('.data-table-cell', this.header).map($cell => {
-                $.data($cell, {
-                    sortOrder: 'none'
-                });
-            });
-
-            let nextSortOrder, textContent;
-            if (sortOrder === 'none') {
-                nextSortOrder = 'asc';
-                textContent = '▲';
-            } else if (sortOrder === 'asc') {
-                nextSortOrder = 'desc';
-                textContent = '▼';
-            } else if (sortOrder === 'desc') {
-                nextSortOrder = 'none';
-                textContent = '';
-            }
-
-            $.data($cell, {
-                sortOrder: nextSortOrder
-            });
-            $('.sort-indicator', $cell).textContent = textContent;
-
-            this.sortColumn(colIndex, nextSortOrder);
-        });
-    }
-
-    sortColumn(colIndex, nextSortOrder) {
-        this.instance.freeze();
-        this.sortRows(colIndex, nextSortOrder)
-            .then(() => {
-                this.refreshHeader();
-                return this.rowmanager.refreshRows();
-            })
-            .then(() => this.instance.unfreeze())
-            .then(() => {
-                this.fireEvent('onSortColumn', this.getColumn(colIndex));
-            });
-    }
-
-    removeColumn(colIndex) {
-        const removedCol = this.getColumn(colIndex);
-        this.instance.freeze();
-        this.datamanager.removeColumn(colIndex)
-            .then(() => {
-                this.refreshHeader();
-                return this.rowmanager.refreshRows();
-            })
-            .then(() => this.instance.unfreeze())
-            .then(() => {
-                this.fireEvent('onRemoveColumn', removedCol);
-            });
-    }
-
-    switchColumn(oldIndex, newIndex) {
-        this.instance.freeze();
-        this.datamanager.switchColumn(oldIndex, newIndex)
-            .then(() => {
-                this.refreshHeader();
-                return this.rowmanager.refreshRows();
-            })
-            .then(() => {
-                this.setColumnWidth(oldIndex);
-                this.setColumnWidth(newIndex);
-                this.instance.unfreeze();
-            })
-            .then(() => {
-                this.fireEvent('onSwitchColumn',
-                    this.getColumn(oldIndex), this.getColumn(newIndex)
-                );
-            });
-    }
-
-    toggleFilter(flag) {
-        let showFilter;
-        if (flag === undefined) {
-            showFilter = !this.isFilterShown;
-        } else {
-            showFilter = flag;
-        }
-
-        if (showFilter) {
-            $.style(this.$filterRow, { display: '' });
-        } else {
-            $.style(this.$filterRow, { display: 'none' });
-        }
-
-        this.isFilterShown = showFilter;
-        this.style.setBodyStyle();
-    }
-
-    focusFilter(colIndex) {
-        if (!this.isFilterShown) return;
-
-        const $filterInput = $(`[data-col-index="${colIndex}"] .data-table-filter`, this.$filterRow);
-        $filterInput.focus();
-    }
-
-    bindFilter() {
-        if (!this.options.inlineFilters) return;
-        const handler = e => {
-            const $filterCell = $.closest('.data-table-cell', e.target);
-            const {
-                colIndex
-            } = $.data($filterCell);
-            const keyword = e.target.value;
-
-            this.datamanager.filterRows(keyword, colIndex)
-                .then(({
-                    rowsToHide,
-                    rowsToShow
-                }) => {
-                    this.rowmanager.hideRows(rowsToHide);
-                    this.rowmanager.showRows(rowsToShow);
-                });
-        };
-        $.on(this.header, 'keydown', '.data-table-filter', debounce$2(handler, 300));
-    }
-
-    sortRows(colIndex, sortOrder) {
-        return this.datamanager.sortRows(colIndex, sortOrder);
-    }
-
-    getColumn(colIndex) {
-        return this.datamanager.getColumn(colIndex);
-    }
-
-    getColumns() {
-        return this.datamanager.getColumns();
-    }
-
-    setColumnWidth(colIndex, width) {
-        colIndex = +colIndex;
-        this._columnWidthMap = this._columnWidthMap || [];
-
-        let columnWidth = width || this.getColumn(colIndex).width;
-
-        let index = this._columnWidthMap[colIndex];
-        const selector = `[data-col-index="${colIndex}"] .content, [data-col-index="${colIndex}"] .edit-cell`;
-        const styles = {
-            width: columnWidth + 'px'
-        };
-
-        index = this.style.setStyle(selector, styles, index);
-
-        if (index !== undefined) {
-            this._columnWidthMap[colIndex] = index;
-        }
-    }
-
-    setColumnHeaderWidth(colIndex) {
-        colIndex = +colIndex;
-        this.$columnMap = this.$columnMap || [];
-        const selector = `.data-table-header [data-col-index="${colIndex}"] .content`;
-        const {
-            width
-        } = this.getColumn(colIndex);
-
-        let $column = this.$columnMap[colIndex];
-        if (!$column) {
-            $column = this.header.querySelector(selector);
-            this.$columnMap[colIndex] = $column;
-        }
-
-        $column.style.width = width + 'px';
-    }
-
-    getColumnMinWidth(colIndex) {
-        colIndex = +colIndex;
-        return this.getColumn(colIndex).minWidth || 24;
-    }
-
-    getFirstColumnIndex() {
-        return this.datamanager.getColumnIndexById('_rowIndex') + 1;
-    }
-
-    getHeaderCell$(colIndex) {
-        return $(`.data-table-cell[data-col-index="${colIndex}"]`, this.header);
-    }
-
-    getLastColumnIndex() {
-        return this.datamanager.getColumnCount() - 1;
-    }
-
-    getSerialColumnIndex() {
-        const columns = this.datamanager.getColumns();
-
-        return columns.findIndex(column => column.content.includes('Sr. No'));
-    }
-}
-
-// eslint-disable-next-line
-var getDropdownHTML = function getDropdownHTML(dropdownButton = 'v') {
-    // add dropdown buttons
-    const dropdownItems = this.options.headerDropdown;
-
-    return `<div class="data-table-dropdown-toggle">${dropdownButton}</div>
-    <div class="data-table-dropdown-list">
-      ${dropdownItems.map((d, i) => `<div data-index="${i}">${d.label}</div>`).join('')}
-    </div>
-  `;
-};
-
 class CellManager {
     constructor(instance) {
         this.instance = instance;
@@ -1954,7 +1492,7 @@ class CellManager {
     bindEditCell() {
         this.$editingCell = null;
 
-        $.on(this.bodyScrollable, 'dblclick', '.data-table-cell', (e, cell) => {
+        $.on(this.bodyScrollable, 'dblclick', '.dt-cell', (e, cell) => {
             this.activateEditing(cell);
         });
 
@@ -2029,7 +1567,7 @@ class CellManager {
 
         if (this.options.inlineFilters) {
             this.keyboard.on('ctrl+f', (e) => {
-                const $cell = $.closest('.data-table-cell', e.target);
+                const $cell = $.closest('.dt-cell', e.target);
                 const { colIndex } = $.data($cell);
 
                 this.activateFilter(colIndex);
@@ -2062,14 +1600,18 @@ class CellManager {
 
     bindCopyCellContents() {
         this.keyboard.on('ctrl+c', () => {
-            this.copyCellContents(this.$focusedCell, this.$selectionCursor);
+            const noOfCellsCopied = this.copyCellContents(this.$focusedCell, this.$selectionCursor);
+            const message = `${noOfCellsCopied} cell${noOfCellsCopied > 1 ? 's' : ''} copied`;
+            if (noOfCellsCopied) {
+                this.instance.showToastMessage(message, 2);
+            }
         });
     }
 
     bindMouseEvents() {
         let mouseDown = null;
 
-        $.on(this.bodyScrollable, 'mousedown', '.data-table-cell', (e) => {
+        $.on(this.bodyScrollable, 'mousedown', '.dt-cell', (e) => {
             mouseDown = true;
             this.focusCell($(e.delegatedTarget));
         });
@@ -2083,15 +1625,15 @@ class CellManager {
             this.selectArea($(e.delegatedTarget));
         };
 
-        $.on(this.bodyScrollable, 'mousemove', '.data-table-cell', throttle$1(selectArea, 50));
+        $.on(this.bodyScrollable, 'mousemove', '.dt-cell', throttle$1(selectArea, 50));
     }
 
     bindTreeEvents() {
-        $.on(this.bodyScrollable, 'click', '.toggle', (e, $toggle) => {
-            const $cell = $.closest('.data-table-cell', $toggle);
+        $.on(this.bodyScrollable, 'click', '.dt-tree-node__toggle', (e, $toggle) => {
+            const $cell = $.closest('.dt-cell', $toggle);
             const { rowIndex } = $.data($cell);
 
-            if ($cell.classList.contains('tree-close')) {
+            if ($cell.classList.contains('dt-cell--tree-close')) {
                 this.rowmanager.openSingleNode(rowIndex);
             } else {
                 this.rowmanager.closeSingleNode(rowIndex);
@@ -2128,11 +1670,11 @@ class CellManager {
         }
 
         if (this.$focusedCell) {
-            this.$focusedCell.classList.remove('selected');
+            this.$focusedCell.classList.remove('dt-cell--focus');
         }
 
         this.$focusedCell = $cell;
-        $cell.classList.add('selected');
+        $cell.classList.add('dt-cell--focus');
 
         // so that keyboard nav works
         $cell.focus();
@@ -2145,22 +1687,20 @@ class CellManager {
             colIndex,
             rowIndex
         } = $.data($cell);
-        const _colIndex = this.datamanager.getColumnIndexById('_rowIndex');
-        const colHeaderSelector = `.data-table-header .data-table-cell[data-col-index="${colIndex}"]`;
-        const rowHeaderSelector = `.data-table-cell[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
+
+        const srNoColIndex = this.datamanager.getColumnIndexById('_rowIndex');
+        const colHeaderSelector = `.dt-cell--header-${colIndex}`;
+        const rowHeaderSelector = `.dt-cell--${srNoColIndex}-${rowIndex}`;
 
         if (this.lastHeaders) {
-            $.removeStyle(this.lastHeaders, 'backgroundColor');
+            this.lastHeaders.forEach(header => header.classList.remove('dt-cell--highlight'));
         }
 
         const colHeader = $(colHeaderSelector, this.wrapper);
         const rowHeader = $(rowHeaderSelector, this.wrapper);
 
-        $.style([colHeader, rowHeader], {
-            backgroundColor: '#f5f7fa' // light-bg
-        });
-
         this.lastHeaders = [colHeader, rowHeader];
+        this.lastHeaders.forEach(header => header.classList.add('dt-cell--highlight'));
     }
 
     selectAreaOnClusterChanged() {
@@ -2214,18 +1754,18 @@ class CellManager {
         if (!cells) return false;
 
         this.clearSelection();
-        cells.map(index => this.getCell$(...index)).map($cell => $cell.classList.add('highlight'));
+        this._selectedCells = cells.map(index => this.getCell$(...index));
+        requestAnimationFrame(() => {
+            this._selectedCells.map($cell => $cell.classList.add('dt-cell--highlight'));
+        });
         return true;
     }
 
     getCellsInRange($cell1, $cell2) {
-        let colIndex1;
-        let rowIndex1;
-        let colIndex2;
-        let rowIndex2;
+        let colIndex1, rowIndex1, colIndex2, rowIndex2;
 
         if (typeof $cell1 === 'number') {
-            [colIndex1, rowIndex1, colIndex2, rowIndex2] = arguments; // eslint-disable-line
+            [colIndex1, rowIndex1, colIndex2, rowIndex2] = arguments;
         } else
         if (typeof $cell1 === 'object') {
             if (!($cell1 && $cell2)) {
@@ -2235,10 +1775,10 @@ class CellManager {
             const cell1 = $.data($cell1);
             const cell2 = $.data($cell2);
 
-            colIndex1 = cell1.colIndex;
-            rowIndex1 = cell1.rowIndex;
-            colIndex2 = cell2.colIndex;
-            rowIndex2 = cell2.rowIndex;
+            colIndex1 = +cell1.colIndex;
+            rowIndex1 = +cell1.rowIndex;
+            colIndex2 = +cell2.colIndex;
+            rowIndex2 = +cell2.rowIndex;
         }
 
         if (rowIndex1 > rowIndex2) {
@@ -2275,9 +1815,10 @@ class CellManager {
     }
 
     clearSelection() {
-        $.each('.data-table-cell.highlight', this.bodyScrollable)
-            .map(cell => cell.classList.remove('highlight'));
+        (this._selectedCells || [])
+            .forEach($cell => $cell.classList.remove('dt-cell--highlight'));
 
+        this._selectedCells = [];
         this.$selectionCursor = null;
     }
 
@@ -2315,9 +1856,9 @@ class CellManager {
         }
 
         this.$editingCell = $cell;
-        $cell.classList.add('editing');
+        $cell.classList.add('dt-cell--editing');
 
-        const $editCell = $('.edit-cell', $cell);
+        const $editCell = $('.dt-cell__edit', $cell);
         $editCell.innerHTML = '';
 
         const editor = this.getEditor(colIndex, rowIndex, cell.content, $editCell);
@@ -2334,7 +1875,7 @@ class CellManager {
         if (this.$focusedCell) this.$focusedCell.focus();
 
         if (!this.$editingCell) return;
-        this.$editingCell.classList.remove('editing');
+        this.$editingCell.classList.remove('dt-cell--editing');
         this.$editingCell = null;
     }
 
@@ -2360,7 +1901,7 @@ class CellManager {
 
     getDefaultEditor(parent) {
         const $input = $.create('input', {
-            class: 'input-style',
+            class: 'dt-input',
             type: 'text',
             inside: parent
         });
@@ -2422,13 +1963,13 @@ class CellManager {
             } = $.data($cell1);
             const cell = this.getCell(colIndex, rowIndex);
             copyTextToClipboard(cell.content);
-            return;
+            return 1;
         }
         const cells = this.getCellsInRange($cell1, $cell2);
 
-        if (!cells) return;
+        if (!cells) return 0;
 
-        const values = cells
+        const rows = cells
             // get cell objects
             .map(index => this.getCell(...index))
             // convert to array of rows
@@ -2439,13 +1980,18 @@ class CellManager {
                 acc[rowIndex].push(curr.content);
 
                 return acc;
-            }, [])
+            }, []);
+
+        const values = rows
             // join values by tab
             .map(row => row.join('\t'))
             // join rows by newline
             .join('\n');
 
         copyTextToClipboard(values);
+
+        // return no of cells copied
+        return rows.reduce((total, row) => total + row.length, 0);
     }
 
     activateFilter(colIndex) {
@@ -2474,7 +2020,7 @@ class CellManager {
         const colIndex = this.columnmanager.getFirstColumnIndex();
         const $cell = this.getCell$(colIndex, rowIndex);
         if ($cell) {
-            $cell.classList[flag ? 'remove' : 'add']('tree-close');
+            $cell.classList[flag ? 'remove' : 'add']('dt-cell--tree-close');
         }
     }
 
@@ -2493,12 +2039,12 @@ class CellManager {
         } = $.data($cell);
 
         let $aboveRow = $cell.parentElement.previousElementSibling;
-        while ($aboveRow && $aboveRow.classList.contains('hide')) {
+        while ($aboveRow && $aboveRow.classList.contains('dt-row--hide')) {
             $aboveRow = $aboveRow.previousElementSibling;
         }
 
         if (!$aboveRow) return $cell;
-        return $(`[data-col-index="${colIndex}"]`, $aboveRow);
+        return $(`.dt-cell--col-${colIndex}`, $aboveRow);
     }
 
     getBelowCell$($cell) {
@@ -2507,12 +2053,12 @@ class CellManager {
         } = $.data($cell);
 
         let $belowRow = $cell.parentElement.nextElementSibling;
-        while ($belowRow && $belowRow.classList.contains('hide')) {
+        while ($belowRow && $belowRow.classList.contains('dt-row--hide')) {
             $belowRow = $belowRow.nextElementSibling;
         }
 
         if (!$belowRow) return $cell;
-        return $(`[data-col-index="${colIndex}"]`, $belowRow);
+        return $(`.dt-cell--col-${colIndex}`, $belowRow);
     }
 
     getLeftCell$($cell) {
@@ -2543,12 +2089,8 @@ class CellManager {
         return this.instance.datamanager.getCell(colIndex, rowIndex);
     }
 
-    getCellAttr($cell) {
-        return this.instance.getCellAttr($cell);
-    }
-
     getRowHeight() {
-        return $.style($('.data-table-row', this.bodyScrollable), 'height');
+        return $.style($('.dt-row', this.bodyScrollable), 'height');
     }
 
     scrollToCell($cell) {
@@ -2579,8 +2121,20 @@ class CellManager {
             isFilter
         });
 
+        const isBodyCell = !(isHeader || isFilter);
+
+        const className = [
+            'dt-cell',
+            'dt-cell--col-' + colIndex,
+            isBodyCell ? `dt-cell--${colIndex}-${rowIndex}` : '',
+            isBodyCell ? 'dt-cell--row-' + rowIndex : '',
+            isHeader ? 'dt-cell--header' : '',
+            isHeader ? `dt-cell--header-${colIndex}` : '',
+            isFilter ? 'dt-cell--filter' : ''
+        ].join(' ');
+
         return `
-            <td class="data-table-cell noselect" ${dataAttr} tabindex="0">
+            <td class="${className}" ${dataAttr} tabindex="0">
                 ${this.getCellContent(cell)}
             </td>
         `;
@@ -2589,20 +2143,21 @@ class CellManager {
     getCellContent(cell) {
         const {
             isHeader,
-            isFilter
+            isFilter,
+            colIndex
         } = cell;
 
         const editable = !isHeader && cell.editable !== false;
-        const editCellHTML = editable ? this.getEditCellHTML() : '';
+        const editCellHTML = editable ? this.getEditCellHTML(colIndex) : '';
 
         const sortable = isHeader && cell.sortable !== false;
         const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
 
         const resizable = isHeader && cell.resizable !== false;
-        const resizeColumn = resizable ? '<span class="column-resizer"></span>' : '';
+        const resizeColumn = resizable ? '<span class="dt-cell__resize-handle"></span>' : '';
 
         const hasDropdown = isHeader && cell.dropdown !== false;
-        const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
+        const dropdown = hasDropdown ? this.columnmanager.getDropdownHTML() : '';
 
         const customFormatter = cell.format || (cell.column && cell.column.format) || null;
 
@@ -2623,14 +2178,20 @@ class CellManager {
             const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
             if (firstColumnIndex === cell.colIndex) {
                 const padding = ((cell.indent || 0) + 1) * 1.5;
-                const toggleHTML = addToggle ? `<span class="toggle" style="left: ${padding - 1.5}rem"></span>` : '';
-                contentHTML = `<span class="tree-node" style="padding-left: ${padding}rem">
+                const toggleHTML = addToggle ?
+                    `<span class="dt-tree-node__toggle" style="left: ${padding - 1.5}rem"></span>` : '';
+                contentHTML = `<span class="dt-tree-node" style="padding-left: ${padding}rem">
                     ${toggleHTML}${contentHTML}</span>`;
             }
         }
 
+        const className = [
+            'dt-cell__content',
+            isHeader ? `dt-cell__content--header-${colIndex}` : `dt-cell__content--col-${colIndex}`
+        ].join(' ');
+
         return `
-            <div class="content ellipsis">
+            <div class="${className}">
                 ${contentHTML}
                 ${sortIndicator}
                 ${resizeColumn}
@@ -2640,14 +2201,403 @@ class CellManager {
         `;
     }
 
-    getEditCellHTML() {
-        return `
-      <div class="edit-cell"></div>
-    `;
+    getEditCellHTML(colIndex) {
+        return `<div class="dt-cell__edit dt-cell__edit--col-${colIndex}"></div>`;
     }
 
     selector(colIndex, rowIndex) {
-        return `.data-table-cell[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
+        return `.dt-cell--${colIndex}-${rowIndex}`;
+    }
+}
+
+class ColumnManager {
+    constructor(instance) {
+        this.instance = instance;
+
+        linkProperties(this, this.instance, [
+            'options',
+            'fireEvent',
+            'header',
+            'datamanager',
+            'style',
+            'wrapper',
+            'rowmanager',
+            'bodyScrollable'
+        ]);
+
+        this.bindEvents();
+    }
+
+    renderHeader() {
+        this.header.innerHTML = '<thead></thead>';
+        this.refreshHeader();
+    }
+
+    refreshHeader() {
+        const columns = this.datamanager.getColumns();
+        const $cols = $.each('.dt-cell--header', this.header);
+
+        const refreshHTML =
+            // first init
+            !$('.dt-cell', this.header) ||
+            // deleted column
+            columns.length < $cols.length;
+
+        if (refreshHTML) {
+            // refresh html
+            $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
+
+            this.$filterRow = $('.dt-row[data-is-filter]', this.header);
+            if (this.$filterRow) {
+                $.style(this.$filterRow, { display: 'none' });
+            }
+        } else {
+            // update data-attributes
+            $cols.map(($col, i) => {
+                const column = columns[i];
+                // column sorted or order changed
+                // update colIndex of each header cell
+                $.data($col, {
+                    colIndex: column.colIndex
+                });
+
+                // refresh sort indicator
+                const sortIndicator = $('.sort-indicator', $col);
+                if (sortIndicator) {
+                    sortIndicator.innerHTML = this.options.sortIndicator[column.sortOrder];
+                }
+            });
+        }
+        // reset columnMap
+        this.$columnMap = [];
+    }
+
+    getHeaderHTML(columns) {
+        let html = this.rowmanager.getRowHTML(columns, {
+            isHeader: 1
+        });
+        if (this.options.inlineFilters) {
+            html += this.rowmanager.getRowHTML(columns, {
+                isFilter: 1
+            });
+        }
+        return html;
+    }
+
+    bindEvents() {
+        this.bindDropdown();
+        this.bindResizeColumn();
+        this.bindMoveColumn();
+        this.bindFilter();
+    }
+
+    bindDropdown() {
+        let $activeDropdown;
+        let activeClass = 'dt-dropdown--active';
+        let toggleClass = '.dt-dropdown__toggle';
+
+        $.on(this.header, 'click', toggleClass, (e, $button) => {
+            const $dropdown = $.closest('.dt-dropdown', $button);
+
+            if (!$dropdown.classList.contains(activeClass)) {
+                deactivateDropdown();
+                $dropdown.classList.add(activeClass);
+                $activeDropdown = $dropdown;
+            } else {
+                deactivateDropdown();
+            }
+        });
+
+        $.on(document.body, 'click', (e) => {
+            if (e.target.matches(toggleClass)) return;
+            deactivateDropdown();
+        });
+
+        const dropdownItems = this.options.headerDropdown;
+
+        $.on(this.header, 'click', '.dt-dropdown__list-item', (e, $item) => {
+            const $col = $.closest('.dt-cell', $item);
+            const {
+                index
+            } = $.data($item);
+            const {
+                colIndex
+            } = $.data($col);
+            let callback = dropdownItems[index].action;
+
+            callback && callback.call(this.instance, this.getColumn(colIndex));
+        });
+
+        function deactivateDropdown(e) {
+            $activeDropdown && $activeDropdown.classList.remove(activeClass);
+            $activeDropdown = null;
+        }
+    }
+
+    bindResizeColumn() {
+        let isDragging = false;
+        let $resizingCell, startWidth, startX;
+
+        $.on(this.header, 'mousedown', '.dt-cell .dt-cell__resize-handle', (e, $handle) => {
+            document.body.classList.add('dt-resize');
+            const $cell = $handle.parentNode.parentNode;
+            $resizingCell = $cell;
+            const {
+                colIndex
+            } = $.data($resizingCell);
+            const col = this.getColumn(colIndex);
+
+            if (col && col.resizable === false) {
+                return;
+            }
+
+            isDragging = true;
+            startWidth = $.style($('.dt-cell__content', $resizingCell), 'width');
+            startX = e.pageX;
+        });
+
+        $.on(document.body, 'mouseup', (e) => {
+            document.body.classList.remove('dt-resize');
+            if (!$resizingCell) return;
+            isDragging = false;
+
+            const {
+                colIndex
+            } = $.data($resizingCell);
+            this.setColumnWidth(colIndex);
+            this.style.setBodyStyle();
+            $resizingCell = null;
+        });
+
+        $.on(document.body, 'mousemove', (e) => {
+            if (!isDragging) return;
+            const finalWidth = startWidth + (e.pageX - startX);
+            const {
+                colIndex
+            } = $.data($resizingCell);
+
+            if (this.getColumnMinWidth(colIndex) > finalWidth) {
+                // don't resize past minWidth
+                return;
+            }
+            this.datamanager.updateColumn(colIndex, {
+                width: finalWidth
+            });
+            this.setColumnHeaderWidth(colIndex);
+        });
+    }
+
+    bindMoveColumn() {
+        let initialized;
+
+        const initialize = () => {
+            if (initialized) {
+                $.off(document.body, 'mousemove', initialize);
+                return;
+            }
+            const ready = $('.dt-cell', this.header);
+            if (!ready) return;
+
+            const $parent = $('.dt-row', this.header);
+
+            this.sortable = Sortable.create($parent, {
+                onEnd: (e) => {
+                    const {
+                        oldIndex,
+                        newIndex
+                    } = e;
+                    const $draggedCell = e.item;
+                    const {
+                        colIndex
+                    } = $.data($draggedCell);
+                    if (+colIndex === newIndex) return;
+
+                    this.switchColumn(oldIndex, newIndex);
+                },
+                preventOnFilter: false,
+                filter: '.dt-cell__resize-handle, .dt-dropdown',
+                chosenClass: 'dt-cell--dragging',
+                animation: 150
+            });
+        };
+
+        $.on(document.body, 'mousemove', initialize);
+    }
+
+    sortColumn(colIndex, nextSortOrder) {
+        this.instance.freeze();
+        this.sortRows(colIndex, nextSortOrder)
+            .then(() => {
+                this.refreshHeader();
+                return this.rowmanager.refreshRows();
+            })
+            .then(() => this.instance.unfreeze())
+            .then(() => {
+                this.fireEvent('onSortColumn', this.getColumn(colIndex));
+            });
+    }
+
+    removeColumn(colIndex) {
+        const removedCol = this.getColumn(colIndex);
+        this.instance.freeze();
+        this.datamanager.removeColumn(colIndex)
+            .then(() => {
+                this.refreshHeader();
+                return this.rowmanager.refreshRows();
+            })
+            .then(() => this.instance.unfreeze())
+            .then(() => {
+                this.fireEvent('onRemoveColumn', removedCol);
+            });
+    }
+
+    switchColumn(oldIndex, newIndex) {
+        this.instance.freeze();
+        this.datamanager.switchColumn(oldIndex, newIndex)
+            .then(() => {
+                this.refreshHeader();
+                return this.rowmanager.refreshRows();
+            })
+            .then(() => {
+                this.setColumnWidth(oldIndex);
+                this.setColumnWidth(newIndex);
+                this.instance.unfreeze();
+            })
+            .then(() => {
+                this.fireEvent('onSwitchColumn',
+                    this.getColumn(oldIndex), this.getColumn(newIndex)
+                );
+            });
+    }
+
+    toggleFilter(flag) {
+        let showFilter;
+        if (flag === undefined) {
+            showFilter = !this.isFilterShown;
+        } else {
+            showFilter = flag;
+        }
+
+        if (showFilter) {
+            $.style(this.$filterRow, { display: '' });
+        } else {
+            $.style(this.$filterRow, { display: 'none' });
+        }
+
+        this.isFilterShown = showFilter;
+        this.style.setBodyStyle();
+    }
+
+    focusFilter(colIndex) {
+        if (!this.isFilterShown) return;
+
+        const $filterInput = $(`[data-col-index="${colIndex}"] .dt-filter`, this.$filterRow);
+        $filterInput.focus();
+    }
+
+    bindFilter() {
+        if (!this.options.inlineFilters) return;
+        const handler = e => {
+            const $filterCell = $.closest('.dt-cell', e.target);
+            const {
+                colIndex
+            } = $.data($filterCell);
+            const keyword = e.target.value;
+
+            this.datamanager.filterRows(keyword, colIndex)
+                .then(({
+                    rowsToHide,
+                    rowsToShow
+                }) => {
+                    this.rowmanager.hideRows(rowsToHide);
+                    this.rowmanager.showRows(rowsToShow);
+                });
+        };
+        $.on(this.header, 'keydown', '.dt-filter', debounce$2(handler, 300));
+    }
+
+    sortRows(colIndex, sortOrder) {
+        return this.datamanager.sortRows(colIndex, sortOrder);
+    }
+
+    getColumn(colIndex) {
+        return this.datamanager.getColumn(colIndex);
+    }
+
+    getColumns() {
+        return this.datamanager.getColumns();
+    }
+
+    setColumnWidth(colIndex, width) {
+        colIndex = +colIndex;
+        this._columnWidthMap = this._columnWidthMap || [];
+
+        let columnWidth = width || this.getColumn(colIndex).width;
+
+        let index = this._columnWidthMap[colIndex];
+        const selector = [
+            `.dt-cell__content--col-${colIndex}`,
+            `.dt-cell__edit--col-${colIndex}`
+        ].join(', ');
+
+        const styles = {
+            width: columnWidth + 'px'
+        };
+
+        index = this.style.setStyle(selector, styles, index);
+
+        if (index !== undefined) {
+            this._columnWidthMap[colIndex] = index;
+        }
+    }
+
+    setColumnHeaderWidth(colIndex) {
+        colIndex = +colIndex;
+        this.$columnMap = this.$columnMap || [];
+        const selector = `.dt-cell__content--header-${colIndex}`;
+        const {
+            width
+        } = this.getColumn(colIndex);
+
+        let $column = this.$columnMap[colIndex];
+        if (!$column) {
+            $column = this.header.querySelector(selector);
+            this.$columnMap[colIndex] = $column;
+        }
+
+        $column.style.width = width + 'px';
+    }
+
+    getColumnMinWidth(colIndex) {
+        colIndex = +colIndex;
+        return this.getColumn(colIndex).minWidth || 24;
+    }
+
+    getFirstColumnIndex() {
+        return this.datamanager.getColumnIndexById('_rowIndex') + 1;
+    }
+
+    getHeaderCell$(colIndex) {
+        return $(`.dt-cell--header-${colIndex}`, this.header);
+    }
+
+    getLastColumnIndex() {
+        return this.datamanager.getColumnCount() - 1;
+    }
+
+    getDropdownHTML() {
+        const { dropdownButton, headerDropdown: dropdownItems } = this.options;
+
+        return `
+            <div class="dt-dropdown">
+                <div class="dt-dropdown__toggle">${dropdownButton}</div>
+                <div class="dt-dropdown__list">
+                ${dropdownItems.map((d, i) => `
+                    <div class="dt-dropdown__list-item" data-index="${i}">${d.label}</div>
+                `).join('')}
+                </div>
+            </div>
+      `;
     }
 }
 
@@ -2684,8 +2634,8 @@ class RowManager {
         // map of checked rows
         this.checkMap = [];
 
-        $.on(this.wrapper, 'click', '.data-table-cell[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
-            const $cell = $checkbox.closest('.data-table-cell');
+        $.on(this.wrapper, 'click', '.dt-cell[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
+            const $cell = $checkbox.closest('.dt-cell');
             const {
                 rowIndex,
                 isHeader
@@ -2737,7 +2687,7 @@ class RowManager {
     checkRow(rowIndex, toggle) {
         const value = toggle ? 1 : 0;
         const selector = rowIndex =>
-            `.data-table-cell[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
+            `.dt-cell[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
         // update internal map
         this.checkMap[rowIndex] = value;
         // set checkbox value explicitly
@@ -2761,7 +2711,7 @@ class RowManager {
             this.checkMap = [];
         }
         // set checkbox value
-        $.each('.data-table-cell[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
+        $.each('.dt-cell[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
             .map(input => {
                 input.checked = toggle;
             });
@@ -2785,34 +2735,34 @@ class RowManager {
         const $row = this.getRow$(rowIndex);
         if (!$row) return;
 
-        if (!toggle && this.bodyScrollable.classList.contains('row-highlight-all')) {
-            $row.classList.add('row-unhighlight');
+        if (!toggle && this.bodyScrollable.classList.contains('dt-scrollable--highlight-all')) {
+            $row.classList.add('dt-row--unhighlight');
             return;
         }
 
-        if (toggle && $row.classList.contains('row-unhighlight')) {
-            $row.classList.remove('row-unhighlight');
+        if (toggle && $row.classList.contains('dt-row--unhighlight')) {
+            $row.classList.remove('dt-row--unhighlight');
         }
 
         this._highlightedRows = this._highlightedRows || {};
 
         if (toggle) {
-            $row.classList.add('row-highlight');
+            $row.classList.add('dt-row--highlight');
             this._highlightedRows[rowIndex] = $row;
         } else {
-            $row.classList.remove('row-highlight');
+            $row.classList.remove('dt-row--highlight');
             delete this._highlightedRows[rowIndex];
         }
     }
 
     highlightAll(toggle = true) {
         if (toggle) {
-            this.bodyScrollable.classList.add('row-highlight-all');
+            this.bodyScrollable.classList.add('dt-scrollable--highlight-all');
         } else {
-            this.bodyScrollable.classList.remove('row-highlight-all');
+            this.bodyScrollable.classList.remove('dt-scrollable--highlight-all');
             for (const rowIndex in this._highlightedRows) {
                 const $row = this._highlightedRows[rowIndex];
-                $row.classList.remove('row-highlight');
+                $row.classList.remove('dt-row--highlight');
             }
             this._highlightedRows = {};
         }
@@ -2822,7 +2772,7 @@ class RowManager {
         rowIndices = ensureArray(rowIndices);
         rowIndices.map(rowIndex => {
             const $tr = this.getRow$(rowIndex);
-            $tr.classList.add('hide');
+            $tr.classList.add('dt-row--hide');
         });
     }
 
@@ -2830,7 +2780,7 @@ class RowManager {
         rowIndices = ensureArray(rowIndices);
         rowIndices.map(rowIndex => {
             const $tr = this.getRow$(rowIndex);
-            $tr.classList.remove('hide');
+            $tr.classList.remove('dt-row--hide');
         });
     }
 
@@ -2913,7 +2863,7 @@ class RowManager {
         }
 
         return `
-            <tr class="data-table-row" ${dataAttr}>
+            <tr class="dt-row" ${dataAttr}>
                 ${row.map(cell => this.cellmanager.getCellHTML(cell)).join('')}
             </tr>
         `;
@@ -2921,11 +2871,11 @@ class RowManager {
 
     getFilterInput(props) {
         const dataAttr = makeDataAttributeString(props);
-        return `<input class="data-table-filter input-style" type="text" ${dataAttr} />`;
+        return `<input class="dt-filter dt-input" type="text" ${dataAttr} />`;
     }
 
     selector(rowIndex) {
-        return `.data-table-row[data-row-index="${rowIndex}"]`;
+        return `.dt-row[data-row-index="${rowIndex}"]`;
     }
 }
 
@@ -2952,11 +2902,7 @@ class BodyRenderer {
     renderBodyHTML() {
         const rows = this.datamanager.getRowsForView();
 
-        this.bodyScrollable.innerHTML = `
-            <table class="data-table-body">
-                ${this.getBodyHTML(rows)}
-            </table>
-        `;
+        this.bodyScrollable.innerHTML = this.getBodyHTML(rows);
         this.instance.setDimensions();
         this.restoreState();
     }
@@ -2967,16 +2913,12 @@ class BodyRenderer {
         let initialData = this.getDataForClusterize(rows);
 
         if (initialData.length === 0) {
-            initialData = [`<tr class="no-data"><td>${this.options.noDataMessage}</td></tr>`];
+            initialData = [this.getNoDataHTML()];
         }
 
         if (!this.clusterize) {
             // empty body
-            this.bodyScrollable.innerHTML = `
-                <table class="data-table-body">
-                    ${this.getBodyHTML([])}
-                </table>
-            `;
+            this.bodyScrollable.innerHTML = this.getBodyHTML([]);
 
             // first 20 rows will appended
             // rest of them in nextTick
@@ -3013,8 +2955,14 @@ class BodyRenderer {
         this.clusterize.append(data);
     }
 
-    showToastMessage(message) {
-        this.instance.toastMessage.innerHTML = `<span>${message}</span>`;
+    showToastMessage(message, hideAfter) {
+        this.instance.toastMessage.innerHTML = this.getToastMessageHTML(message);
+
+        if (hideAfter) {
+            setTimeout(() => {
+                this.clearToastMessage();
+            }, hideAfter * 1000);
+        }
     }
 
     clearToastMessage() {
@@ -3027,10 +2975,20 @@ class BodyRenderer {
 
     getBodyHTML(rows) {
         return `
-            <tbody>
-                ${rows.map(row => this.rowmanager.getRowHTML(row, row.meta)).join('')}
-            </tbody>
+            <table class="dt-body">
+                <tbody>
+                    ${rows.map(row => this.rowmanager.getRowHTML(row, row.meta)).join('')}
+                </tbody>
+            </table>
         `;
+    }
+
+    getNoDataHTML() {
+        return `<div class="dt-scrollable__no-data">${this.options.noDataMessage}</div>`;
+    }
+
+    getToastMessageHTML(message) {
+        return `<span class="dt-toast__message">${message}</span>`;
     }
 }
 
@@ -3044,7 +3002,7 @@ class Style {
             'getColumn'
         ]);
 
-        this.scopeClass = 'datatable-instance-' + instance.constructor.instances;
+        this.scopeClass = 'dt-instance-' + instance.constructor.instances;
         instance.datatableWrapper.classList.add(this.scopeClass);
 
         const styleEl = document.createElement('style');
@@ -3127,28 +3085,15 @@ class Style {
         $.style(this.header, {
             margin: 0
         });
-
-        // don't show resize cursor on nonResizable columns
-        const nonResizableColumnsSelector = this.datamanager.getColumns()
-            .filter(col => col.resizable === false)
-            .map(col => col.colIndex)
-            .map(i => `.data-table-header [data-col-index="${i}"]`)
-            .join();
-
-        this.setStyle(nonResizableColumnsSelector, {
-            cursor: 'pointer'
-        });
     }
 
     setupMinWidth() {
-        $.each('.data-table-cell[data-is-header]', this.header).map(col => {
-            const width = $.style($('.content', col), 'width');
-            const {
-                colIndex
-            } = $.data(col);
+        $.each('.dt-cell[data-is-header]', this.header).map(col => {
+            const { colIndex } = $.data(col);
             const column = this.getColumn(colIndex);
 
             if (!column.minWidth) {
+                const width = $.style($('.dt-cell__content', col), 'width');
                 // only set this once
                 column.minWidth = width;
             }
@@ -3156,16 +3101,16 @@ class Style {
     }
 
     setupNaturalColumnWidth() {
-        if (!$('.data-table-row')) return;
+        if (!$('.dt-row')) return;
 
         // set initial width as naturally calculated by table's first row
-        $.each('.data-table-row[data-row-index="0"] .data-table-cell', this.bodyScrollable).map($cell => {
+        $.each('.dt-row[data-row-index="0"] .dt-cell', this.bodyScrollable).map($cell => {
             const {
                 colIndex
             } = $.data($cell);
             const column = this.datamanager.getColumn(colIndex);
 
-            let naturalWidth = $.style($('.content', $cell), 'width');
+            let naturalWidth = $.style($('.dt-cell__content', $cell), 'width');
 
             if (column.id === '_rowIndex') {
                 naturalWidth = this.getRowIndexColumnWidth(naturalWidth);
@@ -3224,10 +3169,12 @@ class Style {
     }
 
     compensateScrollbarWidth() {
-        const scrollbarWidth = $.scrollbarWidth();
-        const lastCol = this.datamanager.getColumn(-1);
-        const width = lastCol.width - scrollbarWidth;
-        this.columnmanager.setColumnWidth(lastCol.colIndex, width);
+        requestAnimationFrame(() => {
+            const scrollbarWidth = $.scrollbarWidth();
+            const lastCol = this.datamanager.getColumn(-1);
+            const width = lastCol.width - scrollbarWidth;
+            this.columnmanager.setColumnWidth(lastCol.colIndex, width);
+        });
     }
 
     distributeRemainingWidth() {
@@ -3251,7 +3198,7 @@ class Style {
     setDefaultCellHeight() {
         if (this.options.dynamicRowHeight) return;
         if (this.__cellHeightSet) return;
-        const $firstCell = $('.data-table-cell[data-is-header]', this.instance.header);
+        const $firstCell = $('.dt-cell[data-is-header]', this.instance.header);
         if (!$firstCell) return;
 
         const height = this.options.cellHeight || $.style($firstCell, 'height');
@@ -3262,10 +3209,7 @@ class Style {
     }
 
     setCellHeight(height) {
-        this.setStyle('.data-table-cell .content', {
-            height: height + 'px'
-        });
-        this.setStyle('.data-table-cell .edit-cell', {
+        this.setStyle('.dt-cell__content, .dt-cell__edit', {
             height: height + 'px'
         });
     }
@@ -3276,7 +3220,7 @@ class Style {
             .map(column => {
                 // alignment
                 if (['left', 'center', 'right'].includes(column.align)) {
-                    this.setStyle(`[data-col-index="${column.colIndex}"]`, {
+                    this.setStyle(`.dt-cell--col-${column.colIndex}`, {
                         'text-align': column.align
                     });
                 }
@@ -3296,34 +3240,36 @@ class Style {
     }
 
     setBodyStyle() {
-        const width = $.style(this.header, 'width');
+        requestAnimationFrame(() => {
+            const width = $.style(this.header, 'width');
 
-        $.style(this.bodyScrollable, {
-            width: width + 'px'
-        });
-
-        const $body = $('.data-table-body', this.bodyScrollable);
-
-        if ($body) {
-            $.style($body, {
-                height: '0px'
+            $.style(this.bodyScrollable, {
+                width: width + 'px'
             });
-        }
 
-        $.style(this.bodyScrollable, {
-            marginTop: $.style(this.header, 'height') + 'px'
-        });
+            const $body = $('.dt-body', this.bodyScrollable);
 
-        $.style($('table', this.bodyScrollable), {
-            margin: 0,
-            width: '100%'
+            if ($body) {
+                $.style($body, {
+                    height: '0px'
+                });
+            }
+
+            $.style(this.bodyScrollable, {
+                marginTop: $.style(this.header, 'height') + 'px'
+            });
+
+            $.style($('table', this.bodyScrollable), {
+                margin: 0,
+                width: '100%'
+            });
         });
     }
 
     getColumnHeaderElement(colIndex) {
         colIndex = +colIndex;
         if (colIndex < 0) return null;
-        return $(`.data-table-cell[data-col-index="${colIndex}"]`, this.header);
+        return $(`.dt-cell[data-col-index="${colIndex}"]`, this.header);
     }
 
     getRowIndexColumnWidth(baseWidth) {
@@ -3507,25 +3453,25 @@ class DataTable {
 
     prepareDom() {
         this.wrapper.innerHTML = `
-            <div class="data-table">
-                <table class="data-table-header">
+            <div class="datatable">
+                <table class="dt-header">
                 </table>
-                <div class="body-scrollable">
+                <div class="dt-scrollable">
                 </div>
-                <div class="freeze-container">
-                <span>${this.options.freezeMessage}</span>
+                <div class="dt-freeze">
+                    <span class="dt-freeze__message">
+                        ${this.options.freezeMessage}
+                    </span>
                 </div>
-                <div class="data-table-footer">
-                </div>
-                <div class="toast-message"></div>
+                <div class="dt-toast"></div>
             </div>
         `;
 
-        this.datatableWrapper = $('.data-table', this.wrapper);
-        this.header = $('.data-table-header', this.wrapper);
-        this.bodyScrollable = $('.body-scrollable', this.wrapper);
-        this.freezeContainer = $('.freeze-container', this.wrapper);
-        this.toastMessage = $('.toast-message', this.wrapper);
+        this.datatableWrapper = $('.datatable', this.wrapper);
+        this.header = $('.dt-header', this.wrapper);
+        this.bodyScrollable = $('.dt-scrollable', this.wrapper);
+        this.freezeContainer = $('.dt-freeze', this.wrapper);
+        this.toastMessage = $('.dt-toast', this.wrapper);
     }
 
     refresh(data, columns) {
@@ -3565,8 +3511,8 @@ class DataTable {
         this.style.setDimensions();
     }
 
-    showToastMessage(message) {
-        this.bodyRenderer.showToastMessage(message);
+    showToastMessage(message, hideAfter) {
+        this.bodyRenderer.showToastMessage(message, hideAfter);
     }
 
     clearToastMessage() {
