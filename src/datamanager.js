@@ -381,7 +381,7 @@ export default class DataManager {
             }
         }
 
-        const _row = this.prepareRow(row, rowIndex);
+        const _row = this.prepareRow(row, {rowIndex});
         const index = this.rows.findIndex(row => row[0].rowIndex === rowIndex);
         this.rows[index] = _row;
 
