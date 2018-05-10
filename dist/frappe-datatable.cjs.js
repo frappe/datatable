@@ -1606,6 +1606,22 @@ class CellManager {
                 this.instance.showToastMessage(message, 2);
             }
         });
+
+        if (this.options.pasteFromClipboard) {
+            this.keyboard.on('ctrl+v', (e) => {
+                // hack
+                // https://stackoverflow.com/a/2177059/5353542
+                this.instance.pasteTarget.focus();
+
+                setTimeout(() => {
+                    const data = this.instance.pasteTarget.value;
+                    this.instance.pasteTarget.value = '';
+                    this.pasteContentInCell(data);
+                }, 10);
+
+                return false;
+            });
+        }
     }
 
     bindMouseEvents() {
@@ -1992,6 +2008,30 @@ class CellManager {
 
         // return no of cells copied
         return rows.reduce((total, row) => total + row.length, 0);
+    }
+
+    pasteContentInCell(data) {
+        if (!this.$focusedCell) return;
+
+        const matrix = data
+            .split('\n')
+            .map(row => row.split('\t'))
+            .filter(row => row.length && row.every(it => it));
+
+        let { colIndex, rowIndex } = $.data(this.$focusedCell);
+
+        let focusedCell = {
+            colIndex: +colIndex,
+            rowIndex: +rowIndex
+        };
+
+        matrix.forEach((row, i) => {
+            let rowIndex = i + focusedCell.rowIndex;
+            row.forEach((cell, j) => {
+                let colIndex = j + focusedCell.colIndex;
+                this.updateCell(colIndex, rowIndex, cell);
+            });
+        });
     }
 
     activateFilter(colIndex) {
@@ -3299,7 +3339,8 @@ const KEYCODES = {
     9: 'tab',
     27: 'esc',
     67: 'c',
-    70: 'f'
+    70: 'f',
+    86: 'v'
 };
 
 class Keyboard {
@@ -3394,7 +3435,8 @@ var DEFAULT_OPTIONS = {
     inlineFilters: false,
     treeView: false,
     checkedRowStatus: true,
-    dynamicRowHeight: false
+    dynamicRowHeight: false,
+    pasteFromClipboard: false
 };
 
 class DataTable {
@@ -3464,6 +3506,7 @@ class DataTable {
                     </span>
                 </div>
                 <div class="dt-toast"></div>
+                <textarea class="dt-paste-target"></textarea>
             </div>
         `;
 
@@ -3472,6 +3515,7 @@ class DataTable {
         this.bodyScrollable = $('.dt-scrollable', this.wrapper);
         this.freezeContainer = $('.dt-freeze', this.wrapper);
         this.toastMessage = $('.dt-toast', this.wrapper);
+        this.pasteTarget = $('.dt-paste-target', this.wrapper);
     }
 
     refresh(data, columns) {
@@ -3589,7 +3633,7 @@ class DataTable {
 DataTable.instances = 0;
 
 var name = "frappe-datatable";
-var version = "0.0.4";
+var version = "0.0.5";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
 var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js"};

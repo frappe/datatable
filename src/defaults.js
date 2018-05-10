@@ -48,9 +48,9 @@ export default {
     layout: 'fixed', // fixed, fluid, ratio
     noDataMessage: 'No Data',
     cellHeight: null,
+    dynamicRowHeight: false,
     inlineFilters: false,
     treeView: false,
     checkedRowStatus: true,
-    dynamicRowHeight: false,
     pasteFromClipboard: false
 };

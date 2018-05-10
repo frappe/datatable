@@ -247,6 +247,11 @@
 		        transform: translateY(-50%);
 	}
 
+.dt-paste-target {
+	position: fixed;
+	left: -999em;
+}
+
 body.dt-resize {
 	cursor: col-resize;
 }
