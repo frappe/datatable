@@ -1,8 +1,8 @@
-# Frappe Datatable
-
-## Getting Started
+# Getting Started
 
 The easiest way to get started with Frappe DataTable is using this [JSFiddle Demo](https://jsfiddle.net/f4qe6phc/7/). Or you can copy the following template into a new index.html file.
+
+## Example
 
 ```html
 <!-- include styles -->

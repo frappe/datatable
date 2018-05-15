@@ -7,6 +7,9 @@
   <meta name="description" content="A modern datatable library for the web">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//unpkg.com/docsify/themes/vue.css">
+  <link rel="stylesheet" href="//unpkg.com/docsify/themes/pure.css">
+  <!-- <link rel="stylesheet" href="assets/css/docsify.css"> -->
+  <!-- <link rel="stylesheet" href="assets/css/frappe-datatable.css"> -->
 </head>
 <body>
   <div id="app"></div>
@@ -15,12 +18,20 @@
       repo: 'https://github.com/frappe/datatable',
       themeColor: '#58b81d',
       loadSidebar: true,
-      loadNavbar: true,
       auto2top: true,
-      maxSubLevel: 3
+      homepage: 'getting-started.md',
+      executeScript: true,
+      maxLevel: 4,
+      subMaxLevel: 2,
     }
   </script>
   <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
   <script src="//unpkg.com/docsify/lib/plugins/search.min.js"></script>
+  <script src="//unpkg.com/docsify/lib/plugins/external-script.min.js"></script>
+  <script src="//unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  <script src="assets/js/clusterize.min.js"></script>
+  <script src="assets/js/Sortable.min.js"></script>
+  <script src="assets/js/frappe-datatable.js"></script>
+  <script src="assets/js/index.js"></script>
 </body>
 </html>

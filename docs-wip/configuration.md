@@ -1,8 +1,8 @@
-## Configuration
+# Configuration
 
 Frappe DataTable has a lot of customizable features, this section is dedicated to enabling / disabling existing functionality.
 
-### Container
+## Container
 
 The first parameter required by the `DataTable` constructor is the container element. You can pass in a CSS Selector or a DOM Object.
 
@@ -13,7 +13,7 @@ const container = document.querySelector('#datatable');
 const datatable = new DataTable(container, options);
 ```
 
-### Options
+## Options
 
 The second parameter required by the `DataTable` constructor is the options object. The minimum required configuration is to pass `column` and `data` values.
 
@@ -31,7 +31,7 @@ const datatable = new DataTable(container, options);
 
 The following options are configurable:
 
-#### getEditor
+### getEditor
  - Type: `Function`
  - Default: `null`
 
@@ -39,7 +39,7 @@ Customize the editor behaviour.
 
 ---
 
-#### serialNoColumn
+### serialNoColumn
  - Type: `Boolean`
  - Default: `true`
 
@@ -47,7 +47,7 @@ Whether to show serial number as the first column in datatable.
 
 ---
 
-#### checkboxColumn
+### checkboxColumn
  - Type: `Boolean`
  - Default: `false`
 
@@ -55,7 +55,7 @@ Whether to show checkbox column in the datatable.
 
 ---
 
-#### clusterize
+### clusterize
  - Type: `Boolean`
  - Default: `true`
 
@@ -65,28 +65,28 @@ Whether to use clusterize to render the data.
 
 ---
 
-#### layout
+### layout
  - Type: `String`
  - Default: `fixed`
  - Options: `fixed | fluid | ratio`
 
 This option controls how width of each `column` is calculated in the DataTable.
 
-##### fixed
+#### fixed
 
 The column width is calculated based on the content of the first row of the table. This layout can result in horizontal scroll.
 
-##### fluid
+#### fluid
 
 The column width is adjusted based on the width of container. So the columns will be resized if the window is resized. This layout won't result in horizontal scroll. You will always see all the columns.
 
-##### ratio
+#### ratio
 
 This layout works similar to the `flex` property in CSS. When column A has `width` set as `1` and column B as `2`, then column B's width  will be twice as much as column A.
 
 ---
 
-#### noDataMessage
+### noDataMessage
  - Type: `String`
  - Default: `No Data`
 
@@ -94,7 +94,7 @@ The message shown when there are no rows to show in the DataTable.
 
 ---
 
-#### dynamicRowHeight
+### dynamicRowHeight
  - Type: `Boolean`
  - Default: `false`
 
@@ -102,7 +102,7 @@ The height of the row will be set according to the content of the cell with the 
 
 ---
 
-#### cellHeight
+### cellHeight
  - Type: `Number`
  - Default: `null`
 
@@ -112,7 +112,7 @@ Set the height of each cell explicitly.
 
 ---
 
-#### inlineFilters
+### inlineFilters
  - Type: `Boolean`
  - Default: `false`
 
@@ -120,7 +120,7 @@ Whether to enable the inline filter feature. If the value is `true`, then you ca
 
 ---
 
-#### treeView
+### treeView
  - Type: `Boolean`
  - Default: `false`
 
@@ -166,7 +166,7 @@ const datatable = new DataTable('#datatable', {
 
 ---
 
-#### checkedRowStatus
+### checkedRowStatus
  - Type: `Boolean`
  - Default: `true`
 
@@ -174,7 +174,7 @@ Whether to show the number of rows checked in a toast message.
 
 ---
 
-#### pasteFromClipboard
+### pasteFromClipboard
  - _Experimental_
  - Type: `Boolean`
  - Default: `false`
@@ -183,7 +183,7 @@ Whether to allow the user to paste copied content into selected cell(s).
 
 ---
 
-#### dropdownButton
+### dropdownButton
  - Type: `String`
  - Default: `▼`
 
@@ -198,7 +198,7 @@ Example
 
 ```
 
-#### headerDropdown
+### headerDropdown
  - Type: `Array`
 
 When you hover over any column, you see the dropdown button which is used to perform certain actions for that column.
@@ -216,7 +216,7 @@ options = {
 }
 ```
 
-#### events
+### events
  - Type: `Object`
 
  The events options is described in detailed in the [next section](events.md).
