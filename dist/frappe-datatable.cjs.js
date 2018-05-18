@@ -242,10 +242,12 @@ var isObject_1 = isObject;
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
+/** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
 
 var _freeGlobal = freeGlobal;
 
+/** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
 
 /** Used as a reference to the global object. */
@@ -253,16 +255,34 @@ var root = _freeGlobal || freeSelf || Function('return this')();
 
 var _root = root;
 
+/**
+ * Gets the timestamp of the number of milliseconds that have elapsed since
+ * the Unix epoch (1 January 1970 00:00:00 UTC).
+ *
+ * @static
+ * @memberOf _
+ * @since 2.4.0
+ * @category Date
+ * @returns {number} Returns the timestamp.
+ * @example
+ *
+ * _.defer(function(stamp) {
+ *   console.log(_.now() - stamp);
+ * }, _.now());
+ * // => Logs the number of milliseconds it took for the deferred invocation.
+ */
 var now = function() {
   return _root.Date.now();
 };
 
 var now_1 = now;
 
+/** Built-in value references. */
 var Symbol = _root.Symbol;
 
 var _Symbol = Symbol;
 
+/** Used for built-in method references. */
 var objectProto = Object.prototype;
 
 /** Used to check objects for own properties. */
@@ -291,11 +311,10 @@ function getRawTag(value) {
 
   try {
     value[symToStringTag] = undefined;
-    var unmasked = true;
   } catch (e) {}
 
   var result = nativeObjectToString.call(value);
-  if (unmasked) {
+  {
     if (isOwn) {
       value[symToStringTag] = tag;
     } else {
@@ -330,8 +349,9 @@ function objectToString(value) {
 
 var _objectToString = objectToString;
 
-var nullTag = '[object Null]';
-var undefinedTag = '[object Undefined]';
+/** `Object#toString` result references. */
+var nullTag = '[object Null]',
+    undefinedTag = '[object Undefined]';
 
 /** Built-in value references. */
 var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
@@ -384,6 +404,7 @@ function isObjectLike(value) {
 
 var isObjectLike_1 = isObjectLike;
 
+/** `Object#toString` result references. */
 var symbolTag = '[object Symbol]';
 
 /**
@@ -410,6 +431,7 @@ function isSymbol(value) {
 
 var isSymbol_1 = isSymbol;
 
+/** Used as references for various `Number` constants. */
 var NAN = 0 / 0;
 
 /** Used to match leading and trailing whitespace. */
@@ -473,11 +495,12 @@ function toNumber(value) {
 
 var toNumber_1 = toNumber;
 
+/** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max;
-var nativeMin = Math.min;
+var nativeMax = Math.max,
+    nativeMin = Math.min;
 
 /**
  * Creates a debounced function that delays invoking `func` until after `wait`
@@ -659,6 +682,7 @@ function debounce(func, wait, options) {
 
 var debounce_1 = debounce;
 
+/** Error message constants. */
 var FUNC_ERROR_TEXT$1 = 'Expected a function';
 
 /**
@@ -805,7 +829,7 @@ function isNumeric(val) {
 
 let throttle$1 = throttle_1;
 
-let debounce$2 = debounce_1;
+let debounce$1 = debounce_1;
 
 function nextTick(fn, context = null) {
     return (...args) => {
@@ -818,7 +842,6 @@ function nextTick(fn, context = null) {
         });
     };
 }
-
 function linkProperties(target, source, properties) {
     const props = properties.reduce((acc, prop) => {
         acc[prop] = {
@@ -830,7 +853,6 @@ function linkProperties(target, source, properties) {
     }, {});
     Object.defineProperties(target, props);
 }
-
 function isSet(val) {
     return val !== undefined || val !== null;
 }
@@ -1226,7 +1248,7 @@ class DataManager {
             }
         }
 
-        const _row = this.prepareRow(row, rowIndex);
+        const _row = this.prepareRow(row, {rowIndex});
         const index = this.rows.findIndex(row => row[0].rowIndex === rowIndex);
         this.rows[index] = _row;
 
@@ -1606,6 +1628,22 @@ class CellManager {
                 this.instance.showToastMessage(message, 2);
             }
         });
+
+        if (this.options.pasteFromClipboard) {
+            this.keyboard.on('ctrl+v', (e) => {
+                // hack
+                // https://stackoverflow.com/a/2177059/5353542
+                this.instance.pasteTarget.focus();
+
+                setTimeout(() => {
+                    const data = this.instance.pasteTarget.value;
+                    this.instance.pasteTarget.value = '';
+                    this.pasteContentInCell(data);
+                }, 10);
+
+                return false;
+            });
+        }
     }
 
     bindMouseEvents() {
@@ -1992,6 +2030,30 @@ class CellManager {
 
         // return no of cells copied
         return rows.reduce((total, row) => total + row.length, 0);
+    }
+
+    pasteContentInCell(data) {
+        if (!this.$focusedCell) return;
+
+        const matrix = data
+            .split('\n')
+            .map(row => row.split('\t'))
+            .filter(row => row.length && row.every(it => it));
+
+        let { colIndex, rowIndex } = $.data(this.$focusedCell);
+
+        let focusedCell = {
+            colIndex: +colIndex,
+            rowIndex: +rowIndex
+        };
+
+        matrix.forEach((row, i) => {
+            let rowIndex = i + focusedCell.rowIndex;
+            row.forEach((cell, j) => {
+                let colIndex = j + focusedCell.colIndex;
+                this.updateCell(colIndex, rowIndex, cell);
+            });
+        });
     }
 
     activateFilter(colIndex) {
@@ -2513,7 +2575,7 @@ class ColumnManager {
                     this.rowmanager.showRows(rowsToShow);
                 });
         };
-        $.on(this.header, 'keydown', '.dt-filter', debounce$2(handler, 300));
+        $.on(this.header, 'keydown', '.dt-filter', debounce$1(handler, 300));
     }
 
     sortRows(colIndex, sortOrder) {
@@ -3299,7 +3361,8 @@ const KEYCODES = {
     9: 'tab',
     27: 'esc',
     67: 'c',
-    70: 'f'
+    70: 'f',
+    86: 'v'
 };
 
 class Keyboard {
@@ -3394,7 +3457,8 @@ var DEFAULT_OPTIONS = {
     inlineFilters: false,
     treeView: false,
     checkedRowStatus: true,
-    dynamicRowHeight: false
+    dynamicRowHeight: false,
+    pasteFromClipboard: false
 };
 
 class DataTable {
@@ -3434,8 +3498,11 @@ class DataTable {
             this.options || {}, options
         );
 
-        this.options.headerDropdown
-            .push(...(options.headerDropdown || []));
+        options.headerDropdown = options.headerDropdown || [];
+        this.options.headerDropdown = [
+            ...DEFAULT_OPTIONS.headerDropdown,
+            ...options.headerDropdown
+        ];
 
         // custom user events
         this.events = Object.assign(
@@ -3464,6 +3531,7 @@ class DataTable {
                     </span>
                 </div>
                 <div class="dt-toast"></div>
+                <textarea class="dt-paste-target"></textarea>
             </div>
         `;
 
@@ -3472,6 +3540,7 @@ class DataTable {
         this.bodyScrollable = $('.dt-scrollable', this.wrapper);
         this.freezeContainer = $('.dt-freeze', this.wrapper);
         this.toastMessage = $('.dt-toast', this.wrapper);
+        this.pasteTarget = $('.dt-paste-target', this.wrapper);
     }
 
     refresh(data, columns) {
@@ -3589,7 +3658,7 @@ class DataTable {
 DataTable.instances = 0;
 
 var name = "frappe-datatable";
-var version = "0.0.4";
+var version = "0.0.5";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
 var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js"};
