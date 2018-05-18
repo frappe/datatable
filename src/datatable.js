@@ -45,8 +45,11 @@ class DataTable {
             this.options || {}, options
         );
 
-        this.options.headerDropdown
-            .push(...(options.headerDropdown || []));
+        options.headerDropdown = options.headerDropdown || [];
+        this.options.headerDropdown = [
+            ...DEFAULT_OPTIONS.headerDropdown,
+            ...options.headerDropdown
+        ];
 
         // custom user events
         this.events = Object.assign(
