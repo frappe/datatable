@@ -79,6 +79,10 @@
 					data,
 					inlineFilters: true,
 					dynamicRowHeight: true,
+					headerDropdown: [{
+						label: 'Add Column',
+						action: console.log
+					}],
 					getEditor(colIndex, rowIndex, value, parent) {
 						// editing obj only for date field
 						if (colIndex != 6) return;

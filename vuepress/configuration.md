@@ -1,3 +1,7 @@
+---
+sidebarDepth: 2
+---
+
 # Configuration
 
 Frappe DataTable has a lot of customizable features, this section is dedicated to enabling / disabling existing functionality.

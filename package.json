@@ -9,7 +9,8 @@
     "production": "rollup -c --production",
     "build:docs": "rollup -c --docs",
     "dev": "rollup -c -w",
-    "test": "mocha --compilers js:babel-core/register --colors ./test/*.spec.js"
+    "test": "mocha --compilers js:babel-core/register --colors ./test/*.spec.js",
+    "docs": "vuepress dev vuepress"
   },
   "devDependencies": {
     "chai": "3.5.0",
@@ -20,12 +21,15 @@
     "mocha": "3.3.0",
     "postcss-cssnext": "^3.1.0",
     "postcss-nested": "^3.0.0",
+    "rollup": "^0.59.1",
     "rollup-plugin-commonjs": "^8.3.0",
     "rollup-plugin-eslint": "^4.0.0",
     "rollup-plugin-json": "^2.3.0",
     "rollup-plugin-node-resolve": "^3.0.3",
     "rollup-plugin-postcss": "^1.2.8",
-    "rollup-plugin-uglify-es": "^0.0.1"
+    "rollup-plugin-uglify-es": "^0.0.1",
+    "script-loader": "^0.7.2",
+    "vuepress": "^0.8.4"
   },
   "repository": {
     "type": "git",
@@ -37,7 +41,7 @@
     "grid",
     "table"
   ],
-  "author": "Faris Ansari",
+  "author": "Frappe Technologies",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/frappe/datatable/issues"

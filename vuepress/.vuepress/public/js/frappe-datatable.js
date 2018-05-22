@@ -1,9 +1,8 @@
+var DataTable = (function (Sortable,Clusterize) {
 'use strict';
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var Sortable = _interopDefault(require('sortablejs'));
-var Clusterize = _interopDefault(require('clusterize.js'));
+Sortable = Sortable && Sortable.hasOwnProperty('default') ? Sortable['default'] : Sortable;
+Clusterize = Clusterize && Clusterize.hasOwnProperty('default') ? Clusterize['default'] : Clusterize;
 
 function $(expr, con) {
     return typeof expr === 'string' ?
@@ -311,10 +310,11 @@ function getRawTag(value) {
 
   try {
     value[symToStringTag] = undefined;
+    var unmasked = true;
   } catch (e) {}
 
   var result = nativeObjectToString.call(value);
-  {
+  if (unmasked) {
     if (isOwn) {
       value[symToStringTag] = tag;
     } else {
@@ -350,8 +350,8 @@ function objectToString(value) {
 var _objectToString = objectToString;
 
 /** `Object#toString` result references. */
-var nullTag = '[object Null]',
-    undefinedTag = '[object Undefined]';
+var nullTag = '[object Null]';
+var undefinedTag = '[object Undefined]';
 
 /** Built-in value references. */
 var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
@@ -499,8 +499,8 @@ var toNumber_1 = toNumber;
 var FUNC_ERROR_TEXT = 'Expected a function';
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max,
-    nativeMin = Math.min;
+var nativeMax = Math.max;
+var nativeMin = Math.min;
 
 /**
  * Creates a debounced function that delays invoking `func` until after `wait`
@@ -829,7 +829,7 @@ function isNumeric(val) {
 
 let throttle$1 = throttle_1;
 
-let debounce$1 = debounce_1;
+let debounce$2 = debounce_1;
 
 function nextTick(fn, context = null) {
     return (...args) => {
@@ -838,10 +838,18 @@ function nextTick(fn, context = null) {
                 const out = fn.apply(context, args);
                 resolve(out);
             };
-            setTimeout(execute);
+
+            if (window.setImmediate) {
+                setImmediate(execute);
+            } else if (window.requestAnimationFrame) {
+                requestAnimationFrame(execute);
+            } else {
+                setTimeout(execute);
+            }
         });
     };
 }
+
 function linkProperties(target, source, properties) {
     const props = properties.reduce((acc, prop) => {
         acc[prop] = {
@@ -853,6 +861,7 @@ function linkProperties(target, source, properties) {
     }, {});
     Object.defineProperties(target, props);
 }
+
 function isSet(val) {
     return val !== undefined || val !== null;
 }
@@ -1248,7 +1257,7 @@ class DataManager {
             }
         }
 
-        const _row = this.prepareRow(row, {rowIndex});
+        const _row = this.prepareRow(row, rowIndex);
         const index = this.rows.findIndex(row => row[0].rowIndex === rowIndex);
         this.rows[index] = _row;
 
@@ -1481,797 +1490,6 @@ class DataManager {
 // Custom Errors
 class DataError extends TypeError {}
 
-class CellManager {
-    constructor(instance) {
-        this.instance = instance;
-        linkProperties(this, this.instance, [
-            'wrapper',
-            'options',
-            'style',
-            'bodyScrollable',
-            'columnmanager',
-            'rowmanager',
-            'datamanager',
-            'keyboard'
-        ]);
-
-        this.bindEvents();
-    }
-
-    bindEvents() {
-        this.bindFocusCell();
-        this.bindEditCell();
-        this.bindKeyboardSelection();
-        this.bindCopyCellContents();
-        this.bindMouseEvents();
-        this.bindTreeEvents();
-    }
-
-    bindFocusCell() {
-        this.bindKeyboardNav();
-    }
-
-    bindEditCell() {
-        this.$editingCell = null;
-
-        $.on(this.bodyScrollable, 'dblclick', '.dt-cell', (e, cell) => {
-            this.activateEditing(cell);
-        });
-
-        this.keyboard.on('enter', () => {
-            if (this.$focusedCell && !this.$editingCell) {
-                // enter keypress on focused cell
-                this.activateEditing(this.$focusedCell);
-            } else if (this.$editingCell) {
-                // enter keypress on editing cell
-                this.submitEditing();
-                this.deactivateEditing();
-            }
-        });
-    }
-
-    bindKeyboardNav() {
-        const focusCell = (direction) => {
-            if (!this.$focusedCell || this.$editingCell) {
-                return false;
-            }
-
-            let $cell = this.$focusedCell;
-
-            if (direction === 'left' || direction === 'shift+tab') {
-                $cell = this.getLeftCell$($cell);
-            } else if (direction === 'right' || direction === 'tab') {
-                $cell = this.getRightCell$($cell);
-            } else if (direction === 'up') {
-                $cell = this.getAboveCell$($cell);
-            } else if (direction === 'down') {
-                $cell = this.getBelowCell$($cell);
-            }
-
-            this.focusCell($cell);
-            return true;
-        };
-
-        const focusLastCell = (direction) => {
-            if (!this.$focusedCell || this.$editingCell) {
-                return false;
-            }
-
-            let $cell = this.$focusedCell;
-            const {
-                rowIndex,
-                colIndex
-            } = $.data($cell);
-
-            if (direction === 'left') {
-                $cell = this.getLeftMostCell$(rowIndex);
-            } else if (direction === 'right') {
-                $cell = this.getRightMostCell$(rowIndex);
-            } else if (direction === 'up') {
-                $cell = this.getTopMostCell$(colIndex);
-            } else if (direction === 'down') {
-                $cell = this.getBottomMostCell$(colIndex);
-            }
-
-            this.focusCell($cell);
-            return true;
-        };
-
-        ['left', 'right', 'up', 'down', 'tab', 'shift+tab']
-            .map(direction => this.keyboard.on(direction, () => focusCell(direction)));
-
-        ['left', 'right', 'up', 'down']
-            .map(direction => this.keyboard.on(`ctrl+${direction}`, () => focusLastCell(direction)));
-
-        this.keyboard.on('esc', () => {
-            this.deactivateEditing();
-        });
-
-        if (this.options.inlineFilters) {
-            this.keyboard.on('ctrl+f', (e) => {
-                const $cell = $.closest('.dt-cell', e.target);
-                const { colIndex } = $.data($cell);
-
-                this.activateFilter(colIndex);
-                return true;
-            });
-        }
-    }
-
-    bindKeyboardSelection() {
-        const getNextSelectionCursor = (direction) => {
-            let $selectionCursor = this.getSelectionCursor();
-
-            if (direction === 'left') {
-                $selectionCursor = this.getLeftCell$($selectionCursor);
-            } else if (direction === 'right') {
-                $selectionCursor = this.getRightCell$($selectionCursor);
-            } else if (direction === 'up') {
-                $selectionCursor = this.getAboveCell$($selectionCursor);
-            } else if (direction === 'down') {
-                $selectionCursor = this.getBelowCell$($selectionCursor);
-            }
-
-            return $selectionCursor;
-        };
-
-        ['left', 'right', 'up', 'down']
-            .map(direction =>
-                this.keyboard.on(`shift+${direction}`, () => this.selectArea(getNextSelectionCursor(direction))));
-    }
-
-    bindCopyCellContents() {
-        this.keyboard.on('ctrl+c', () => {
-            const noOfCellsCopied = this.copyCellContents(this.$focusedCell, this.$selectionCursor);
-            const message = `${noOfCellsCopied} cell${noOfCellsCopied > 1 ? 's' : ''} copied`;
-            if (noOfCellsCopied) {
-                this.instance.showToastMessage(message, 2);
-            }
-        });
-
-        if (this.options.pasteFromClipboard) {
-            this.keyboard.on('ctrl+v', (e) => {
-                // hack
-                // https://stackoverflow.com/a/2177059/5353542
-                this.instance.pasteTarget.focus();
-
-                setTimeout(() => {
-                    const data = this.instance.pasteTarget.value;
-                    this.instance.pasteTarget.value = '';
-                    this.pasteContentInCell(data);
-                }, 10);
-
-                return false;
-            });
-        }
-    }
-
-    bindMouseEvents() {
-        let mouseDown = null;
-
-        $.on(this.bodyScrollable, 'mousedown', '.dt-cell', (e) => {
-            mouseDown = true;
-            this.focusCell($(e.delegatedTarget));
-        });
-
-        $.on(this.bodyScrollable, 'mouseup', () => {
-            mouseDown = false;
-        });
-
-        const selectArea = (e) => {
-            if (!mouseDown) return;
-            this.selectArea($(e.delegatedTarget));
-        };
-
-        $.on(this.bodyScrollable, 'mousemove', '.dt-cell', throttle$1(selectArea, 50));
-    }
-
-    bindTreeEvents() {
-        $.on(this.bodyScrollable, 'click', '.dt-tree-node__toggle', (e, $toggle) => {
-            const $cell = $.closest('.dt-cell', $toggle);
-            const { rowIndex } = $.data($cell);
-
-            if ($cell.classList.contains('dt-cell--tree-close')) {
-                this.rowmanager.openSingleNode(rowIndex);
-            } else {
-                this.rowmanager.closeSingleNode(rowIndex);
-            }
-        });
-    }
-
-    focusCell($cell, {
-        skipClearSelection = 0
-    } = {}) {
-        if (!$cell) return;
-
-        // don't focus if already editing cell
-        if ($cell === this.$editingCell) return;
-
-        const {
-            colIndex,
-            isHeader
-        } = $.data($cell);
-        if (isHeader) {
-            return;
-        }
-
-        const column = this.columnmanager.getColumn(colIndex);
-        if (column.focusable === false) {
-            return;
-        }
-
-        this.scrollToCell($cell);
-
-        this.deactivateEditing();
-        if (!skipClearSelection) {
-            this.clearSelection();
-        }
-
-        if (this.$focusedCell) {
-            this.$focusedCell.classList.remove('dt-cell--focus');
-        }
-
-        this.$focusedCell = $cell;
-        $cell.classList.add('dt-cell--focus');
-
-        // so that keyboard nav works
-        $cell.focus();
-
-        this.highlightRowColumnHeader($cell);
-    }
-
-    highlightRowColumnHeader($cell) {
-        const {
-            colIndex,
-            rowIndex
-        } = $.data($cell);
-
-        const srNoColIndex = this.datamanager.getColumnIndexById('_rowIndex');
-        const colHeaderSelector = `.dt-cell--header-${colIndex}`;
-        const rowHeaderSelector = `.dt-cell--${srNoColIndex}-${rowIndex}`;
-
-        if (this.lastHeaders) {
-            this.lastHeaders.forEach(header => header.classList.remove('dt-cell--highlight'));
-        }
-
-        const colHeader = $(colHeaderSelector, this.wrapper);
-        const rowHeader = $(rowHeaderSelector, this.wrapper);
-
-        this.lastHeaders = [colHeader, rowHeader];
-        this.lastHeaders.forEach(header => header.classList.add('dt-cell--highlight'));
-    }
-
-    selectAreaOnClusterChanged() {
-        if (!(this.$focusedCell && this.$selectionCursor)) return;
-        const {
-            colIndex,
-            rowIndex
-        } = $.data(this.$selectionCursor);
-        const $cell = this.getCell$(colIndex, rowIndex);
-
-        if (!$cell || $cell === this.$selectionCursor) return;
-
-        // selectArea needs $focusedCell
-        const fCell = $.data(this.$focusedCell);
-        this.$focusedCell = this.getCell$(fCell.colIndex, fCell.rowIndex);
-
-        this.selectArea($cell);
-    }
-
-    focusCellOnClusterChanged() {
-        if (!this.$focusedCell) return;
-
-        const {
-            colIndex,
-            rowIndex
-        } = $.data(this.$focusedCell);
-        const $cell = this.getCell$(colIndex, rowIndex);
-
-        if (!$cell) return;
-        // this function is called after selectAreaOnClusterChanged,
-        // focusCell calls clearSelection which resets the area selection
-        // so a flag to skip it
-        this.focusCell($cell, {
-            skipClearSelection: 1
-        });
-    }
-
-    selectArea($selectionCursor) {
-        if (!this.$focusedCell) return;
-
-        if (this._selectArea(this.$focusedCell, $selectionCursor)) {
-            // valid selection
-            this.$selectionCursor = $selectionCursor;
-        }
-    }
-
-    _selectArea($cell1, $cell2) {
-        if ($cell1 === $cell2) return false;
-
-        const cells = this.getCellsInRange($cell1, $cell2);
-        if (!cells) return false;
-
-        this.clearSelection();
-        this._selectedCells = cells.map(index => this.getCell$(...index));
-        requestAnimationFrame(() => {
-            this._selectedCells.map($cell => $cell.classList.add('dt-cell--highlight'));
-        });
-        return true;
-    }
-
-    getCellsInRange($cell1, $cell2) {
-        let colIndex1, rowIndex1, colIndex2, rowIndex2;
-
-        if (typeof $cell1 === 'number') {
-            [colIndex1, rowIndex1, colIndex2, rowIndex2] = arguments;
-        } else
-        if (typeof $cell1 === 'object') {
-            if (!($cell1 && $cell2)) {
-                return false;
-            }
-
-            const cell1 = $.data($cell1);
-            const cell2 = $.data($cell2);
-
-            colIndex1 = +cell1.colIndex;
-            rowIndex1 = +cell1.rowIndex;
-            colIndex2 = +cell2.colIndex;
-            rowIndex2 = +cell2.rowIndex;
-        }
-
-        if (rowIndex1 > rowIndex2) {
-            [rowIndex1, rowIndex2] = [rowIndex2, rowIndex1];
-        }
-
-        if (colIndex1 > colIndex2) {
-            [colIndex1, colIndex2] = [colIndex2, colIndex1];
-        }
-
-        if (this.isStandardCell(colIndex1) || this.isStandardCell(colIndex2)) {
-            return false;
-        }
-
-        const cells = [];
-        let colIndex = colIndex1;
-        let rowIndex = rowIndex1;
-        const rowIndices = [];
-
-        while (rowIndex <= rowIndex2) {
-            rowIndices.push(rowIndex);
-            rowIndex += 1;
-        }
-
-        rowIndices.map((rowIndex) => {
-            while (colIndex <= colIndex2) {
-                cells.push([colIndex, rowIndex]);
-                colIndex++;
-            }
-            colIndex = colIndex1;
-        });
-
-        return cells;
-    }
-
-    clearSelection() {
-        (this._selectedCells || [])
-            .forEach($cell => $cell.classList.remove('dt-cell--highlight'));
-
-        this._selectedCells = [];
-        this.$selectionCursor = null;
-    }
-
-    getSelectionCursor() {
-        return this.$selectionCursor || this.$focusedCell;
-    }
-
-    activateEditing($cell) {
-        this.focusCell($cell);
-        const {
-            rowIndex,
-            colIndex
-        } = $.data($cell);
-
-        const col = this.columnmanager.getColumn(colIndex);
-        if (col && (col.editable === false || col.focusable === false)) {
-            return;
-        }
-
-        const cell = this.getCell(colIndex, rowIndex);
-        if (cell && cell.editable === false) {
-            return;
-        }
-
-        if (this.$editingCell) {
-            const {
-                _rowIndex,
-                _colIndex
-            } = $.data(this.$editingCell);
-
-            if (rowIndex === _rowIndex && colIndex === _colIndex) {
-                // editing the same cell
-                return;
-            }
-        }
-
-        this.$editingCell = $cell;
-        $cell.classList.add('dt-cell--editing');
-
-        const $editCell = $('.dt-cell__edit', $cell);
-        $editCell.innerHTML = '';
-
-        const editor = this.getEditor(colIndex, rowIndex, cell.content, $editCell);
-
-        if (editor) {
-            this.currentCellEditor = editor;
-            // initialize editing input with cell value
-            editor.initValue(cell.content, rowIndex, col);
-        }
-    }
-
-    deactivateEditing() {
-        // keep focus on the cell so that keyboard navigation works
-        if (this.$focusedCell) this.$focusedCell.focus();
-
-        if (!this.$editingCell) return;
-        this.$editingCell.classList.remove('dt-cell--editing');
-        this.$editingCell = null;
-    }
-
-    getEditor(colIndex, rowIndex, value, parent) {
-        const column = this.datamanager.getColumn(colIndex);
-        const row = this.datamanager.getRow(rowIndex);
-        const data = this.datamanager.getData(rowIndex);
-        let editor = this.options.getEditor ?
-            this.options.getEditor(colIndex, rowIndex, value, parent, column, row, data) :
-            this.getDefaultEditor(parent);
-
-        if (editor === false) {
-            // explicitly returned false
-            return false;
-        }
-        if (editor === undefined) {
-            // didn't return editor, fallback to default
-            editor = this.getDefaultEditor(parent);
-        }
-
-        return editor;
-    }
-
-    getDefaultEditor(parent) {
-        const $input = $.create('input', {
-            class: 'dt-input',
-            type: 'text',
-            inside: parent
-        });
-
-        return {
-            initValue(value) {
-                $input.focus();
-                $input.value = value;
-            },
-            getValue() {
-                return $input.value;
-            },
-            setValue(value) {
-                $input.value = value;
-            }
-        };
-    }
-
-    submitEditing() {
-        if (!this.$editingCell) return;
-        const $cell = this.$editingCell;
-        const {
-            rowIndex,
-            colIndex
-        } = $.data($cell);
-        const col = this.datamanager.getColumn(colIndex);
-
-        if ($cell) {
-            const editor = this.currentCellEditor;
-
-            if (editor) {
-                const value = editor.getValue();
-                const done = editor.setValue(value, rowIndex, col);
-                const oldValue = this.getCell(colIndex, rowIndex).content;
-
-                // update cell immediately
-                this.updateCell(colIndex, rowIndex, value);
-                $cell.focus();
-
-                if (done && done.then) {
-                    // revert to oldValue if promise fails
-                    done.catch((e) => {
-                        console.log(e);
-                        this.updateCell(colIndex, rowIndex, oldValue);
-                    });
-                }
-            }
-        }
-
-        this.currentCellEditor = null;
-    }
-
-    copyCellContents($cell1, $cell2) {
-        if (!$cell2 && $cell1) {
-            // copy only focusedCell
-            const {
-                colIndex,
-                rowIndex
-            } = $.data($cell1);
-            const cell = this.getCell(colIndex, rowIndex);
-            copyTextToClipboard(cell.content);
-            return 1;
-        }
-        const cells = this.getCellsInRange($cell1, $cell2);
-
-        if (!cells) return 0;
-
-        const rows = cells
-            // get cell objects
-            .map(index => this.getCell(...index))
-            // convert to array of rows
-            .reduce((acc, curr) => {
-                const rowIndex = curr.rowIndex;
-
-                acc[rowIndex] = acc[rowIndex] || [];
-                acc[rowIndex].push(curr.content);
-
-                return acc;
-            }, []);
-
-        const values = rows
-            // join values by tab
-            .map(row => row.join('\t'))
-            // join rows by newline
-            .join('\n');
-
-        copyTextToClipboard(values);
-
-        // return no of cells copied
-        return rows.reduce((total, row) => total + row.length, 0);
-    }
-
-    pasteContentInCell(data) {
-        if (!this.$focusedCell) return;
-
-        const matrix = data
-            .split('\n')
-            .map(row => row.split('\t'))
-            .filter(row => row.length && row.every(it => it));
-
-        let { colIndex, rowIndex } = $.data(this.$focusedCell);
-
-        let focusedCell = {
-            colIndex: +colIndex,
-            rowIndex: +rowIndex
-        };
-
-        matrix.forEach((row, i) => {
-            let rowIndex = i + focusedCell.rowIndex;
-            row.forEach((cell, j) => {
-                let colIndex = j + focusedCell.colIndex;
-                this.updateCell(colIndex, rowIndex, cell);
-            });
-        });
-    }
-
-    activateFilter(colIndex) {
-        this.columnmanager.toggleFilter();
-        this.columnmanager.focusFilter(colIndex);
-
-        if (!this.columnmanager.isFilterShown) {
-            // put focus back on cell
-            this.$focusedCell.focus();
-        }
-    }
-
-    updateCell(colIndex, rowIndex, value) {
-        const cell = this.datamanager.updateCell(colIndex, rowIndex, {
-            content: value
-        });
-        this.refreshCell(cell);
-    }
-
-    refreshCell(cell) {
-        const $cell = $(this.selector(cell.colIndex, cell.rowIndex), this.bodyScrollable);
-        $cell.innerHTML = this.getCellContent(cell);
-    }
-
-    toggleTreeButton(rowIndex, flag) {
-        const colIndex = this.columnmanager.getFirstColumnIndex();
-        const $cell = this.getCell$(colIndex, rowIndex);
-        if ($cell) {
-            $cell.classList[flag ? 'remove' : 'add']('dt-cell--tree-close');
-        }
-    }
-
-    isStandardCell(colIndex) {
-        // Standard cells are in Sr. No and Checkbox column
-        return colIndex < this.columnmanager.getFirstColumnIndex();
-    }
-
-    getCell$(colIndex, rowIndex) {
-        return $(this.selector(colIndex, rowIndex), this.bodyScrollable);
-    }
-
-    getAboveCell$($cell) {
-        const {
-            colIndex
-        } = $.data($cell);
-
-        let $aboveRow = $cell.parentElement.previousElementSibling;
-        while ($aboveRow && $aboveRow.classList.contains('dt-row--hide')) {
-            $aboveRow = $aboveRow.previousElementSibling;
-        }
-
-        if (!$aboveRow) return $cell;
-        return $(`.dt-cell--col-${colIndex}`, $aboveRow);
-    }
-
-    getBelowCell$($cell) {
-        const {
-            colIndex
-        } = $.data($cell);
-
-        let $belowRow = $cell.parentElement.nextElementSibling;
-        while ($belowRow && $belowRow.classList.contains('dt-row--hide')) {
-            $belowRow = $belowRow.nextElementSibling;
-        }
-
-        if (!$belowRow) return $cell;
-        return $(`.dt-cell--col-${colIndex}`, $belowRow);
-    }
-
-    getLeftCell$($cell) {
-        return $cell.previousElementSibling;
-    }
-
-    getRightCell$($cell) {
-        return $cell.nextElementSibling;
-    }
-
-    getLeftMostCell$(rowIndex) {
-        return this.getCell$(this.columnmanager.getFirstColumnIndex(), rowIndex);
-    }
-
-    getRightMostCell$(rowIndex) {
-        return this.getCell$(this.columnmanager.getLastColumnIndex(), rowIndex);
-    }
-
-    getTopMostCell$(colIndex) {
-        return this.getCell$(colIndex, this.rowmanager.getFirstRowIndex());
-    }
-
-    getBottomMostCell$(colIndex) {
-        return this.getCell$(colIndex, this.rowmanager.getLastRowIndex());
-    }
-
-    getCell(colIndex, rowIndex) {
-        return this.instance.datamanager.getCell(colIndex, rowIndex);
-    }
-
-    getRowHeight() {
-        return $.style($('.dt-row', this.bodyScrollable), 'height');
-    }
-
-    scrollToCell($cell) {
-        if ($.inViewport($cell, this.bodyScrollable)) return false;
-
-        const {
-            rowIndex
-        } = $.data($cell);
-        this.rowmanager.scrollToRow(rowIndex);
-        return false;
-    }
-
-    getRowCountPerPage() {
-        return Math.ceil(this.instance.getViewportHeight() / this.getRowHeight());
-    }
-
-    getCellHTML(cell) {
-        const {
-            rowIndex,
-            colIndex,
-            isHeader,
-            isFilter
-        } = cell;
-        const dataAttr = makeDataAttributeString({
-            rowIndex,
-            colIndex,
-            isHeader,
-            isFilter
-        });
-
-        const isBodyCell = !(isHeader || isFilter);
-
-        const className = [
-            'dt-cell',
-            'dt-cell--col-' + colIndex,
-            isBodyCell ? `dt-cell--${colIndex}-${rowIndex}` : '',
-            isBodyCell ? 'dt-cell--row-' + rowIndex : '',
-            isHeader ? 'dt-cell--header' : '',
-            isHeader ? `dt-cell--header-${colIndex}` : '',
-            isFilter ? 'dt-cell--filter' : ''
-        ].join(' ');
-
-        return `
-            <td class="${className}" ${dataAttr} tabindex="0">
-                ${this.getCellContent(cell)}
-            </td>
-        `;
-    }
-
-    getCellContent(cell) {
-        const {
-            isHeader,
-            isFilter,
-            colIndex
-        } = cell;
-
-        const editable = !isHeader && cell.editable !== false;
-        const editCellHTML = editable ? this.getEditCellHTML(colIndex) : '';
-
-        const sortable = isHeader && cell.sortable !== false;
-        const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
-
-        const resizable = isHeader && cell.resizable !== false;
-        const resizeColumn = resizable ? '<span class="dt-cell__resize-handle"></span>' : '';
-
-        const hasDropdown = isHeader && cell.dropdown !== false;
-        const dropdown = hasDropdown ? this.columnmanager.getDropdownHTML() : '';
-
-        const customFormatter = cell.format || (cell.column && cell.column.format) || null;
-
-        let contentHTML;
-        if (isHeader || isFilter || !customFormatter) {
-            contentHTML = cell.content;
-        } else {
-            const row = this.datamanager.getRow(cell.rowIndex);
-            const data = this.datamanager.getData(cell.rowIndex);
-            contentHTML = customFormatter(cell.content, row, cell.column, data);
-        }
-
-        if (this.options.treeView && !(isHeader || isFilter) && cell.indent !== undefined) {
-            const nextRow = this.datamanager.getRow(cell.rowIndex + 1);
-            const addToggle = nextRow && nextRow.meta.indent > cell.indent;
-
-            // Add toggle and indent in the first column
-            const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
-            if (firstColumnIndex === cell.colIndex) {
-                const padding = ((cell.indent || 0) + 1) * 1.5;
-                const toggleHTML = addToggle ?
-                    `<span class="dt-tree-node__toggle" style="left: ${padding - 1.5}rem"></span>` : '';
-                contentHTML = `<span class="dt-tree-node" style="padding-left: ${padding}rem">
-                    ${toggleHTML}${contentHTML}</span>`;
-            }
-        }
-
-        const className = [
-            'dt-cell__content',
-            isHeader ? `dt-cell__content--header-${colIndex}` : `dt-cell__content--col-${colIndex}`
-        ].join(' ');
-
-        return `
-            <div class="${className}">
-                ${contentHTML}
-                ${sortIndicator}
-                ${resizeColumn}
-                ${dropdown}
-            </div>
-            ${editCellHTML}
-        `;
-    }
-
-    getEditCellHTML(colIndex) {
-        return `<div class="dt-cell__edit dt-cell__edit--col-${colIndex}"></div>`;
-    }
-
-    selector(colIndex, rowIndex) {
-        return `.dt-cell--${colIndex}-${rowIndex}`;
-    }
-}
-
 class ColumnManager {
     constructor(instance) {
         this.instance = instance;
@@ -2288,6 +1506,7 @@ class ColumnManager {
         ]);
 
         this.bindEvents();
+        getDropdownHTML = getDropdownHTML.bind(this, this.options.dropdownButton);
     }
 
     renderHeader() {
@@ -2297,11 +1516,11 @@ class ColumnManager {
 
     refreshHeader() {
         const columns = this.datamanager.getColumns();
-        const $cols = $.each('.dt-cell--header', this.header);
+        const $cols = $.each('.data-table-cell[data-is-header]', this.header);
 
         const refreshHTML =
             // first init
-            !$('.dt-cell', this.header) ||
+            !$('.data-table-cell', this.header) ||
             // deleted column
             columns.length < $cols.length;
 
@@ -2309,7 +1528,7 @@ class ColumnManager {
             // refresh html
             $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
 
-            this.$filterRow = $('.dt-row[data-is-filter]', this.header);
+            this.$filterRow = $('.data-table-row[data-is-filter]', this.header);
             if (this.$filterRow) {
                 $.style(this.$filterRow, { display: 'none' });
             }
@@ -2355,15 +1574,12 @@ class ColumnManager {
 
     bindDropdown() {
         let $activeDropdown;
-        let activeClass = 'dt-dropdown--active';
-        let toggleClass = '.dt-dropdown__toggle';
+        $.on(this.header, 'click', '.data-table-dropdown-toggle', (e, $button) => {
+            const $dropdown = $.closest('.data-table-dropdown', $button);
 
-        $.on(this.header, 'click', toggleClass, (e, $button) => {
-            const $dropdown = $.closest('.dt-dropdown', $button);
-
-            if (!$dropdown.classList.contains(activeClass)) {
+            if (!$dropdown.classList.contains('is-active')) {
                 deactivateDropdown();
-                $dropdown.classList.add(activeClass);
+                $dropdown.classList.add('is-active');
                 $activeDropdown = $dropdown;
             } else {
                 deactivateDropdown();
@@ -2371,14 +1587,14 @@ class ColumnManager {
         });
 
         $.on(document.body, 'click', (e) => {
-            if (e.target.matches(toggleClass)) return;
+            if (e.target.matches('.data-table-dropdown-toggle')) return;
             deactivateDropdown();
         });
 
         const dropdownItems = this.options.headerDropdown;
 
-        $.on(this.header, 'click', '.dt-dropdown__list-item', (e, $item) => {
-            const $col = $.closest('.dt-cell', $item);
+        $.on(this.header, 'click', '.data-table-dropdown-list > div', (e, $item) => {
+            const $col = $.closest('.data-table-cell', $item);
             const {
                 index
             } = $.data($item);
@@ -2391,7 +1607,7 @@ class ColumnManager {
         });
 
         function deactivateDropdown(e) {
-            $activeDropdown && $activeDropdown.classList.remove(activeClass);
+            $activeDropdown && $activeDropdown.classList.remove('is-active');
             $activeDropdown = null;
         }
     }
@@ -2400,8 +1616,8 @@ class ColumnManager {
         let isDragging = false;
         let $resizingCell, startWidth, startX;
 
-        $.on(this.header, 'mousedown', '.dt-cell .dt-cell__resize-handle', (e, $handle) => {
-            document.body.classList.add('dt-resize');
+        $.on(this.header, 'mousedown', '.data-table-cell .column-resizer', (e, $handle) => {
+            document.body.classList.add('data-table-resize');
             const $cell = $handle.parentNode.parentNode;
             $resizingCell = $cell;
             const {
@@ -2414,12 +1630,12 @@ class ColumnManager {
             }
 
             isDragging = true;
-            startWidth = $.style($('.dt-cell__content', $resizingCell), 'width');
+            startWidth = $.style($('.content', $resizingCell), 'width');
             startX = e.pageX;
         });
 
         $.on(document.body, 'mouseup', (e) => {
-            document.body.classList.remove('dt-resize');
+            document.body.classList.remove('data-table-resize');
             if (!$resizingCell) return;
             isDragging = false;
 
@@ -2457,10 +1673,10 @@ class ColumnManager {
                 $.off(document.body, 'mousemove', initialize);
                 return;
             }
-            const ready = $('.dt-cell', this.header);
+            const ready = $('.data-table-cell', this.header);
             if (!ready) return;
 
-            const $parent = $('.dt-row', this.header);
+            const $parent = $('.data-table-row', this.header);
 
             this.sortable = Sortable.create($parent, {
                 onEnd: (e) => {
@@ -2477,13 +1693,55 @@ class ColumnManager {
                     this.switchColumn(oldIndex, newIndex);
                 },
                 preventOnFilter: false,
-                filter: '.dt-cell__resize-handle, .dt-dropdown',
-                chosenClass: 'dt-cell--dragging',
+                filter: '.column-resizer, .data-table-dropdown',
                 animation: 150
             });
         };
 
         $.on(document.body, 'mousemove', initialize);
+    }
+
+    bindSortColumn() {
+
+        $.on(this.header, 'click', '.data-table-cell .column-title', (e, span) => {
+            const $cell = span.closest('.data-table-cell');
+            let {
+                colIndex,
+                sortOrder = 'none'
+            } = $.data($cell);
+            const col = this.getColumn(colIndex);
+
+            if (col && col.sortable === false) {
+                return;
+            }
+
+            // reset sort indicator
+            $('.sort-indicator', this.header).textContent = '';
+            $.each('.data-table-cell', this.header).map($cell => {
+                $.data($cell, {
+                    sortOrder: 'none'
+                });
+            });
+
+            let nextSortOrder, textContent;
+            if (sortOrder === 'none') {
+                nextSortOrder = 'asc';
+                textContent = '▲';
+            } else if (sortOrder === 'asc') {
+                nextSortOrder = 'desc';
+                textContent = '▼';
+            } else if (sortOrder === 'desc') {
+                nextSortOrder = 'none';
+                textContent = '';
+            }
+
+            $.data($cell, {
+                sortOrder: nextSortOrder
+            });
+            $('.sort-indicator', $cell).textContent = textContent;
+
+            this.sortColumn(colIndex, nextSortOrder);
+        });
     }
 
     sortColumn(colIndex, nextSortOrder) {
@@ -2553,14 +1811,14 @@ class ColumnManager {
     focusFilter(colIndex) {
         if (!this.isFilterShown) return;
 
-        const $filterInput = $(`[data-col-index="${colIndex}"] .dt-filter`, this.$filterRow);
+        const $filterInput = $(`[data-col-index="${colIndex}"] .data-table-filter`, this.$filterRow);
         $filterInput.focus();
     }
 
     bindFilter() {
         if (!this.options.inlineFilters) return;
         const handler = e => {
-            const $filterCell = $.closest('.dt-cell', e.target);
+            const $filterCell = $.closest('.data-table-cell', e.target);
             const {
                 colIndex
             } = $.data($filterCell);
@@ -2575,7 +1833,7 @@ class ColumnManager {
                     this.rowmanager.showRows(rowsToShow);
                 });
         };
-        $.on(this.header, 'keydown', '.dt-filter', debounce$1(handler, 300));
+        $.on(this.header, 'keydown', '.data-table-filter', debounce$2(handler, 300));
     }
 
     sortRows(colIndex, sortOrder) {
@@ -2597,11 +1855,7 @@ class ColumnManager {
         let columnWidth = width || this.getColumn(colIndex).width;
 
         let index = this._columnWidthMap[colIndex];
-        const selector = [
-            `.dt-cell__content--col-${colIndex}`,
-            `.dt-cell__edit--col-${colIndex}`
-        ].join(', ');
-
+        const selector = `[data-col-index="${colIndex}"] .content, [data-col-index="${colIndex}"] .edit-cell`;
         const styles = {
             width: columnWidth + 'px'
         };
@@ -2616,7 +1870,7 @@ class ColumnManager {
     setColumnHeaderWidth(colIndex) {
         colIndex = +colIndex;
         this.$columnMap = this.$columnMap || [];
-        const selector = `.dt-cell__content--header-${colIndex}`;
+        const selector = `.data-table-header [data-col-index="${colIndex}"] .content`;
         const {
             width
         } = this.getColumn(colIndex);
@@ -2640,26 +1894,762 @@ class ColumnManager {
     }
 
     getHeaderCell$(colIndex) {
-        return $(`.dt-cell--header-${colIndex}`, this.header);
+        return $(`.data-table-cell[data-col-index="${colIndex}"]`, this.header);
     }
 
     getLastColumnIndex() {
         return this.datamanager.getColumnCount() - 1;
     }
 
-    getDropdownHTML() {
-        const { dropdownButton, headerDropdown: dropdownItems } = this.options;
+    getSerialColumnIndex() {
+        const columns = this.datamanager.getColumns();
+
+        return columns.findIndex(column => column.content.includes('Sr. No'));
+    }
+}
+
+// eslint-disable-next-line
+var getDropdownHTML = function getDropdownHTML(dropdownButton = 'v') {
+    // add dropdown buttons
+    const dropdownItems = this.options.headerDropdown;
+
+    return `<div class="data-table-dropdown-toggle">${dropdownButton}</div>
+    <div class="data-table-dropdown-list">
+      ${dropdownItems.map((d, i) => `<div data-index="${i}">${d.label}</div>`).join('')}
+    </div>
+  `;
+};
+
+class CellManager {
+    constructor(instance) {
+        this.instance = instance;
+        linkProperties(this, this.instance, [
+            'wrapper',
+            'options',
+            'style',
+            'bodyScrollable',
+            'columnmanager',
+            'rowmanager',
+            'datamanager',
+            'keyboard'
+        ]);
+
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        this.bindFocusCell();
+        this.bindEditCell();
+        this.bindKeyboardSelection();
+        this.bindCopyCellContents();
+        this.bindMouseEvents();
+        this.bindTreeEvents();
+    }
+
+    bindFocusCell() {
+        this.bindKeyboardNav();
+    }
+
+    bindEditCell() {
+        this.$editingCell = null;
+
+        $.on(this.bodyScrollable, 'dblclick', '.data-table-cell', (e, cell) => {
+            this.activateEditing(cell);
+        });
+
+        this.keyboard.on('enter', (e) => {
+            if (this.$focusedCell && !this.$editingCell) {
+                // enter keypress on focused cell
+                this.activateEditing(this.$focusedCell);
+            } else if (this.$editingCell) {
+                // enter keypress on editing cell
+                this.submitEditing();
+                this.deactivateEditing();
+            }
+        });
+    }
+
+    bindKeyboardNav() {
+        const focusCell = (direction) => {
+            if (!this.$focusedCell || this.$editingCell) {
+                return false;
+            }
+
+            let $cell = this.$focusedCell;
+
+            if (direction === 'left' || direction === 'shift+tab') {
+                $cell = this.getLeftCell$($cell);
+            } else if (direction === 'right' || direction === 'tab') {
+                $cell = this.getRightCell$($cell);
+            } else if (direction === 'up') {
+                $cell = this.getAboveCell$($cell);
+            } else if (direction === 'down') {
+                $cell = this.getBelowCell$($cell);
+            }
+
+            this.focusCell($cell);
+            return true;
+        };
+
+        const focusLastCell = (direction) => {
+            if (!this.$focusedCell || this.$editingCell) {
+                return false;
+            }
+
+            let $cell = this.$focusedCell;
+            const {
+                rowIndex,
+                colIndex
+            } = $.data($cell);
+
+            if (direction === 'left') {
+                $cell = this.getLeftMostCell$(rowIndex);
+            } else if (direction === 'right') {
+                $cell = this.getRightMostCell$(rowIndex);
+            } else if (direction === 'up') {
+                $cell = this.getTopMostCell$(colIndex);
+            } else if (direction === 'down') {
+                $cell = this.getBottomMostCell$(colIndex);
+            }
+
+            this.focusCell($cell);
+            return true;
+        };
+
+        ['left', 'right', 'up', 'down', 'tab', 'shift+tab'].map(
+            direction => this.keyboard.on(direction, () => focusCell(direction))
+        );
+
+        ['left', 'right', 'up', 'down'].map(
+            direction => this.keyboard.on('ctrl+' + direction, () => focusLastCell(direction))
+        );
+
+        this.keyboard.on('esc', () => {
+            this.deactivateEditing();
+        });
+
+        if (this.options.inlineFilters) {
+            this.keyboard.on('ctrl+f', (e) => {
+                const $cell = $.closest('.data-table-cell', e.target);
+                let {
+                    colIndex
+                } = $.data($cell);
+
+                this.activateFilter(colIndex);
+                return true;
+            });
+        }
+    }
+
+    bindKeyboardSelection() {
+        const getNextSelectionCursor = (direction) => {
+            let $selectionCursor = this.getSelectionCursor();
+
+            if (direction === 'left') {
+                $selectionCursor = this.getLeftCell$($selectionCursor);
+            } else if (direction === 'right') {
+                $selectionCursor = this.getRightCell$($selectionCursor);
+            } else if (direction === 'up') {
+                $selectionCursor = this.getAboveCell$($selectionCursor);
+            } else if (direction === 'down') {
+                $selectionCursor = this.getBelowCell$($selectionCursor);
+            }
+
+            return $selectionCursor;
+        };
+
+        ['left', 'right', 'up', 'down'].map(
+            direction => this.keyboard.on('shift+' + direction,
+                () => this.selectArea(getNextSelectionCursor(direction)))
+        );
+    }
+
+    bindCopyCellContents() {
+        this.keyboard.on('ctrl+c', () => {
+            this.copyCellContents(this.$focusedCell, this.$selectionCursor);
+        });
+    }
+
+    bindMouseEvents() {
+        let mouseDown = null;
+
+        $.on(this.bodyScrollable, 'mousedown', '.data-table-cell', (e) => {
+            mouseDown = true;
+            this.focusCell($(e.delegatedTarget));
+        });
+
+        $.on(this.bodyScrollable, 'mouseup', () => {
+            mouseDown = false;
+        });
+
+        const selectArea = (e) => {
+            if (!mouseDown) return;
+            this.selectArea($(e.delegatedTarget));
+        };
+
+        $.on(this.bodyScrollable, 'mousemove', '.data-table-cell', throttle$1(selectArea, 50));
+    }
+
+    bindTreeEvents() {
+        $.on(this.bodyScrollable, 'click', '.toggle', (e, $toggle) => {
+            const $cell = $.closest('.data-table-cell', $toggle);
+            const { rowIndex } = $.data($cell);
+
+            if ($cell.classList.contains('tree-close')) {
+                this.rowmanager.openSingleNode(rowIndex);
+            } else {
+                this.rowmanager.closeSingleNode(rowIndex);
+            }
+        });
+    }
+
+    focusCell($cell, {
+        skipClearSelection = 0
+    } = {}) {
+        if (!$cell) return;
+
+        // don't focus if already editing cell
+        if ($cell === this.$editingCell) return;
+
+        const {
+            colIndex,
+            isHeader
+        } = $.data($cell);
+        if (isHeader) {
+            return;
+        }
+
+        const column = this.columnmanager.getColumn(colIndex);
+        if (column.focusable === false) {
+            return;
+        }
+
+        this.scrollToCell($cell);
+
+        this.deactivateEditing();
+        if (!skipClearSelection) {
+            this.clearSelection();
+        }
+
+        if (this.$focusedCell) {
+            this.$focusedCell.classList.remove('selected');
+        }
+
+        this.$focusedCell = $cell;
+        $cell.classList.add('selected');
+
+        // so that keyboard nav works
+        $cell.focus();
+
+        this.highlightRowColumnHeader($cell);
+    }
+
+    highlightRowColumnHeader($cell) {
+        const {
+            colIndex,
+            rowIndex
+        } = $.data($cell);
+        const _colIndex = this.datamanager.getColumnIndexById('_rowIndex');
+        const colHeaderSelector = `.data-table-header .data-table-cell[data-col-index="${colIndex}"]`;
+        const rowHeaderSelector = `.data-table-cell[data-row-index="${rowIndex}"][data-col-index="${_colIndex}"]`;
+
+        if (this.lastHeaders) {
+            $.removeStyle(this.lastHeaders, 'backgroundColor');
+        }
+
+        const colHeader = $(colHeaderSelector, this.wrapper);
+        const rowHeader = $(rowHeaderSelector, this.wrapper);
+
+        $.style([colHeader, rowHeader], {
+            backgroundColor: '#f5f7fa' // light-bg
+        });
+
+        this.lastHeaders = [colHeader, rowHeader];
+    }
+
+    selectAreaOnClusterChanged() {
+        if (!(this.$focusedCell && this.$selectionCursor)) return;
+        const {
+            colIndex,
+            rowIndex
+        } = $.data(this.$selectionCursor);
+        const $cell = this.getCell$(colIndex, rowIndex);
+
+        if (!$cell || $cell === this.$selectionCursor) return;
+
+        // selectArea needs $focusedCell
+        const fCell = $.data(this.$focusedCell);
+        this.$focusedCell = this.getCell$(fCell.colIndex, fCell.rowIndex);
+
+        this.selectArea($cell);
+    }
+
+    focusCellOnClusterChanged() {
+        if (!this.$focusedCell) return;
+
+        const {
+            colIndex,
+            rowIndex
+        } = $.data(this.$focusedCell);
+        const $cell = this.getCell$(colIndex, rowIndex);
+
+        if (!$cell) return;
+        // this function is called after selectAreaOnClusterChanged,
+        // focusCell calls clearSelection which resets the area selection
+        // so a flag to skip it
+        this.focusCell($cell, {
+            skipClearSelection: 1
+        });
+    }
+
+    selectArea($selectionCursor) {
+        if (!this.$focusedCell) return;
+
+        if (this._selectArea(this.$focusedCell, $selectionCursor)) {
+            // valid selection
+            this.$selectionCursor = $selectionCursor;
+        }
+    };
+
+    _selectArea($cell1, $cell2) {
+        if ($cell1 === $cell2) return false;
+
+        const cells = this.getCellsInRange($cell1, $cell2);
+        if (!cells) return false;
+
+        this.clearSelection();
+        cells.map(index => this.getCell$(...index)).map($cell => $cell.classList.add('highlight'));
+        return true;
+    }
+
+    getCellsInRange($cell1, $cell2) {
+        let colIndex1, rowIndex1, colIndex2, rowIndex2;
+
+        if (typeof $cell1 === 'number') {
+            [colIndex1, rowIndex1, colIndex2, rowIndex2] = arguments;
+        } else
+        if (typeof $cell1 === 'object') {
+
+            if (!($cell1 && $cell2)) {
+                return false;
+            }
+
+            const cell1 = $.data($cell1);
+            const cell2 = $.data($cell2);
+
+            colIndex1 = cell1.colIndex;
+            rowIndex1 = cell1.rowIndex;
+            colIndex2 = cell2.colIndex;
+            rowIndex2 = cell2.rowIndex;
+        }
+
+        if (rowIndex1 > rowIndex2) {
+            [rowIndex1, rowIndex2] = [rowIndex2, rowIndex1];
+        }
+
+        if (colIndex1 > colIndex2) {
+            [colIndex1, colIndex2] = [colIndex2, colIndex1];
+        }
+
+        if (this.isStandardCell(colIndex1) || this.isStandardCell(colIndex2)) {
+            return false;
+        }
+
+        let cells = [];
+        let colIndex = colIndex1;
+        let rowIndex = rowIndex1;
+        let rowIndices = [];
+
+        while (rowIndex <= rowIndex2) {
+            rowIndices.push(rowIndex);
+            rowIndex++;
+        }
+
+        rowIndices.map(rowIndex => {
+            while (colIndex <= colIndex2) {
+                cells.push([colIndex, rowIndex]);
+                colIndex++;
+            }
+            colIndex = colIndex1;
+        });
+
+        return cells;
+    }
+
+    clearSelection() {
+        $.each('.data-table-cell.highlight', this.bodyScrollable)
+            .map(cell => cell.classList.remove('highlight'));
+
+        this.$selectionCursor = null;
+    }
+
+    getSelectionCursor() {
+        return this.$selectionCursor || this.$focusedCell;
+    }
+
+    activateEditing($cell) {
+        this.focusCell($cell);
+        const {
+            rowIndex,
+            colIndex
+        } = $.data($cell);
+
+        const col = this.columnmanager.getColumn(colIndex);
+        if (col && (col.editable === false || col.focusable === false)) {
+            return;
+        }
+
+        const cell = this.getCell(colIndex, rowIndex);
+        if (cell && cell.editable === false) {
+            return;
+        }
+
+        if (this.$editingCell) {
+            const {
+                _rowIndex,
+                _colIndex
+            } = $.data(this.$editingCell);
+
+            if (rowIndex === _rowIndex && colIndex === _colIndex) {
+                // editing the same cell
+                return;
+            }
+        }
+
+        this.$editingCell = $cell;
+        $cell.classList.add('editing');
+
+        const $editCell = $('.edit-cell', $cell);
+        $editCell.innerHTML = '';
+
+        const editor = this.getEditor(colIndex, rowIndex, cell.content, $editCell);
+
+        if (editor) {
+            this.currentCellEditor = editor;
+            // initialize editing input with cell value
+            editor.initValue(cell.content, rowIndex, col);
+        }
+    }
+
+    deactivateEditing() {
+        // keep focus on the cell so that keyboard navigation works
+        if (this.$focusedCell) this.$focusedCell.focus();
+
+        if (!this.$editingCell) return;
+        this.$editingCell.classList.remove('editing');
+        this.$editingCell = null;
+    }
+
+    getEditor(colIndex, rowIndex, value, parent) {
+        const column = this.datamanager.getColumn(colIndex);
+        const row = this.datamanager.getRow(rowIndex);
+        const data = this.datamanager.getData(rowIndex);
+        let editor = this.options.getEditor ?
+            this.options.getEditor(colIndex, rowIndex, value, parent, column, row, data) :
+            this.getDefaultEditor(parent);
+
+        if (editor === false) {
+            // explicitly returned false
+            return false;
+        }
+        if (editor === undefined) {
+            // didn't return editor, fallback to default
+            editor = this.getDefaultEditor(parent);
+        }
+
+        return editor;
+    }
+
+    getDefaultEditor(parent) {
+        const $input = $.create('input', {
+            class: 'input-style',
+            type: 'text',
+            inside: parent
+        });
+
+        return {
+            initValue(value) {
+                $input.focus();
+                $input.value = value;
+            },
+            getValue() {
+                return $input.value;
+            },
+            setValue(value) {
+                $input.value = value;
+            }
+        };
+    }
+
+    submitEditing() {
+        if (!this.$editingCell) return;
+        const $cell = this.$editingCell;
+        const {
+            rowIndex,
+            colIndex
+        } = $.data($cell);
+        const col = this.datamanager.getColumn(colIndex);
+
+        if ($cell) {
+            const editor = this.currentCellEditor;
+
+            if (editor) {
+                const value = editor.getValue();
+                const done = editor.setValue(value, rowIndex, col);
+                const oldValue = this.getCell(colIndex, rowIndex).content;
+
+                // update cell immediately
+                this.updateCell(colIndex, rowIndex, value);
+                $cell.focus();
+
+                if (done && done.then) {
+                    // revert to oldValue if promise fails
+                    done.catch((e) => {
+                        console.log(e);
+                        this.updateCell(colIndex, rowIndex, oldValue);
+                    });
+                }
+            }
+        }
+
+        this.currentCellEditor = null;
+    }
+
+    copyCellContents($cell1, $cell2) {
+        if (!$cell2 && $cell1) {
+            // copy only focusedCell
+            const {
+                colIndex,
+                rowIndex
+            } = $.data($cell1);
+            const cell = this.getCell(colIndex, rowIndex);
+            copyTextToClipboard(cell.content);
+            return;
+        }
+        const cells = this.getCellsInRange($cell1, $cell2);
+
+        if (!cells) return;
+
+        const values = cells
+            // get cell objects
+            .map(index => this.getCell(...index))
+            // convert to array of rows
+            .reduce((acc, curr) => {
+                const rowIndex = curr.rowIndex;
+
+                acc[rowIndex] = acc[rowIndex] || [];
+                acc[rowIndex].push(curr.content);
+
+                return acc;
+            }, [])
+            // join values by tab
+            .map(row => row.join('\t'))
+            // join rows by newline
+            .join('\n');
+
+        copyTextToClipboard(values);
+    }
+
+    activateFilter(colIndex) {
+        this.columnmanager.toggleFilter();
+        this.columnmanager.focusFilter(colIndex);
+
+        if (!this.columnmanager.isFilterShown) {
+            // put focus back on cell
+            this.$focusedCell.focus();
+        }
+    }
+
+    updateCell(colIndex, rowIndex, value) {
+        const cell = this.datamanager.updateCell(colIndex, rowIndex, {
+            content: value
+        });
+        this.refreshCell(cell);
+    }
+
+    refreshCell(cell) {
+        const $cell = $(this.selector(cell.colIndex, cell.rowIndex), this.bodyScrollable);
+        $cell.innerHTML = this.getCellContent(cell);
+    }
+
+    toggleTreeButton(rowIndex, flag) {
+        const colIndex = this.columnmanager.getFirstColumnIndex();
+        const $cell = this.getCell$(colIndex, rowIndex);
+        if ($cell) {
+            $cell.classList[flag ? 'remove' : 'add']('tree-close');
+        }
+    }
+
+    isStandardCell(colIndex) {
+        // Standard cells are in Sr. No and Checkbox column
+        return colIndex < this.columnmanager.getFirstColumnIndex();
+    }
+
+    getCell$(colIndex, rowIndex) {
+        return $(this.selector(colIndex, rowIndex), this.bodyScrollable);
+    }
+
+    getAboveCell$($cell) {
+        const {
+            colIndex
+        } = $.data($cell);
+
+        let $aboveRow = $cell.parentElement.previousElementSibling;
+        while ($aboveRow && $aboveRow.classList.contains('hide')) {
+            $aboveRow = $aboveRow.previousElementSibling;
+        }
+
+        if (!$aboveRow) return $cell;
+        return $(`[data-col-index="${colIndex}"]`, $aboveRow);
+    }
+
+    getBelowCell$($cell) {
+        const {
+            colIndex
+        } = $.data($cell);
+
+        let $belowRow = $cell.parentElement.nextElementSibling;
+        while ($belowRow && $belowRow.classList.contains('hide')) {
+            $belowRow = $belowRow.nextElementSibling;
+        }
+
+        if (!$belowRow) return $cell;
+        return $(`[data-col-index="${colIndex}"]`, $belowRow);
+    }
+
+    getLeftCell$($cell) {
+        return $cell.previousElementSibling;
+    }
+
+    getRightCell$($cell) {
+        return $cell.nextElementSibling;
+    }
+
+    getLeftMostCell$(rowIndex) {
+        return this.getCell$(this.columnmanager.getFirstColumnIndex(), rowIndex);
+    }
+
+    getRightMostCell$(rowIndex) {
+        return this.getCell$(this.columnmanager.getLastColumnIndex(), rowIndex);
+    }
+
+    getTopMostCell$(colIndex) {
+        return this.getCell$(colIndex, this.rowmanager.getFirstRowIndex());
+    }
+
+    getBottomMostCell$(colIndex) {
+        return this.getCell$(colIndex, this.rowmanager.getLastRowIndex());
+    }
+
+    getCell(colIndex, rowIndex) {
+        return this.instance.datamanager.getCell(colIndex, rowIndex);
+    }
+
+    getCellAttr($cell) {
+        return this.instance.getCellAttr($cell);
+    }
+
+    getRowHeight() {
+        return $.style($('.data-table-row', this.bodyScrollable), 'height');
+    }
+
+    scrollToCell($cell) {
+        if ($.inViewport($cell, this.bodyScrollable)) return false;
+
+        const {
+            rowIndex
+        } = $.data($cell);
+        this.rowmanager.scrollToRow(rowIndex);
+        return false;
+    }
+
+    getRowCountPerPage() {
+        return Math.ceil(this.instance.getViewportHeight() / this.getRowHeight());
+    }
+
+    getCellHTML(cell) {
+        const {
+            rowIndex,
+            colIndex,
+            isHeader,
+            isFilter
+        } = cell;
+        const dataAttr = makeDataAttributeString({
+            rowIndex,
+            colIndex,
+            isHeader,
+            isFilter
+        });
 
         return `
-            <div class="dt-dropdown">
-                <div class="dt-dropdown__toggle">${dropdownButton}</div>
-                <div class="dt-dropdown__list">
-                ${dropdownItems.map((d, i) => `
-                    <div class="dt-dropdown__list-item" data-index="${i}">${d.label}</div>
-                `).join('')}
-                </div>
+            <td class="data-table-cell noselect" ${dataAttr} tabindex="0">
+                ${this.getCellContent(cell)}
+            </td>
+        `;
+    }
+
+    getCellContent(cell) {
+        const {
+            isHeader,
+            isFilter
+        } = cell;
+
+        const editable = !isHeader && cell.editable !== false;
+        const editCellHTML = editable ? this.getEditCellHTML() : '';
+
+        const sortable = isHeader && cell.sortable !== false;
+        const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
+
+        const resizable = isHeader && cell.resizable !== false;
+        const resizeColumn = resizable ? '<span class="column-resizer"></span>' : '';
+
+        const hasDropdown = isHeader && cell.dropdown !== false;
+        const dropdown = hasDropdown ? `<div class="data-table-dropdown">${getDropdownHTML()}</div>` : '';
+
+        const customFormatter = cell.format || (cell.column && cell.column.format) || null;
+
+        let contentHTML;
+        if (isHeader || isFilter || !customFormatter) {
+            contentHTML = cell.content;
+        } else {
+            const row = this.datamanager.getRow(cell.rowIndex);
+            const data = this.datamanager.getData(cell.rowIndex);
+            contentHTML = customFormatter(cell.content, row, cell.column, data);
+        }
+
+        if (this.options.treeView && !(isHeader || isFilter) && cell.indent !== undefined) {
+            const nextRow = this.datamanager.getRow(cell.rowIndex + 1);
+            const addToggle = nextRow && nextRow.meta.indent > cell.indent;
+
+            // Add toggle and indent in the first column
+            const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
+            if (firstColumnIndex === cell.colIndex) {
+                const padding = ((cell.indent || 0) + 1) * 1.5;
+                const toggleHTML = addToggle ? `<span class="toggle" style="left: ${padding - 1.5}rem"></span>` : '';
+                contentHTML = `<span class="tree-node" style="padding-left: ${padding}rem">
+                    ${toggleHTML}${contentHTML}</span>`;
+            }
+        }
+
+        return `
+            <div class="content ellipsis">
+                ${contentHTML}
+                ${sortIndicator}
+                ${resizeColumn}
+                ${dropdown}
             </div>
-      `;
+            ${editCellHTML}
+        `;
+    }
+
+    getEditCellHTML() {
+        return `
+      <div class="edit-cell"></div>
+    `;
+    }
+
+    selector(colIndex, rowIndex) {
+        return `.data-table-cell[data-col-index="${colIndex}"][data-row-index="${rowIndex}"]`;
     }
 }
 
@@ -2696,8 +2686,8 @@ class RowManager {
         // map of checked rows
         this.checkMap = [];
 
-        $.on(this.wrapper, 'click', '.dt-cell[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
-            const $cell = $checkbox.closest('.dt-cell');
+        $.on(this.wrapper, 'click', '.data-table-cell[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
+            const $cell = $checkbox.closest('.data-table-cell');
             const {
                 rowIndex,
                 isHeader
@@ -2749,7 +2739,7 @@ class RowManager {
     checkRow(rowIndex, toggle) {
         const value = toggle ? 1 : 0;
         const selector = rowIndex =>
-            `.dt-cell[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
+            `.data-table-cell[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
         // update internal map
         this.checkMap[rowIndex] = value;
         // set checkbox value explicitly
@@ -2773,7 +2763,7 @@ class RowManager {
             this.checkMap = [];
         }
         // set checkbox value
-        $.each('.dt-cell[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
+        $.each('.data-table-cell[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
             .map(input => {
                 input.checked = toggle;
             });
@@ -2797,34 +2787,34 @@ class RowManager {
         const $row = this.getRow$(rowIndex);
         if (!$row) return;
 
-        if (!toggle && this.bodyScrollable.classList.contains('dt-scrollable--highlight-all')) {
-            $row.classList.add('dt-row--unhighlight');
+        if (!toggle && this.bodyScrollable.classList.contains('row-highlight-all')) {
+            $row.classList.add('row-unhighlight');
             return;
         }
 
-        if (toggle && $row.classList.contains('dt-row--unhighlight')) {
-            $row.classList.remove('dt-row--unhighlight');
+        if (toggle && $row.classList.contains('row-unhighlight')) {
+            $row.classList.remove('row-unhighlight');
         }
 
         this._highlightedRows = this._highlightedRows || {};
 
         if (toggle) {
-            $row.classList.add('dt-row--highlight');
+            $row.classList.add('row-highlight');
             this._highlightedRows[rowIndex] = $row;
         } else {
-            $row.classList.remove('dt-row--highlight');
+            $row.classList.remove('row-highlight');
             delete this._highlightedRows[rowIndex];
         }
     }
 
     highlightAll(toggle = true) {
         if (toggle) {
-            this.bodyScrollable.classList.add('dt-scrollable--highlight-all');
+            this.bodyScrollable.classList.add('row-highlight-all');
         } else {
-            this.bodyScrollable.classList.remove('dt-scrollable--highlight-all');
+            this.bodyScrollable.classList.remove('row-highlight-all');
             for (const rowIndex in this._highlightedRows) {
                 const $row = this._highlightedRows[rowIndex];
-                $row.classList.remove('dt-row--highlight');
+                $row.classList.remove('row-highlight');
             }
             this._highlightedRows = {};
         }
@@ -2834,7 +2824,7 @@ class RowManager {
         rowIndices = ensureArray(rowIndices);
         rowIndices.map(rowIndex => {
             const $tr = this.getRow$(rowIndex);
-            $tr.classList.add('dt-row--hide');
+            $tr.classList.add('hide');
         });
     }
 
@@ -2842,7 +2832,7 @@ class RowManager {
         rowIndices = ensureArray(rowIndices);
         rowIndices.map(rowIndex => {
             const $tr = this.getRow$(rowIndex);
-            $tr.classList.remove('dt-row--hide');
+            $tr.classList.remove('hide');
         });
     }
 
@@ -2925,7 +2915,7 @@ class RowManager {
         }
 
         return `
-            <tr class="dt-row" ${dataAttr}>
+            <tr class="data-table-row" ${dataAttr}>
                 ${row.map(cell => this.cellmanager.getCellHTML(cell)).join('')}
             </tr>
         `;
@@ -2933,11 +2923,11 @@ class RowManager {
 
     getFilterInput(props) {
         const dataAttr = makeDataAttributeString(props);
-        return `<input class="dt-filter dt-input" type="text" ${dataAttr} />`;
+        return `<input class="data-table-filter input-style" type="text" ${dataAttr} />`;
     }
 
     selector(rowIndex) {
-        return `.dt-row[data-row-index="${rowIndex}"]`;
+        return `.data-table-row[data-row-index="${rowIndex}"]`;
     }
 }
 
@@ -2964,7 +2954,11 @@ class BodyRenderer {
     renderBodyHTML() {
         const rows = this.datamanager.getRowsForView();
 
-        this.bodyScrollable.innerHTML = this.getBodyHTML(rows);
+        this.bodyScrollable.innerHTML = `
+            <table class="data-table-body">
+                ${this.getBodyHTML(rows)}
+            </table>
+        `;
         this.instance.setDimensions();
         this.restoreState();
     }
@@ -2975,12 +2969,16 @@ class BodyRenderer {
         let initialData = this.getDataForClusterize(rows);
 
         if (initialData.length === 0) {
-            initialData = [this.getNoDataHTML()];
+            initialData = [`<tr class="no-data"><td>${this.options.noDataMessage}</td></tr>`];
         }
 
         if (!this.clusterize) {
             // empty body
-            this.bodyScrollable.innerHTML = this.getBodyHTML([]);
+            this.bodyScrollable.innerHTML = `
+                <table class="data-table-body">
+                    ${this.getBodyHTML([])}
+                </table>
+            `;
 
             // first 20 rows will appended
             // rest of them in nextTick
@@ -2989,7 +2987,9 @@ class BodyRenderer {
                 scrollElem: this.bodyScrollable,
                 contentElem: $('tbody', this.bodyScrollable),
                 callbacks: {
-                    clusterChanged: () => this.restoreState()
+                    clusterChanged: () => {
+                        this.restoreState();
+                    }
                 },
                 /* eslint-disable */
                 show_no_data_row: false,
@@ -3017,14 +3017,8 @@ class BodyRenderer {
         this.clusterize.append(data);
     }
 
-    showToastMessage(message, hideAfter) {
-        this.instance.toastMessage.innerHTML = this.getToastMessageHTML(message);
-
-        if (hideAfter) {
-            setTimeout(() => {
-                this.clearToastMessage();
-            }, hideAfter * 1000);
-        }
+    showToastMessage(message) {
+        this.instance.toastMessage.innerHTML = `<span>${message}</span>`;
     }
 
     clearToastMessage() {
@@ -3032,25 +3026,15 @@ class BodyRenderer {
     }
 
     getDataForClusterize(rows) {
-        return rows.map(row => this.rowmanager.getRowHTML(row, row.meta));
+        return rows.map((row) => this.rowmanager.getRowHTML(row, row.meta));
     }
 
     getBodyHTML(rows) {
         return `
-            <table class="dt-body">
-                <tbody>
-                    ${rows.map(row => this.rowmanager.getRowHTML(row, row.meta)).join('')}
-                </tbody>
-            </table>
+            <tbody>
+                ${rows.map(row => this.rowmanager.getRowHTML(row, row.meta)).join('')}
+            </tbody>
         `;
-    }
-
-    getNoDataHTML() {
-        return `<div class="dt-scrollable__no-data">${this.options.noDataMessage}</div>`;
-    }
-
-    getToastMessageHTML(message) {
-        return `<span class="dt-toast__message">${message}</span>`;
     }
 }
 
@@ -3064,7 +3048,7 @@ class Style {
             'getColumn'
         ]);
 
-        this.scopeClass = 'dt-instance-' + instance.constructor.instances;
+        this.scopeClass = 'datatable-instance-' + instance.constructor.instances;
         instance.datatableWrapper.classList.add(this.scopeClass);
 
         const styleEl = document.createElement('style');
@@ -3147,15 +3131,28 @@ class Style {
         $.style(this.header, {
             margin: 0
         });
+
+        // don't show resize cursor on nonResizable columns
+        const nonResizableColumnsSelector = this.datamanager.getColumns()
+            .filter(col => col.resizable === false)
+            .map(col => col.colIndex)
+            .map(i => `.data-table-header [data-col-index="${i}"]`)
+            .join();
+
+        this.setStyle(nonResizableColumnsSelector, {
+            cursor: 'pointer'
+        });
     }
 
     setupMinWidth() {
-        $.each('.dt-cell[data-is-header]', this.header).map(col => {
-            const { colIndex } = $.data(col);
+        $.each('.data-table-cell[data-is-header]', this.header).map(col => {
+            const width = $.style($('.content', col), 'width');
+            const {
+                colIndex
+            } = $.data(col);
             const column = this.getColumn(colIndex);
 
             if (!column.minWidth) {
-                const width = $.style($('.dt-cell__content', col), 'width');
                 // only set this once
                 column.minWidth = width;
             }
@@ -3163,16 +3160,16 @@ class Style {
     }
 
     setupNaturalColumnWidth() {
-        if (!$('.dt-row')) return;
+        if (!$('.data-table-row')) return;
 
         // set initial width as naturally calculated by table's first row
-        $.each('.dt-row[data-row-index="0"] .dt-cell', this.bodyScrollable).map($cell => {
+        $.each('.data-table-row[data-row-index="0"] .data-table-cell', this.bodyScrollable).map($cell => {
             const {
                 colIndex
             } = $.data($cell);
             const column = this.datamanager.getColumn(colIndex);
 
-            let naturalWidth = $.style($('.dt-cell__content', $cell), 'width');
+            let naturalWidth = $.style($('.content', $cell), 'width');
 
             if (column.id === '_rowIndex') {
                 naturalWidth = this.getRowIndexColumnWidth(naturalWidth);
@@ -3231,12 +3228,10 @@ class Style {
     }
 
     compensateScrollbarWidth() {
-        requestAnimationFrame(() => {
-            const scrollbarWidth = $.scrollbarWidth();
-            const lastCol = this.datamanager.getColumn(-1);
-            const width = lastCol.width - scrollbarWidth;
-            this.columnmanager.setColumnWidth(lastCol.colIndex, width);
-        });
+        const scrollbarWidth = $.scrollbarWidth();
+        const lastCol = this.datamanager.getColumn(-1);
+        const width = lastCol.width - scrollbarWidth;
+        this.columnmanager.setColumnWidth(lastCol.colIndex, width);
     }
 
     distributeRemainingWidth() {
@@ -3260,7 +3255,7 @@ class Style {
     setDefaultCellHeight() {
         if (this.options.dynamicRowHeight) return;
         if (this.__cellHeightSet) return;
-        const $firstCell = $('.dt-cell[data-is-header]', this.instance.header);
+        const $firstCell = $('.data-table-cell[data-is-header]', this.instance.header);
         if (!$firstCell) return;
 
         const height = this.options.cellHeight || $.style($firstCell, 'height');
@@ -3271,7 +3266,10 @@ class Style {
     }
 
     setCellHeight(height) {
-        this.setStyle('.dt-cell__content, .dt-cell__edit', {
+        this.setStyle('.data-table-cell .content', {
+            height: height + 'px'
+        });
+        this.setStyle('.data-table-cell .edit-cell', {
             height: height + 'px'
         });
     }
@@ -3282,7 +3280,7 @@ class Style {
             .map(column => {
                 // alignment
                 if (['left', 'center', 'right'].includes(column.align)) {
-                    this.setStyle(`.dt-cell--col-${column.colIndex}`, {
+                    this.setStyle(`[data-col-index="${column.colIndex}"]`, {
                         'text-align': column.align
                     });
                 }
@@ -3302,36 +3300,34 @@ class Style {
     }
 
     setBodyStyle() {
-        requestAnimationFrame(() => {
-            const width = $.style(this.header, 'width');
+        const width = $.style(this.header, 'width');
 
-            $.style(this.bodyScrollable, {
-                width: width + 'px'
+        $.style(this.bodyScrollable, {
+            width: width + 'px'
+        });
+
+        const $body = $('.data-table-body', this.bodyScrollable);
+
+        if ($body) {
+            $.style($body, {
+                height: '0px'
             });
+        }
 
-            const $body = $('.dt-body', this.bodyScrollable);
+        $.style(this.bodyScrollable, {
+            marginTop: $.style(this.header, 'height') + 'px'
+        });
 
-            if ($body) {
-                $.style($body, {
-                    height: '0px'
-                });
-            }
-
-            $.style(this.bodyScrollable, {
-                marginTop: $.style(this.header, 'height') + 'px'
-            });
-
-            $.style($('table', this.bodyScrollable), {
-                margin: 0,
-                width: '100%'
-            });
+        $.style($('table', this.bodyScrollable), {
+            margin: 0,
+            width: '100%'
         });
     }
 
     getColumnHeaderElement(colIndex) {
         colIndex = +colIndex;
         if (colIndex < 0) return null;
-        return $(`.dt-cell[data-col-index="${colIndex}"]`, this.header);
+        return $(`.data-table-cell[data-col-index="${colIndex}"]`, this.header);
     }
 
     getRowIndexColumnWidth(baseWidth) {
@@ -3361,8 +3357,7 @@ const KEYCODES = {
     9: 'tab',
     27: 'esc',
     67: 'c',
-    70: 'f',
-    86: 'v'
+    70: 'f'
 };
 
 class Keyboard {
@@ -3454,11 +3449,10 @@ var DEFAULT_OPTIONS = {
     layout: 'fixed', // fixed, fluid, ratio
     noDataMessage: 'No Data',
     cellHeight: null,
-    dynamicRowHeight: false,
     inlineFilters: false,
     treeView: false,
     checkedRowStatus: true,
-    pasteFromClipboard: false
+    dynamicRowHeight: false
 };
 
 class DataTable {
@@ -3498,11 +3492,8 @@ class DataTable {
             this.options || {}, options
         );
 
-        options.headerDropdown = options.headerDropdown || [];
-        this.options.headerDropdown = [
-            ...DEFAULT_OPTIONS.headerDropdown,
-            ...options.headerDropdown
-        ];
+        this.options.headerDropdown
+            .push(...(options.headerDropdown || []));
 
         // custom user events
         this.events = Object.assign(
@@ -3520,27 +3511,25 @@ class DataTable {
 
     prepareDom() {
         this.wrapper.innerHTML = `
-            <div class="datatable">
-                <table class="dt-header">
+            <div class="data-table">
+                <table class="data-table-header">
                 </table>
-                <div class="dt-scrollable">
+                <div class="body-scrollable">
                 </div>
-                <div class="dt-freeze">
-                    <span class="dt-freeze__message">
-                        ${this.options.freezeMessage}
-                    </span>
+                <div class="freeze-container">
+                <span>${this.options.freezeMessage}</span>
                 </div>
-                <div class="dt-toast"></div>
-                <textarea class="dt-paste-target"></textarea>
+                <div class="data-table-footer">
+                </div>
+                <div class="toast-message"></div>
             </div>
         `;
 
-        this.datatableWrapper = $('.datatable', this.wrapper);
-        this.header = $('.dt-header', this.wrapper);
-        this.bodyScrollable = $('.dt-scrollable', this.wrapper);
-        this.freezeContainer = $('.dt-freeze', this.wrapper);
-        this.toastMessage = $('.dt-toast', this.wrapper);
-        this.pasteTarget = $('.dt-paste-target', this.wrapper);
+        this.datatableWrapper = $('.data-table', this.wrapper);
+        this.header = $('.data-table-header', this.wrapper);
+        this.bodyScrollable = $('.body-scrollable', this.wrapper);
+        this.freezeContainer = $('.freeze-container', this.wrapper);
+        this.toastMessage = $('.toast-message', this.wrapper);
     }
 
     refresh(data, columns) {
@@ -3580,8 +3569,8 @@ class DataTable {
         this.style.setDimensions();
     }
 
-    showToastMessage(message, hideAfter) {
-        this.bodyRenderer.showToastMessage(message, hideAfter);
+    showToastMessage(message) {
+        this.bodyRenderer.showToastMessage(message);
     }
 
     clearToastMessage() {
@@ -3658,11 +3647,11 @@ class DataTable {
 DataTable.instances = 0;
 
 var name = "frappe-datatable";
-var version = "0.0.5";
+var version = "0.0.4";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
-var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js","docs":"vuepress dev docs-wip"};
-var devDependencies = {"chai":"3.5.0","deepmerge":"^2.0.1","eslint-config-airbnb":"^16.1.0","eslint-config-airbnb-base":"^12.1.0","eslint-plugin-import":"^2.11.0","mocha":"3.3.0","postcss-cssnext":"^3.1.0","postcss-nested":"^3.0.0","rollup":"^0.59.1","rollup-plugin-commonjs":"^8.3.0","rollup-plugin-eslint":"^4.0.0","rollup-plugin-json":"^2.3.0","rollup-plugin-node-resolve":"^3.0.3","rollup-plugin-postcss":"^1.2.8","rollup-plugin-uglify-es":"^0.0.1","vuepress":"^0.8.4"};
+var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js"};
+var devDependencies = {"chai":"3.5.0","deepmerge":"^2.0.1","mocha":"3.3.0","postcss-cssnext":"^3.1.0","postcss-nested":"^3.0.0","rollup-plugin-commonjs":"^8.3.0","rollup-plugin-eslint":"^4.0.0","rollup-plugin-json":"^2.3.0","rollup-plugin-node-resolve":"^3.0.3","rollup-plugin-postcss":"^1.2.8","rollup-plugin-uglify-es":"^0.0.1"};
 var repository = {"type":"git","url":"https://github.com/frappe/datatable.git"};
 var keywords = ["datatable","data","grid","table"];
 var author = "Faris Ansari";
@@ -3688,4 +3677,6 @@ var packageJson = {
 
 DataTable.__version__ = packageJson.version;
 
-module.exports = DataTable;
+return DataTable;
+
+}(Sortable,Clusterize));

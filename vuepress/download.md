@@ -1,8 +1,8 @@
-## Download
+# Download
 
 Frappe DataTable can be consumed in several different forms.
 
-### CDN
+## CDN
 
 Load it directly from the unpkg CDN.
 
@@ -10,7 +10,7 @@ Load it directly from the unpkg CDN.
 <script src="https://unpkg.com/frappe-datatable@0.0.5/dist/frappe-datatable.min.js"></script>
 ```
 
-### Package managers
+## Package managers
 
 Include it directly in your build workflow. You can find the compiled JS/CSS files in the `dist/` directory.
 
@@ -20,7 +20,7 @@ yarn add frappe-datatable
 npm install frappe-datatable
 ```
 
-### Source
+## Source
 
 The complete source code is always available on Github.
 

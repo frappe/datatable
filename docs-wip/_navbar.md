@@ -1,3 +1,0 @@
-* Home
-* About
-* Contact
