@@ -6,7 +6,7 @@ module.exports = {
     title: 'Frappe DataTable',
     description: 'A simple, modern and interactive datatable for the web',
     dest: outputPath,
-    base: '/docs/datatable',
+    base: '/docs/datatable/',
     themeConfig: {
         sidebar: [
             '/getting-started',
