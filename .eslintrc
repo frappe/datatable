@@ -7,7 +7,8 @@
   "env": {
     "browser": true,
     "es6": true,
-    "node": true
+    "node": true,
+    "mocha": true
   },
 
   "globals": {
@@ -21,7 +22,9 @@
     "it": true,
     "expect": true,
     "sinon": true,
-    "Clusterize": true
+    "Clusterize": true,
+    "cy": true,
+    "Cypress": true
   },
 
   "plugins": [
