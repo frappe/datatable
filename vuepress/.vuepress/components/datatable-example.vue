@@ -4,6 +4,7 @@
     </div>
 </template>
 <script>
+import config from '../config';
 import { getSampleData } from './datatableData';
 
 export default {
@@ -22,10 +23,10 @@ export default {
     methods: {
         loadScriptsAndStyle() {
             return Promise.all([
-                this.loadScript('/js/Sortable.min.js'),
-                this.loadScript('/js/clusterize.min.js'),
-                this.loadScript('/js/frappe-datatable.js'),
-                this.loadStyle('/css/frappe-datatable.css')
+                this.loadScript(config.base + 'js/Sortable.min.js'),
+                this.loadScript(config.base + 'js/clusterize.min.js'),
+                this.loadScript(config.base + 'js/frappe-datatable.js'),
+                this.loadStyle(config.base + 'css/frappe-datatable.css')
             ])
         },
         loadScript(src) {
