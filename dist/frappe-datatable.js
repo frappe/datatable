@@ -246,13 +246,27 @@ var DataTable = (function (Sortable,Clusterize) {
 
     var _freeGlobal = freeGlobal;
 
+    var _freeGlobal$1 = /*#__PURE__*/Object.freeze({
+        default: _freeGlobal,
+        __moduleExports: _freeGlobal
+    });
+
+    var freeGlobal$1 = ( _freeGlobal$1 && _freeGlobal ) || _freeGlobal$1;
+
     /** Detect free variable `self`. */
     var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
 
     /** Used as a reference to the global object. */
-    var root = _freeGlobal || freeSelf || Function('return this')();
+    var root = freeGlobal$1 || freeSelf || Function('return this')();
 
     var _root = root;
+
+    var _root$1 = /*#__PURE__*/Object.freeze({
+        default: _root,
+        __moduleExports: _root
+    });
+
+    var root$1 = ( _root$1 && _root ) || _root$1;
 
     /**
      * Gets the timestamp of the number of milliseconds that have elapsed since
@@ -271,15 +285,22 @@ var DataTable = (function (Sortable,Clusterize) {
      * // => Logs the number of milliseconds it took for the deferred invocation.
      */
     var now = function() {
-      return _root.Date.now();
+      return root$1.Date.now();
     };
 
     var now_1 = now;
 
     /** Built-in value references. */
-    var Symbol = _root.Symbol;
+    var Symbol = root$1.Symbol;
 
     var _Symbol = Symbol;
+
+    var _Symbol$1 = /*#__PURE__*/Object.freeze({
+        default: _Symbol,
+        __moduleExports: _Symbol
+    });
+
+    var Symbol$1 = ( _Symbol$1 && _Symbol ) || _Symbol$1;
 
     /** Used for built-in method references. */
     var objectProto = Object.prototype;
@@ -295,7 +316,7 @@ var DataTable = (function (Sortable,Clusterize) {
     var nativeObjectToString = objectProto.toString;
 
     /** Built-in value references. */
-    var symToStringTag = _Symbol ? _Symbol.toStringTag : undefined;
+    var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : undefined;
 
     /**
      * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
@@ -353,7 +374,7 @@ var DataTable = (function (Sortable,Clusterize) {
         undefinedTag = '[object Undefined]';
 
     /** Built-in value references. */
-    var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
+    var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : undefined;
 
     /**
      * The base implementation of `getTag` without fallbacks for buggy environments.
@@ -1584,6 +1605,7 @@ var DataTable = (function (Sortable,Clusterize) {
 
             this.keyboard.on('esc', () => {
                 this.deactivateEditing();
+                this.columnmanager.toggleFilter(false);
             });
 
             if (this.options.inlineFilters) {
@@ -2296,41 +2318,17 @@ var DataTable = (function (Sortable,Clusterize) {
 
         refreshHeader() {
             const columns = this.datamanager.getColumns();
-            const $cols = $.each('.dt-cell--header', this.header);
 
-            const refreshHTML =
-                // first init
-                !$('.dt-cell', this.header) ||
-                // deleted column
-                columns.length < $cols.length;
+            // refresh html
+            $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
 
-            if (refreshHTML) {
-                // refresh html
-                $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
-
-                this.$filterRow = $('.dt-row[data-is-filter]', this.header);
-                if (this.$filterRow) {
-                    $.style(this.$filterRow, { display: 'none' });
-                }
-            } else {
-                // update data-attributes
-                $cols.map(($col, i) => {
-                    const column = columns[i];
-                    // column sorted or order changed
-                    // update colIndex of each header cell
-                    $.data($col, {
-                        colIndex: column.colIndex
-                    });
-
-                    // refresh sort indicator
-                    const sortIndicator = $('.sort-indicator', $col);
-                    if (sortIndicator) {
-                        sortIndicator.innerHTML = this.options.sortIndicator[column.sortOrder];
-                    }
-                });
+            this.$filterRow = $('.dt-row[data-is-filter]', this.header);
+            if (this.$filterRow) {
+                $.style(this.$filterRow, { display: 'none' });
             }
             // reset columnMap
             this.$columnMap = [];
+            this.bindMoveColumn();
         }
 
         getHeaderHTML(columns) {
@@ -2348,7 +2346,6 @@ var DataTable = (function (Sortable,Clusterize) {
         bindEvents() {
             this.bindDropdown();
             this.bindResizeColumn();
-            this.bindMoveColumn();
             this.bindFilter();
         }
 
@@ -2449,40 +2446,27 @@ var DataTable = (function (Sortable,Clusterize) {
         }
 
         bindMoveColumn() {
-            let initialized;
+            const $parent = $('.dt-row', this.header);
 
-            const initialize = () => {
-                if (initialized) {
-                    $.off(document.body, 'mousemove', initialize);
-                    return;
-                }
-                const ready = $('.dt-cell', this.header);
-                if (!ready) return;
+            this.sortable = Sortable.create($parent, {
+                onEnd: (e) => {
+                    const {
+                        oldIndex,
+                        newIndex
+                    } = e;
+                    const $draggedCell = e.item;
+                    const {
+                        colIndex
+                    } = $.data($draggedCell);
+                    if (+colIndex === newIndex) return;
 
-                const $parent = $('.dt-row', this.header);
-
-                this.sortable = Sortable.create($parent, {
-                    onEnd: (e) => {
-                        const {
-                            oldIndex,
-                            newIndex
-                        } = e;
-                        const $draggedCell = e.item;
-                        const {
-                            colIndex
-                        } = $.data($draggedCell);
-                        if (+colIndex === newIndex) return;
-
-                        this.switchColumn(oldIndex, newIndex);
-                    },
-                    preventOnFilter: false,
-                    filter: '.dt-cell__resize-handle, .dt-dropdown',
-                    chosenClass: 'dt-cell--dragging',
-                    animation: 150
-                });
-            };
-
-            $.on(document.body, 'mousemove', initialize);
+                    this.switchColumn(oldIndex, newIndex);
+                },
+                preventOnFilter: false,
+                filter: '.dt-cell__resize-handle, .dt-dropdown',
+                chosenClass: 'dt-cell--dragging',
+                animation: 150
+            });
         }
 
         sortColumn(colIndex, nextSortOrder) {
@@ -2591,11 +2575,9 @@ var DataTable = (function (Sortable,Clusterize) {
 
         setColumnWidth(colIndex, width) {
             colIndex = +colIndex;
-            this._columnWidthMap = this._columnWidthMap || [];
 
             let columnWidth = width || this.getColumn(colIndex).width;
 
-            let index = this._columnWidthMap[colIndex];
             const selector = [
                 `.dt-cell__content--col-${colIndex}`,
                 `.dt-cell__edit--col-${colIndex}`
@@ -2605,11 +2587,7 @@ var DataTable = (function (Sortable,Clusterize) {
                 width: columnWidth + 'px'
             };
 
-            index = this.style.setStyle(selector, styles, index);
-
-            if (index !== undefined) {
-                this._columnWidthMap[colIndex] = index;
-            }
+            this.style.setStyle(selector, styles);
         }
 
         setColumnHeaderWidth(colIndex) {
@@ -3092,32 +3070,50 @@ var DataTable = (function (Sortable,Clusterize) {
             this.styleEl.remove();
         }
 
-        setStyle(selector, styleMap, index = -1) {
-            const styles = Object.keys(styleMap)
-                .map(prop => {
-                    if (!prop.includes('-')) {
-                        prop = camelCaseToDash(prop);
-                    }
-                    return `${prop}:${styleMap[prop]};`;
-                })
-                .join('');
-            let prefixedSelector = selector
-                .split(',')
-                .map(r => `.${this.scopeClass} ${r}`)
-                .join(',');
-
-            let ruleString = `${prefixedSelector} { ${styles} }`;
-
-            if (!this.stylesheet) return;
-
-            let _index = this.stylesheet.cssRules.length;
-            if (index !== -1) {
-                this.stylesheet.deleteRule(index);
-                _index = index;
+        setStyle(selector, styleObject) {
+            if (selector.includes(',')) {
+                selector.split(',')
+                    .map(s => s.trim())
+                    .forEach(selector => {
+                        this.setStyle(selector, styleObject);
+                    });
+                return;
             }
 
-            this.stylesheet.insertRule(ruleString, _index);
-            return _index; // eslint-disable-line
+            this._styleRulesMap = this._styleRulesMap || {};
+            const prefixedSelector = this._getPrefixedSelector(selector);
+
+            if (this._styleRulesMap[prefixedSelector]) {
+                // find and remove
+                const index = Array.from(this.stylesheet.cssRules)
+                    .findIndex(rule => rule.selectorText === prefixedSelector);
+                this.stylesheet.deleteRule(index);
+
+                // merge with old styleobject
+                styleObject = Object.assign({}, this._styleRulesMap[prefixedSelector], styleObject);
+            }
+
+            const styleString = this._getRuleString(styleObject);
+            const ruleString = `${prefixedSelector} { ${styleString} }`;
+
+            this._styleRulesMap[prefixedSelector] = styleObject;
+            this.stylesheet.insertRule(ruleString);
+        }
+
+        _getPrefixedSelector(selector) {
+            return `.${this.scopeClass} ${selector}`;
+        }
+
+        _getRuleString(styleObject) {
+            return Object.keys(styleObject)
+                .map(prop => {
+                    let dashed = prop;
+                    if (!prop.includes('-')) {
+                        dashed = camelCaseToDash(prop);
+                    }
+                    return `${dashed}:${styleObject[prop]};`;
+                })
+                .join('');
         }
 
         setDimensions() {
@@ -3280,11 +3276,16 @@ var DataTable = (function (Sortable,Clusterize) {
             this.datamanager.getColumns()
                 .map(column => {
                     // alignment
-                    if (['left', 'center', 'right'].includes(column.align)) {
-                        this.setStyle(`.dt-cell--col-${column.colIndex}`, {
-                            'text-align': column.align
-                        });
+                    if (!column.align) {
+                        column.align = 'left';
                     }
+                    if (!['left', 'center', 'right'].includes(column.align)) {
+                        column.align = 'left';
+                    }
+                    this.setStyle(`.dt-cell--col-${column.colIndex}`, {
+                        'text-align': column.align
+                    });
+
                     // width
                     this.columnmanager.setColumnHeaderWidth(column.colIndex);
                     this.columnmanager.setColumnWidth(column.colIndex);
@@ -3657,7 +3658,7 @@ var DataTable = (function (Sortable,Clusterize) {
     DataTable.instances = 0;
 
     var name = "frappe-datatable";
-    var version = "0.0.5";
+    var version = "0.0.6";
     var description = "A modern datatable library for the web";
     var main = "dist/frappe-datatable.cjs.js";
     var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js"};
