@@ -23,10 +23,10 @@ export default {
     methods: {
         loadScriptsAndStyle() {
             return Promise.all([
-                this.loadScript(config.base + 'js/Sortable.min.js'),
-                this.loadScript(config.base + 'js/clusterize.min.js'),
-                this.loadScript(config.base + 'js/frappe-datatable.js'),
-                this.loadStyle(config.base + 'css/frappe-datatable.css')
+                this.loadScript('//unpkg.com/sortablejs@1.7.0/Sortable.min.js'),
+                this.loadScript('//unpkg.com/clusterize.js@0.18.1/clusterize.min.js'),
+                this.loadScript('//unpkg.com/frappe-datatable@0.0.6/dist/frappe-datatable.min.js'),
+                this.loadStyle('//unpkg.com/frappe-datatable@0.0.6/dist/frappe-datatable.min.css')
             ])
         },
         loadScript(src) {
