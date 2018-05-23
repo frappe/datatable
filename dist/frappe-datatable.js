@@ -246,27 +246,13 @@ var DataTable = (function (Sortable,Clusterize) {
 
     var _freeGlobal = freeGlobal;
 
-    var _freeGlobal$1 = /*#__PURE__*/Object.freeze({
-        default: _freeGlobal,
-        __moduleExports: _freeGlobal
-    });
-
-    var freeGlobal$1 = ( _freeGlobal$1 && _freeGlobal ) || _freeGlobal$1;
-
     /** Detect free variable `self`. */
     var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
 
     /** Used as a reference to the global object. */
-    var root = freeGlobal$1 || freeSelf || Function('return this')();
+    var root = _freeGlobal || freeSelf || Function('return this')();
 
     var _root = root;
-
-    var _root$1 = /*#__PURE__*/Object.freeze({
-        default: _root,
-        __moduleExports: _root
-    });
-
-    var root$1 = ( _root$1 && _root ) || _root$1;
 
     /**
      * Gets the timestamp of the number of milliseconds that have elapsed since
@@ -285,22 +271,15 @@ var DataTable = (function (Sortable,Clusterize) {
      * // => Logs the number of milliseconds it took for the deferred invocation.
      */
     var now = function() {
-      return root$1.Date.now();
+      return _root.Date.now();
     };
 
     var now_1 = now;
 
     /** Built-in value references. */
-    var Symbol = root$1.Symbol;
+    var Symbol = _root.Symbol;
 
     var _Symbol = Symbol;
-
-    var _Symbol$1 = /*#__PURE__*/Object.freeze({
-        default: _Symbol,
-        __moduleExports: _Symbol
-    });
-
-    var Symbol$1 = ( _Symbol$1 && _Symbol ) || _Symbol$1;
 
     /** Used for built-in method references. */
     var objectProto = Object.prototype;
@@ -316,7 +295,7 @@ var DataTable = (function (Sortable,Clusterize) {
     var nativeObjectToString = objectProto.toString;
 
     /** Built-in value references. */
-    var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : undefined;
+    var symToStringTag = _Symbol ? _Symbol.toStringTag : undefined;
 
     /**
      * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
@@ -374,7 +353,7 @@ var DataTable = (function (Sortable,Clusterize) {
         undefinedTag = '[object Undefined]';
 
     /** Built-in value references. */
-    var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : undefined;
+    var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
 
     /**
      * The base implementation of `getTag` without fallbacks for buggy environments.
@@ -2234,7 +2213,11 @@ var DataTable = (function (Sortable,Clusterize) {
             const editCellHTML = editable ? this.getEditCellHTML(colIndex) : '';
 
             const sortable = isHeader && cell.sortable !== false;
-            const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
+            const sortIndicator = sortable ?
+                `<span class="sort-indicator">
+                ${this.options.sortIndicator[cell.sortOrder]}
+            </span>` :
+                '';
 
             const resizable = isHeader && cell.resizable !== false;
             const resizeColumn = resizable ? '<span class="dt-cell__resize-handle"></span>' : '';
@@ -3658,7 +3641,7 @@ var DataTable = (function (Sortable,Clusterize) {
     DataTable.instances = 0;
 
     var name = "frappe-datatable";
-    var version = "0.0.6";
+    var version = "0.0.7";
     var description = "A modern datatable library for the web";
     var main = "dist/frappe-datatable.cjs.js";
     var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js"};

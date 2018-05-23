@@ -2214,7 +2214,11 @@ class CellManager {
         const editCellHTML = editable ? this.getEditCellHTML(colIndex) : '';
 
         const sortable = isHeader && cell.sortable !== false;
-        const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
+        const sortIndicator = sortable ?
+            `<span class="sort-indicator">
+                ${this.options.sortIndicator[cell.sortOrder]}
+            </span>` :
+            '';
 
         const resizable = isHeader && cell.resizable !== false;
         const resizeColumn = resizable ? '<span class="dt-cell__resize-handle"></span>' : '';
@@ -3638,7 +3642,7 @@ class DataTable {
 DataTable.instances = 0;
 
 var name = "frappe-datatable";
-var version = "0.0.6";
+var version = "0.0.7";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
 var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js"};
