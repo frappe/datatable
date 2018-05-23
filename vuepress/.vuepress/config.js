@@ -1,11 +1,7 @@
-const path = require('path');
-
-const outputPath = path.resolve('./static/docs/datatable')
-
 module.exports = {
     title: 'Frappe DataTable',
     description: 'A simple, modern and interactive datatable for the web',
-    dest: outputPath,
+    dest: './static/docs/datatable',
     base: '/docs/datatable/',
     themeConfig: {
         sidebar: [
