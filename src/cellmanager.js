@@ -739,7 +739,11 @@ export default class CellManager {
         const editCellHTML = editable ? this.getEditCellHTML(colIndex) : '';
 
         const sortable = isHeader && cell.sortable !== false;
-        const sortIndicator = sortable ? '<span class="sort-indicator"></span>' : '';
+        const sortIndicator = sortable ?
+            `<span class="sort-indicator">
+                ${this.options.sortIndicator[cell.sortOrder]}
+            </span>` :
+            '';
 
         const resizable = isHeader && cell.resizable !== false;
         const resizeColumn = resizable ? '<span class="dt-cell__resize-handle"></span>' : '';
