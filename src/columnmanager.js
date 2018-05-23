@@ -30,41 +30,17 @@ export default class ColumnManager {
 
     refreshHeader() {
         const columns = this.datamanager.getColumns();
-        const $cols = $.each('.dt-cell--header', this.header);
 
-        const refreshHTML =
-            // first init
-            !$('.dt-cell', this.header) ||
-            // deleted column
-            columns.length < $cols.length;
+        // refresh html
+        $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
 
-        if (refreshHTML) {
-            // refresh html
-            $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
-
-            this.$filterRow = $('.dt-row[data-is-filter]', this.header);
-            if (this.$filterRow) {
-                $.style(this.$filterRow, { display: 'none' });
-            }
-        } else {
-            // update data-attributes
-            $cols.map(($col, i) => {
-                const column = columns[i];
-                // column sorted or order changed
-                // update colIndex of each header cell
-                $.data($col, {
-                    colIndex: column.colIndex
-                });
-
-                // refresh sort indicator
-                const sortIndicator = $('.sort-indicator', $col);
-                if (sortIndicator) {
-                    sortIndicator.innerHTML = this.options.sortIndicator[column.sortOrder];
-                }
-            });
+        this.$filterRow = $('.dt-row[data-is-filter]', this.header);
+        if (this.$filterRow) {
+            $.style(this.$filterRow, { display: 'none' });
         }
         // reset columnMap
         this.$columnMap = [];
+        this.bindMoveColumn();
     }
 
     getHeaderHTML(columns) {
@@ -82,7 +58,6 @@ export default class ColumnManager {
     bindEvents() {
         this.bindDropdown();
         this.bindResizeColumn();
-        this.bindMoveColumn();
         this.bindFilter();
     }
 
@@ -183,40 +158,27 @@ export default class ColumnManager {
     }
 
     bindMoveColumn() {
-        let initialized;
+        const $parent = $('.dt-row', this.header);
 
-        const initialize = () => {
-            if (initialized) {
-                $.off(document.body, 'mousemove', initialize);
-                return;
-            }
-            const ready = $('.dt-cell', this.header);
-            if (!ready) return;
+        this.sortable = Sortable.create($parent, {
+            onEnd: (e) => {
+                const {
+                    oldIndex,
+                    newIndex
+                } = e;
+                const $draggedCell = e.item;
+                const {
+                    colIndex
+                } = $.data($draggedCell);
+                if (+colIndex === newIndex) return;
 
-            const $parent = $('.dt-row', this.header);
-
-            this.sortable = Sortable.create($parent, {
-                onEnd: (e) => {
-                    const {
-                        oldIndex,
-                        newIndex
-                    } = e;
-                    const $draggedCell = e.item;
-                    const {
-                        colIndex
-                    } = $.data($draggedCell);
-                    if (+colIndex === newIndex) return;
-
-                    this.switchColumn(oldIndex, newIndex);
-                },
-                preventOnFilter: false,
-                filter: '.dt-cell__resize-handle, .dt-dropdown',
-                chosenClass: 'dt-cell--dragging',
-                animation: 150
-            });
-        };
-
-        $.on(document.body, 'mousemove', initialize);
+                this.switchColumn(oldIndex, newIndex);
+            },
+            preventOnFilter: false,
+            filter: '.dt-cell__resize-handle, .dt-dropdown',
+            chosenClass: 'dt-cell--dragging',
+            animation: 150
+        });
     }
 
     sortColumn(colIndex, nextSortOrder) {
@@ -325,11 +287,9 @@ export default class ColumnManager {
 
     setColumnWidth(colIndex, width) {
         colIndex = +colIndex;
-        this._columnWidthMap = this._columnWidthMap || [];
 
         let columnWidth = width || this.getColumn(colIndex).width;
 
-        let index = this._columnWidthMap[colIndex];
         const selector = [
             `.dt-cell__content--col-${colIndex}`,
             `.dt-cell__edit--col-${colIndex}`
@@ -339,11 +299,7 @@ export default class ColumnManager {
             width: columnWidth + 'px'
         };
 
-        index = this.style.setStyle(selector, styles, index);
-
-        if (index !== undefined) {
-            this._columnWidthMap[colIndex] = index;
-        }
+        this.style.setStyle(selector, styles);
     }
 
     setColumnHeaderWidth(colIndex) {
