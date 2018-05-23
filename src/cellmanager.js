@@ -110,6 +110,7 @@ export default class CellManager {
 
         this.keyboard.on('esc', () => {
             this.deactivateEditing();
+            this.columnmanager.toggleFilter(false);
         });
 
         if (this.options.inlineFilters) {
