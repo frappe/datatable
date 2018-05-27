@@ -2,7 +2,7 @@
 home: true
 ---
 
-<datatable-example type="basic" />
+<datatable-basic />
 
 ## Installation
 
@@ -33,7 +33,7 @@ let datatable = new DataTable({
 });
 ```
 
-## Features
+## Cell Features
 
 * Custom Formatters
 * Inline Editing
@@ -41,6 +41,26 @@ let datatable = new DataTable({
 * Copy Cells
 * Keyboard Navigation
 * Custom Cell Editor
+
+## Column Features
+
+* Reorder Columns
+* Sort by Column
+* Remove / Hide Column
+* Custom Actions
+* Resize Column
+* Flexible Layout
+
+<img :src="$withBase('/img/datatable-column-demo.gif')" />
+
+## Row Features
+
+* Row Selection
+* Tree Structured Rows
+* Inline Filters
+* Large Number of Rows
+* Dynamic Row Height
+
 
 <div class="footer">
 Made with ❤️ by Frappe
@@ -55,6 +75,9 @@ Made with ❤️ by Frappe
     }
     tr:nth-child(2n) {
         background-color: transparent;
+    }
+    .content.custom > div {
+        height: 2000px;
     }
     .home .hero .description {
         max-width: 30rem;
