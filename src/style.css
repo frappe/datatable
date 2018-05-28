@@ -25,16 +25,25 @@
 
 .datatable {
 	position: relative;
+}
+
+.datatable-main {
 	overflow: auto;
+}
+
+.datatable-left {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 1;
+	background-color: white;
 }
 
 .dt-header {
 	border-collapse: collapse;
 	border-bottom: 1px solid var(--border-color);
 
-	position: absolute;
-	top: 0;
-	left: 0;
+	position: relative;
 	background-color: var(--cell-bg);
 }
 
@@ -256,4 +265,8 @@
 
 body.dt-resize {
 	cursor: col-resize;
+}
+
+.datatable-left [data-is-filter] {
+	display: none;
 }

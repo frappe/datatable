@@ -12,14 +12,14 @@ export default class Style {
         linkProperties(this, this.instance, [
             'options', 'datamanager', 'columnmanager',
             'header', 'bodyScrollable', 'datatableWrapper',
-            'getColumn'
+            'datatableWrapperLeft', 'getColumn'
         ]);
 
         this.scopeClass = 'dt-instance-' + instance.constructor.instances;
         instance.datatableWrapper.classList.add(this.scopeClass);
 
         const styleEl = document.createElement('style');
-        instance.wrapper.insertBefore(styleEl, instance.datatableWrapper);
+        document.head.appendChild(styleEl);
         this.styleEl = styleEl;
 
         this.bindResizeWindow();
@@ -102,15 +102,17 @@ export default class Style {
 
         this.setDefaultCellHeight();
         this.setBodyStyle();
+
+        this.setDatatableLeftStyle();
     }
 
     setHeaderStyle() {
         if (this.options.layout === 'fluid') {
             // setting width as 0 will ensure that the
             // header doesn't take the available space
-            $.style(this.header, {
-                width: 0
-            });
+            // $.style(this.header, {
+            //     width: 0
+            // });
         }
 
         $.style(this.header, {
@@ -291,14 +293,30 @@ export default class Style {
                 });
             }
 
-            $.style(this.bodyScrollable, {
-                marginTop: $.style(this.header, 'height') + 'px'
-            });
+            // $.style(this.bodyScrollable, {
+            //     marginTop: $.style(this.header, 'height') + 'px'
+            // });
 
-            $.style($('table', this.bodyScrollable), {
+            $.style($('.dt-body', this.bodyScrollable), {
                 margin: 0,
                 width: '100%'
             });
+        });
+    }
+
+    setDatatableLeftStyle() {
+        const wrapperWidth = $.style(this.datatableWrapperLeft, 'width');
+        $.style(this.datatableWrapperLeft, {
+            width: wrapperWidth + 'px',
+            overflow: 'hidden'
+        });
+
+        const scrollable = $('.dt-scrollable', this.datatableWrapperLeft);
+
+        const width = $.style(scrollable, 'width');
+        $.style(scrollable, {
+            width: (width + 20) + 'px',
+            paddingRight: '20px'
         });
     }
 
