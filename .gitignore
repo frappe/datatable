@@ -34,3 +34,7 @@ node_modules
 npm-debug.log.*
 
 .DS_Store
+
+# cypress
+cypress/screenshots
+cypress/videos

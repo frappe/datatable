@@ -9,9 +9,10 @@
     "production": "rollup -c --production",
     "build:docs": "rollup -c --docs",
     "dev": "rollup -c -w",
-    "cypress:server": "http-server -p 8989",
-    "cypress:open": "cypress open",
-    "test": "mocha --compilers js:babel-core/register --colors ./test/*.spec.js"
+    "cy:server": "http-server -p 8989",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "test": "start-server-and-test cy:server http://localhost:8989 cy:run"
   },
   "devDependencies": {
     "chai": "3.5.0",
@@ -29,7 +30,8 @@
     "rollup-plugin-json": "^2.3.0",
     "rollup-plugin-node-resolve": "^3.0.3",
     "rollup-plugin-postcss": "^1.2.8",
-    "rollup-plugin-uglify-es": "^0.0.1"
+    "rollup-plugin-uglify-es": "^0.0.1",
+    "start-server-and-test": "^1.4.1"
   },
   "repository": {
     "type": "git",
