@@ -6,11 +6,11 @@
     A modern datatable library for the web
     </p>
 
-</div>
-
 [![travis build](https://api.travis-ci.com/frappe/datatable.svg?branch=master)](https://travis-ci.org/frappe/datatable)
 [![version](https://img.shields.io/npm/v/frappe-datatable.svg)](http://npm.im/frappe-datatable)
 [![MIT License](https://img.shields.io/github/license/frappe/datatable.svg)](http://opensource.org/licenses/MIT)
+
+</div>
 
 ## Features
 
