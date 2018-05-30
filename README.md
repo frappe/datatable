@@ -7,11 +7,10 @@
     </p>
 
 </div>
-<p align="center">
+
 [![travis build](https://img.shields.io/travis/frappe/datatable.svg?style=flat-square)](https://travis-ci.org/frappe/datatable)
 [![version](https://img.shields.io/npm/v/frappe-datatable.svg?style=flat-square)](http://npm.im/frappe-datatable)
 [![MIT License](https://img.shields.io/npm/l/frappe-datatable.svg?style=flat-square)](http://opensource.org/licenses/MIT)
-</p>
 
 ## Features
 
