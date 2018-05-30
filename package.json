@@ -9,14 +9,19 @@
     "production": "rollup -c --production",
     "build:docs": "rollup -c --docs",
     "dev": "rollup -c -w",
-    "test": "mocha --compilers js:babel-core/register --colors ./test/*.spec.js"
+    "cy:server": "http-server -p 8989",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "test": "start-server-and-test cy:server http://localhost:8989 cy:run"
   },
   "devDependencies": {
     "chai": "3.5.0",
+    "cypress": "^2.1.0",
     "deepmerge": "^2.0.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",
+    "http-server": "^0.11.1",
     "mocha": "3.3.0",
     "postcss-cssnext": "^3.1.0",
     "postcss-nested": "^3.0.0",
@@ -25,7 +30,8 @@
     "rollup-plugin-json": "^2.3.0",
     "rollup-plugin-node-resolve": "^3.0.3",
     "rollup-plugin-postcss": "^1.2.8",
-    "rollup-plugin-uglify-es": "^0.0.1"
+    "rollup-plugin-uglify-es": "^0.0.1",
+    "start-server-and-test": "^1.4.1"
   },
   "repository": {
     "type": "git",
