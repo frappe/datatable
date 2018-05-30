@@ -38,13 +38,6 @@ describe('DataTable', function () {
                 .should('have.class', 'dt-cell--editing')
                 .type('{enter}')
                 .should('not.have.class', 'dt-cell--editing');
-
-            // cy.focused()
-            //     .type('{selectall}{del}')
-            //     .wait(20)
-            //     .type('Test{enter}');
-
-            // cy.getCell(4, 0).contains('Test');
         });
 
         it('edit cell on double click', function () {
@@ -58,23 +51,23 @@ describe('DataTable', function () {
             cy.get('@target').should('not.have.class', 'dt-cell--editing');
         });
 
-        it('edit cell', function () {
+        // it('edit cell', function () {
 
-            cy.getCell(4, 1).dblclick();
+        //     cy.getCell(4, 1).dblclick();
 
-            cy.wait(100);
+        //     cy.wait(100);
 
-            cy.focused()
-                .type('{selectall}')
-                .wait(100)
-                .type('{del}')
-                .wait(100)
-                .type('Test')
-                .wait(100)
-                .type('{enter}');
+        //     cy.focused()
+        //         .type('{selectall}')
+        //         .wait(100)
+        //         .type('{del}')
+        //         .wait(100)
+        //         .type('Test')
+        //         .wait(100)
+        //         .type('{enter}');
 
-            cy.getCell(4, 1).contains('Test');
-        });
+        //     cy.getCell(4, 1).contains('Test');
+        // });
 
         it('if editing is false: editing should not activate', function () {
             cy.getCell(3, 0).dblclick({ force: true })
