@@ -23,3 +23,27 @@
 //
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+
+Cypress.Commands.add('getCell', (col, row) => {
+    return cy.get(`.dt-cell--${col}-${row}`);
+});
+
+Cypress.Commands.add('clickCell', (col, row) => {
+    return cy.getCell(col, row).click({ force: true });
+});
+
+Cypress.Commands.add('getColumnCell', (col) => {
+    return cy.get(`.dt-cell--header-${col}`);
+});
+
+Cypress.Commands.add('clickDropdown', (col) => {
+    return cy.getColumnCell(col)
+        .find('.dt-dropdown__toggle')
+        .click();
+});
+
+Cypress.Commands.add('clickDropdownItem', (col, item) => {
+    return cy.getColumnCell(col)
+        .find(`.dt-dropdown__list-item:contains("${item}")`)
+        .click({ force: true });
+});
