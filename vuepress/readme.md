@@ -42,6 +42,8 @@ let datatable = new DataTable({
 * Keyboard Navigation
 * Custom Cell Editor
 
+<img src="./assets/datatable-cell-demo.gif" />
+
 ## Column Features
 
 * Reorder Columns
@@ -51,7 +53,7 @@ let datatable = new DataTable({
 * Resize Column
 * Flexible Layout
 
-<img :src="$withBase('/img/datatable-column-demo.gif')" />
+<img src="./assets/datatable-column-demo.gif" />
 
 ## Row Features
 
@@ -77,7 +79,7 @@ Made with ❤️ by Frappe
         background-color: transparent;
     }
     .content.custom > div {
-        height: 2000px;
+        /* height: 2000px; */
     }
     .home .hero .description {
         max-width: 30rem;
