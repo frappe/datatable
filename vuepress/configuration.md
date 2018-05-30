@@ -35,6 +35,137 @@ const datatable = new DataTable(container, options);
 
 The following options are configurable:
 
+### columns
+ - Type: `Array`
+ - Default: `[]`
+ - Required
+
+The minimum required value is to pass a list of column header names
+
+```js
+const options = {
+    columns: ['Name', 'Position', 'Country']
+}
+```
+
+You can also pass an Array of Object Descriptors for each column header
+
+```js
+const options = {
+    columns: [
+        {
+            name: 'Name',
+            id: 'name',
+            editable: false,
+            resizable: false,
+            sortable: false,
+            focusable: false,
+            dropdown: false,
+            width: 32,
+            format: (value) => {
+                return value.bold();
+            }
+        },
+        ...
+    ]
+}
+```
+
+#### column / name
+ - Type: `String`
+ - Required
+
+#### column / id
+ - Type: `String`
+ - Default: Slugified version of `name`
+
+#### column / editable
+ - Type: `Boolean`
+ - Default: `true`
+
+If this is set to false, the entire column will be read-only
+
+#### column / resizable
+ - Type: `Boolean`
+ - Default: `true`
+
+If this is set to false, the column width will be fixed and is not resizable using mouse drag
+
+#### column / sortable
+ - Type: `Boolean`
+ - Default: `true`
+
+If this is set to false, the column is not sortable using column actions
+
+#### column / focusable
+ - Type: `Boolean`
+ - Default: `true`
+
+If this is set to false, the cells in the column is not focusable on click
+
+#### column / dropdown
+ - Type: `Boolean`
+ - Default: `true`
+
+Show / Hide the dropdown action button on column header
+
+#### column / width
+ - Type: `Number`
+
+If the `layout` option is set to
+- `fluid`, then this value doesn't have any effect
+- `fixed`, then this value is set in pixels
+- `ratio`, then this value works similar to `flex` property in CSS. So, if column A has `width: 1` and column B has `width: 2`, then column B will occupy twice as much width as column A
+
+#### column / format
+ - Type: `Function`
+ - Default: `null`
+
+Custom Formatter function that is passed the value of the cell. You can process the value and return any valid HTML to customize how the cell is rendered.
+
+---
+
+### data
+ - Type: `Array`
+ - Default: `[]`
+ - Required
+
+The minimum required value is to pass an array of array of cell values. The order of cell values should match with the order of columns passed
+
+```js
+const options = {
+    columns: ['Name', 'Position', 'Country'],
+    data: [
+        ['Faris', 'Software Developer', 'India'],
+        ['Kenneth', 'Marketing Engineer', 'India']
+    ]
+}
+```
+
+You can also pass an Object Descriptor for each cell value
+
+```js
+const options = {
+    columns: ['Name', 'Position', 'Country'],
+    data: [
+        [
+            {
+                content: 'Faris',
+                // disable editing just for this cell
+                editable: false,
+                // format function takes precedence over
+                // the format function defined in column header
+                format: (value) => {
+                    return value.fontcolor('blue');
+                }
+            },
+            ...
+        ],
+        ...
+    ]
+}
+```
+
 ### getEditor
  - Type: `Function`
  - Default: `null`
@@ -206,7 +337,7 @@ Example
  - Type: `Array`
 
 When you hover over any column, you see the dropdown button which is used to perform certain actions for that column.
-This options allows you to pass an array of custom buttons with custom actions defined by you.
+This option allows you to pass an array of custom buttons custom actions defined by you.
 
 ```javascript
 options = {

@@ -5,7 +5,7 @@ Hook custom actions on certain events occurred during the lifecycle of DataTable
 Example
 ```javascript
 
-{
+const options = {
     events: {
         onRemoveColumn(column) {
             // your code
@@ -44,5 +44,3 @@ Called when a column's sorting is changed using the dropdown or API.
 - params: `row`
 
 Called when a row is checked using the checkbox or API.
-
----
