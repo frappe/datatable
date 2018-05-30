@@ -44,32 +44,50 @@ export default class Style {
         this.styleEl.remove();
     }
 
-    setStyle(selector, styleMap, index = -1) {
-        const styles = Object.keys(styleMap)
-            .map(prop => {
-                if (!prop.includes('-')) {
-                    prop = camelCaseToDash(prop);
-                }
-                return `${prop}:${styleMap[prop]};`;
-            })
-            .join('');
-        let prefixedSelector = selector
-            .split(',')
-            .map(r => `.${this.scopeClass} ${r}`)
-            .join(',');
-
-        let ruleString = `${prefixedSelector} { ${styles} }`;
-
-        if (!this.stylesheet) return;
-
-        let _index = this.stylesheet.cssRules.length;
-        if (index !== -1) {
-            this.stylesheet.deleteRule(index);
-            _index = index;
+    setStyle(selector, styleObject) {
+        if (selector.includes(',')) {
+            selector.split(',')
+                .map(s => s.trim())
+                .forEach(selector => {
+                    this.setStyle(selector, styleObject);
+                });
+            return;
         }
 
-        this.stylesheet.insertRule(ruleString, _index);
-        return _index; // eslint-disable-line
+        this._styleRulesMap = this._styleRulesMap || {};
+        const prefixedSelector = this._getPrefixedSelector(selector);
+
+        if (this._styleRulesMap[prefixedSelector]) {
+            // find and remove
+            const index = Array.from(this.stylesheet.cssRules)
+                .findIndex(rule => rule.selectorText === prefixedSelector);
+            this.stylesheet.deleteRule(index);
+
+            // merge with old styleobject
+            styleObject = Object.assign({}, this._styleRulesMap[prefixedSelector], styleObject);
+        }
+
+        const styleString = this._getRuleString(styleObject);
+        const ruleString = `${prefixedSelector} { ${styleString} }`;
+
+        this._styleRulesMap[prefixedSelector] = styleObject;
+        this.stylesheet.insertRule(ruleString);
+    }
+
+    _getPrefixedSelector(selector) {
+        return `.${this.scopeClass} ${selector}`;
+    }
+
+    _getRuleString(styleObject) {
+        return Object.keys(styleObject)
+            .map(prop => {
+                let dashed = prop;
+                if (!prop.includes('-')) {
+                    dashed = camelCaseToDash(prop);
+                }
+                return `${dashed}:${styleObject[prop]};`;
+            })
+            .join('');
     }
 
     setDimensions() {
@@ -232,11 +250,16 @@ export default class Style {
         this.datamanager.getColumns()
             .map(column => {
                 // alignment
-                if (['left', 'center', 'right'].includes(column.align)) {
-                    this.setStyle(`.dt-cell--col-${column.colIndex}`, {
-                        'text-align': column.align
-                    });
+                if (!column.align) {
+                    column.align = 'left';
                 }
+                if (!['left', 'center', 'right'].includes(column.align)) {
+                    column.align = 'left';
+                }
+                this.setStyle(`.dt-cell--col-${column.colIndex}`, {
+                    'text-align': column.align
+                });
+
                 // width
                 this.columnmanager.setColumnHeaderWidth(column.colIndex);
                 this.columnmanager.setColumnWidth(column.colIndex);
