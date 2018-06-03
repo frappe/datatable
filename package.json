@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "chai": "3.5.0",
-    "cypress": "^2.1.0",
+    "cypress": "3.0.1",
     "deepmerge": "^2.0.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-config-airbnb-base": "^12.1.0",
