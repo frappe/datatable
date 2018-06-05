@@ -497,21 +497,29 @@ export default class CellManager {
             const editor = this.currentCellEditor;
 
             if (editor) {
-                const value = editor.getValue();
-                const done = editor.setValue(value, rowIndex, col);
-                const oldValue = this.getCell(colIndex, rowIndex).content;
+                let valuePromise = editor.getValue();
 
-                // update cell immediately
-                this.updateCell(colIndex, rowIndex, value);
-                $cell.focus();
-
-                if (done && done.then) {
-                    // revert to oldValue if promise fails
-                    done.catch((e) => {
-                        console.log(e);
-                        this.updateCell(colIndex, rowIndex, oldValue);
-                    });
+                // convert to stubbed Promise
+                if (!valuePromise.then) {
+                    valuePromise = Promise.resolve(valuePromise);
                 }
+
+                valuePromise.then((value) => {
+                    const done = editor.setValue(value, rowIndex, col);
+                    const oldValue = this.getCell(colIndex, rowIndex).content;
+
+                    // update cell immediately
+                    this.updateCell(colIndex, rowIndex, value);
+                    $cell.focus();
+
+                    if (done && done.then) {
+                        // revert to oldValue if promise fails
+                        done.catch((e) => {
+                            console.log(e);
+                            this.updateCell(colIndex, rowIndex, oldValue);
+                        });
+                    }
+                });
             }
         }
 
