@@ -1972,21 +1972,29 @@ class CellManager {
             const editor = this.currentCellEditor;
 
             if (editor) {
-                const value = editor.getValue();
-                const done = editor.setValue(value, rowIndex, col);
-                const oldValue = this.getCell(colIndex, rowIndex).content;
+                let valuePromise = editor.getValue();
 
-                // update cell immediately
-                this.updateCell(colIndex, rowIndex, value);
-                $cell.focus();
-
-                if (done && done.then) {
-                    // revert to oldValue if promise fails
-                    done.catch((e) => {
-                        console.log(e);
-                        this.updateCell(colIndex, rowIndex, oldValue);
-                    });
+                // convert to stubbed Promise
+                if (!valuePromise.then) {
+                    valuePromise = Promise.resolve(valuePromise);
                 }
+
+                valuePromise.then((value) => {
+                    const done = editor.setValue(value, rowIndex, col);
+                    const oldValue = this.getCell(colIndex, rowIndex).content;
+
+                    // update cell immediately
+                    this.updateCell(colIndex, rowIndex, value);
+                    $cell.focus();
+
+                    if (done && done.then) {
+                        // revert to oldValue if promise fails
+                        done.catch((e) => {
+                            console.log(e);
+                            this.updateCell(colIndex, rowIndex, oldValue);
+                        });
+                    }
+                });
             }
         }
 
@@ -3642,11 +3650,11 @@ class DataTable {
 DataTable.instances = 0;
 
 var name = "frappe-datatable";
-var version = "0.0.7";
+var version = "0.0.8";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
-var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","test":"mocha --compilers js:babel-core/register --colors ./test/*.spec.js"};
-var devDependencies = {"chai":"3.5.0","deepmerge":"^2.0.1","eslint-config-airbnb":"^16.1.0","eslint-config-airbnb-base":"^12.1.0","eslint-plugin-import":"^2.11.0","mocha":"3.3.0","postcss-cssnext":"^3.1.0","postcss-nested":"^3.0.0","rollup-plugin-commonjs":"^8.3.0","rollup-plugin-eslint":"^4.0.0","rollup-plugin-json":"^2.3.0","rollup-plugin-node-resolve":"^3.0.3","rollup-plugin-postcss":"^1.2.8","rollup-plugin-uglify-es":"^0.0.1"};
+var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","cy:server":"http-server -p 8989","cy:open":"cypress open","cy:run":"cypress run","test":"start-server-and-test cy:server http://localhost:8989 cy:run"};
+var devDependencies = {"chai":"3.5.0","cypress":"3.0.1","deepmerge":"^2.0.1","eslint-config-airbnb":"^16.1.0","eslint-config-airbnb-base":"^12.1.0","eslint-plugin-import":"^2.11.0","http-server":"^0.11.1","mocha":"3.3.0","postcss-cssnext":"^3.1.0","postcss-nested":"^3.0.0","rollup":"^0.59.4","rollup-plugin-commonjs":"^8.3.0","rollup-plugin-eslint":"^4.0.0","rollup-plugin-json":"^2.3.0","rollup-plugin-node-resolve":"^3.0.3","rollup-plugin-postcss":"^1.2.8","rollup-plugin-uglify-es":"^0.0.1","start-server-and-test":"^1.4.1"};
 var repository = {"type":"git","url":"https://github.com/frappe/datatable.git"};
 var keywords = ["datatable","data","grid","table"];
 var author = "Faris Ansari";
