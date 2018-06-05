@@ -1,6 +1,6 @@
 {
   "name": "frappe-datatable",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A modern datatable library for the web",
   "main": "dist/frappe-datatable.cjs.js",
   "scripts": {
