@@ -3,8 +3,10 @@ node_js:
   - 8
 cache:
   directories:
+    - ~/.npm
+    - ~/.cache
     - node_modules
 install:
-  - yarn
+  - npm install
 script:
-  - yarn test
+  - npm test
