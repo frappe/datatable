@@ -1000,7 +1000,7 @@ var DataTable = (function (Sortable,Clusterize) {
             this.columns = this.columns.map((column, i) => {
 
                 const cellValue = row0[i].content;
-                if (!column.align && cellValue && isNumeric(cellValue)) {
+                if (!column.align && isNumeric(cellValue)) {
                     column.align = 'right';
                 }
 
@@ -3649,7 +3649,7 @@ var DataTable = (function (Sortable,Clusterize) {
     DataTable.instances = 0;
 
     var name = "frappe-datatable";
-    var version = "0.0.8";
+    var version = "0.0.9";
     var description = "A modern datatable library for the web";
     var main = "dist/frappe-datatable.cjs.js";
     var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","cy:server":"http-server -p 8989","cy:open":"cypress open","cy:run":"cypress run","test":"start-server-and-test cy:server http://localhost:8989 cy:run"};
