@@ -134,7 +134,7 @@ export default class DataManager {
         this.columns = this.columns.map((column, i) => {
 
             const cellValue = row0[i].content;
-            if (!column.align && cellValue && isNumeric(cellValue)) {
+            if (!column.align && isNumeric(cellValue)) {
                 column.align = 'right';
             }
 
