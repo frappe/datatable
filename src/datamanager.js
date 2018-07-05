@@ -32,7 +32,6 @@ export default class DataManager {
         this.prepareRows();
         this.prepareTreeRows();
         this.prepareRowView();
-
         this.prepareNumericColumns();
     }
 
