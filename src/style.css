@@ -43,7 +43,7 @@
 }
 
 .dt-scrollable {
-	max-height: 40vw;
+	min-height: calc(100% - 40vw);
 	overflow: auto;
 	border-bottom: 1px solid var(--border-color);
 
