@@ -273,6 +273,16 @@ export default class ColumnManager {
         $.on(this.header, 'keydown', '.dt-filter', debounce(handler, 300));
     }
 
+    applyDefaultSortOrder() {
+        // sort rows if any 1 column has a default sortOrder set
+        const columnsToSort = this.getColumns().filter(col => col.sortOrder !== 'none');
+
+        if (columnsToSort.length === 1) {
+            const column = columnsToSort[0];
+            this.sortColumn(column.colIndex, column.sortOrder);
+        }
+    }
+
     sortRows(colIndex, sortOrder) {
         return this.datamanager.sortRows(colIndex, sortOrder);
     }
