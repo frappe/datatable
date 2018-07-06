@@ -3,7 +3,8 @@ import {
     makeDataAttributeString,
     nextTick,
     ensureArray,
-    linkProperties
+    linkProperties,
+    throttle
 } from './utils';
 
 export default class RowManager {
@@ -14,7 +15,8 @@ export default class RowManager {
             'fireEvent',
             'wrapper',
             'bodyScrollable',
-            'bodyRenderer'
+            'bodyRenderer',
+            'datatableWrapperLeft'
         ]);
 
         this.bindEvents();
@@ -31,6 +33,7 @@ export default class RowManager {
 
     bindEvents() {
         this.bindCheckbox();
+        this.bindScrollSync();
     }
 
     bindCheckbox() {
@@ -53,6 +56,36 @@ export default class RowManager {
                 this.checkRow(rowIndex, checked);
             }
         });
+    }
+
+    bindScrollSync() {
+        // $.on(this.wrapper, 'scroll', '.dt-scrollable', (e, $el) => {
+        //     console.log(e, $el);
+        // });
+
+        if (!this._$leftBodyScrollable) {
+            this._$leftBodyScrollable = $('.dt-scrollable', this.datatableWrapperLeft);
+        }
+
+        $.on(this.bodyScrollable, 'scroll', throttle((e) => {
+            console.log('main scrolled');
+            requestAnimationFrame(() => {
+                if (this._$leftBodyScrollable.scrollTop === this.bodyScrollable.scrollTop) {
+                    return;
+                }
+                this._$leftBodyScrollable.scrollTop = this.bodyScrollable.scrollTop;
+            });
+        }, 16));
+
+        $.on(this._$leftBodyScrollable, 'scroll', throttle((e) => {
+            console.log('left scrolled');
+            requestAnimationFrame(() => {
+                if (this._$leftBodyScrollable.scrollTop === this.bodyScrollable.scrollTop) {
+                    return;
+                }
+                this.bodyScrollable.scrollTop = this._$leftBodyScrollable.scrollTop;
+            });
+        }, 16));
     }
 
     refreshRows() {

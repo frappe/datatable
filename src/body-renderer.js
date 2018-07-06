@@ -10,6 +10,7 @@ export default class BodyRenderer {
         this.rowmanager = instance.rowmanager;
         this.cellmanager = instance.cellmanager;
         this.bodyScrollable = instance.bodyScrollable;
+        this.datatableWrapperLeft = instance.datatableWrapperLeft;
         this.log = instance.log;
         this.appendRemainingData = nextTick(this.appendRemainingData, this);
     }
@@ -20,6 +21,11 @@ export default class BodyRenderer {
         } else {
             this.renderBodyHTML();
         }
+        this.renderLeftColumns();
+    }
+
+    renderLeftColumns() {
+        $('.dt-scrollable', this.datatableWrapperLeft).innerHTML = this.getLeftBodyHTML();
     }
 
     renderBodyHTML() {
@@ -48,7 +54,7 @@ export default class BodyRenderer {
             this.clusterize = new Clusterize({
                 rows: initialData,
                 scrollElem: this.bodyScrollable,
-                contentElem: $('tbody', this.bodyScrollable),
+                contentElem: $('.dt-body', this.bodyScrollable),
                 callbacks: {
                     clusterChanged: () => this.restoreState()
                 },
@@ -101,6 +107,26 @@ export default class BodyRenderer {
             <table class="dt-body">
                 <tbody>
                     ${rows.map(row => this.rowmanager.getRowHTML(row, row.meta)).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    getLeftBodyHTML(rows) {
+        if (!rows) rows = this.datamanager.getRowsForView();
+
+        const columns = this.datamanager.getColumns();
+        const leftColumns = columns.filter(col => {
+            return (col.id === '_checkbox' || col.id === '_rowIndex' || col.fixed);
+        }).map(col => col.colIndex);
+
+        return `
+            <table class="dt-body">
+                <tbody>
+                    ${rows.map(row => {
+                        const leftRow = row.filter(cell => leftColumns.includes(cell.colIndex));
+                        return this.rowmanager.getRowHTML(leftRow, row.meta);
+                    }).join('')}
                 </tbody>
             </table>
         `;
