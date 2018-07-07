@@ -75,8 +75,10 @@ const datatable = new DataTable('#datatable', {
 ## Contribution
 
 * `yarn start` - Start dev server
+* Open `index.html` located in the root folder, and start development.
+* Run `yarn lint` before commiting changes
+* This project uses [commitizen](https://github.com/commitizen/cz-cli) for conventional commit messages, use `yarn commit` command instead of `git commit`
 
-Now you can open the `index.html` located in the root folder, and start development. Make sure to fix all eslint errors before making a Pull Request.
 
 
 ## License

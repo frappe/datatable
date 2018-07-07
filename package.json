@@ -12,7 +12,9 @@
     "cy:run": "cypress run",
     "test": "start-server-and-test cy:server http://localhost:8989 cy:run",
     "travis-deploy-once": "travis-deploy-once",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "lint": "eslint src",
+    "commit": "git cz"
   },
   "files": [
     "dist",
@@ -23,6 +25,7 @@
     "cypress": "3.0.1",
     "cz-conventional-changelog": "^2.1.0",
     "deepmerge": "^2.0.1",
+    "eslint": "^5.0.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",
