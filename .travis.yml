@@ -14,7 +14,7 @@ notifications:
 install:
   - npm install
 script:
-  - npm run test
   - npm run build
+  - npm run test
 after_success:
   - ./node_modules/.bin/travis-deploy-once "npm run semantic-release"
