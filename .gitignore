@@ -38,3 +38,6 @@ npm-debug.log.*
 # cypress
 cypress/screenshots
 cypress/videos
+
+# dist
+dist

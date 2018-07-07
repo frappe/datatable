@@ -1,22 +1,23 @@
 {
   "name": "frappe-datatable",
-  "version": "0.0.10",
+  "version": "0.0.0-development",
   "description": "A modern datatable library for the web",
   "main": "dist/frappe-datatable.cjs.js",
   "scripts": {
     "start": "yarn run dev",
-    "build": "rollup -c",
-    "production": "rollup -c --production",
-    "build:docs": "rollup -c --docs",
+    "build": "rollup -c && rollup -c --production",
     "dev": "rollup -c -w",
     "cy:server": "http-server -p 8989",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "test": "start-server-and-test cy:server http://localhost:8989 cy:run"
+    "test": "start-server-and-test cy:server http://localhost:8989 cy:run",
+    "travis-deploy-once": "travis-deploy-once",
+    "semantic-release": "semantic-release"
   },
   "devDependencies": {
     "chai": "3.5.0",
     "cypress": "3.0.1",
+    "cz-conventional-changelog": "^2.1.0",
     "deepmerge": "^2.0.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-config-airbnb-base": "^12.1.0",
@@ -32,7 +33,9 @@
     "rollup-plugin-node-resolve": "^3.0.3",
     "rollup-plugin-postcss": "^1.2.8",
     "rollup-plugin-uglify-es": "^0.0.1",
-    "start-server-and-test": "^1.4.1"
+    "semantic-release": "^15.6.3",
+    "start-server-and-test": "^1.4.1",
+    "travis-deploy-once": "^5.0.1"
   },
   "repository": {
     "type": "git",
@@ -54,5 +57,10 @@
     "clusterize.js": "^0.18.0",
     "lodash": "^4.17.5",
     "sortablejs": "^1.7.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   }
 }

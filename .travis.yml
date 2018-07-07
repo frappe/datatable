@@ -6,7 +6,15 @@ cache:
     - ~/.npm
     - ~/.cache
     - node_modules
+branches:
+  only:
+    - master
+notifications:
+  email: false
 install:
   - npm install
 script:
-  - npm test
+  - npm run test
+  - npm run build
+after_success:
+  - ./node_modules/.bin/travis-deploy-once "npm run semantic-release"
