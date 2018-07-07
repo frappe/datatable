@@ -39,6 +39,7 @@ export default {
         desc: '↓',
         none: ''
     },
+    groupBy: '', // column id
     freezeMessage: '',
     getEditor: null,
     serialNoColumn: true,

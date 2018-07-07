@@ -33,6 +33,7 @@ export default class DataManager {
         this.prepareTreeRows();
         this.prepareRowView();
         this.prepareNumericColumns();
+        this.prepareGroupBy();
     }
 
     // computed property
@@ -138,6 +139,73 @@ export default class DataManager {
             }
 
             return column;
+        });
+    }
+
+    prepareGroupBy() {
+        if (!this.options.groupBy) return;
+
+        const groupKey = this.options.groupBy;
+        const column = this.columns.find(column => column.id === groupKey);
+
+        if (!column) {
+            throw new Error('Invalid column id provided in groupBy option');
+        }
+
+        const groups =
+            this.rows
+                // get values
+                .map(row => row[column.colIndex].content)
+                // remove duplicates
+                .filter((value, i, self) => {
+                    return self.indexOf(value) === i;
+                })
+                .sort();
+
+        const rowsByGroup = {};
+
+        for (const row of this.rows) {
+            const groupKey = row[column.colIndex].content;
+            rowsByGroup[groupKey] = rowsByGroup[groupKey] || [];
+            rowsByGroup[groupKey].push(row);
+        }
+
+        let rows = [];
+
+        const makeGroupRow = (groupValue) => {
+            const row = this.getColumns().map(c => ({ editable: false }));
+            const firstColumnIndex = this.getStandardColumnCount();
+            row[firstColumnIndex] = groupValue;
+            const meta = {
+                indent: 0
+            };
+
+            return this.prepareRow(row, meta);
+        };
+
+        for (let groupKey of groups) {
+            rowsByGroup[groupKey].forEach(row => {
+                row.meta.indent = 1;
+            });
+
+            rows = [
+                ...rows,
+                makeGroupRow(groupKey),
+                ...rowsByGroup[groupKey]
+            ];
+        }
+
+        this.rows = rows.map((row, i) => {
+            row.meta.rowIndex = i;
+
+            row.forEach(cell => {
+                cell.rowIndex = i;
+                cell.indent = row.meta.indent;
+            });
+
+            row[1].content = i + 1;
+
+            return row;
         });
     }
 

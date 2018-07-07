@@ -899,8 +899,8 @@ class DataManager {
         this.prepareRows();
         this.prepareTreeRows();
         this.prepareRowView();
-
         this.prepareNumericColumns();
+        this.prepareGroupBy();
     }
 
     // computed property
@@ -1006,6 +1006,73 @@ class DataManager {
             }
 
             return column;
+        });
+    }
+
+    prepareGroupBy() {
+        if (!this.options.groupBy) return;
+
+        const groupKey = this.options.groupBy;
+        const column = this.columns.find(column => column.id === groupKey);
+
+        if (!column) {
+            throw new Error('Invalid column id provided in groupBy option');
+        }
+
+        const groups =
+            this.rows
+                // get values
+                .map(row => row[column.colIndex].content)
+                // remove duplicates
+                .filter((value, i, self) => {
+                    return self.indexOf(value) === i;
+                })
+                .sort();
+
+        const rowsByGroup = {};
+
+        for (const row of this.rows) {
+            const groupKey = row[column.colIndex].content;
+            rowsByGroup[groupKey] = rowsByGroup[groupKey] || [];
+            rowsByGroup[groupKey].push(row);
+        }
+
+        let rows = [];
+
+        const makeGroupRow = (groupValue) => {
+            const row = this.getColumns().map(c => ({ editable: false }));
+            const firstColumnIndex = this.getStandardColumnCount();
+            row[firstColumnIndex] = groupValue;
+            const meta = {
+                indent: 0
+            };
+
+            return this.prepareRow(row, meta);
+        };
+
+        for (let groupKey of groups) {
+            rowsByGroup[groupKey].forEach(row => {
+                row.meta.indent = 1;
+            });
+
+            rows = [
+                ...rows,
+                makeGroupRow(groupKey),
+                ...rowsByGroup[groupKey]
+            ];
+        }
+
+        this.rows = rows.map((row, i) => {
+            row.meta.rowIndex = i;
+
+            row.forEach(cell => {
+                cell.rowIndex = i;
+                cell.indent = row.meta.indent;
+            });
+
+            row[1].content = i + 1;
+
+            return row;
         });
     }
 
@@ -2249,12 +2316,14 @@ class CellManager {
             const nextRow = this.datamanager.getRow(cell.rowIndex + 1);
             const addToggle = nextRow && nextRow.meta.indent > cell.indent;
 
+            const leftPadding = 1;
+
             // Add toggle and indent in the first column
             const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
             if (firstColumnIndex === cell.colIndex) {
-                const padding = ((cell.indent || 0) + 1) * 1.5;
+                const padding = ((cell.indent || 0) + 1) * leftPadding;
                 const toggleHTML = addToggle ?
-                    `<span class="dt-tree-node__toggle" style="left: ${padding - 1.5}rem"></span>` : '';
+                    `<span class="dt-tree-node__toggle" style="left: ${padding - leftPadding}rem"></span>` : '';
                 contentHTML = `<span class="dt-tree-node" style="padding-left: ${padding}rem">
                     ${toggleHTML}${contentHTML}</span>`;
             }
@@ -2551,6 +2620,16 @@ class ColumnManager {
                 });
         };
         $.on(this.header, 'keydown', '.dt-filter', debounce$1(handler, 300));
+    }
+
+    applyDefaultSortOrder() {
+        // sort rows if any 1 column has a default sortOrder set
+        const columnsToSort = this.getColumns().filter(col => col.sortOrder !== 'none');
+
+        if (columnsToSort.length === 1) {
+            const column = columnsToSort[0];
+            this.sortColumn(column.colIndex, column.sortOrder);
+        }
     }
 
     sortRows(colIndex, sortOrder) {
@@ -3437,6 +3516,7 @@ var DEFAULT_OPTIONS = {
         desc: '↓',
         none: ''
     },
+    groupBy: '', // column id
     freezeMessage: '',
     getEditor: null,
     serialNoColumn: true,
@@ -3479,6 +3559,7 @@ class DataTable {
 
         if (this.options.data) {
             this.refresh();
+            this.columnmanager.applyDefaultSortOrder();
         }
     }
 
@@ -3650,7 +3731,7 @@ class DataTable {
 DataTable.instances = 0;
 
 var name = "frappe-datatable";
-var version = "0.0.9";
+var version = "0.0.10";
 var description = "A modern datatable library for the web";
 var main = "dist/frappe-datatable.cjs.js";
 var scripts = {"start":"yarn run dev","build":"rollup -c","production":"rollup -c --production","build:docs":"rollup -c --docs","dev":"rollup -c -w","cy:server":"http-server -p 8989","cy:open":"cypress open","cy:run":"cypress run","test":"start-server-and-test cy:server http://localhost:8989 cy:run"};

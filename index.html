@@ -53,7 +53,7 @@
 					{ name: "Name" },
 					{ name: "Position" },
 					{ name: "Office" },
-					{ name: "Extn.", sortOrder: "desc" },
+					{ name: "Extn." },
 					{ name: "Start Date" },
 					{ name: "Salary" }
 				];
@@ -75,6 +75,8 @@
 					checkboxColumn: true,
 					serialNoColumn: true,
 					layout: 'fluid',
+					groupBy: 'Position',
+					treeView: true,
 					columns,
 					data,
 					inlineFilters: true,
