@@ -14,6 +14,10 @@
     "travis-deploy-once": "travis-deploy-once",
     "semantic-release": "semantic-release"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "devDependencies": {
     "chai": "3.5.0",
     "cypress": "3.0.1",
