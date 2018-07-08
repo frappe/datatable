@@ -1,17 +1,11 @@
 .datatable {
-	--border-color: #424242;
-	--light-bg: #2e3538;
-	--text-color: #dfe2e5;
-	--text-light: #dfe2e5;
+    --border-color: #424242;
+    --light-bg: #2e3538;
+    --text-color: #dfe2e5;
+    --text-light: #dfe2e5;
     --cell-bg: #1c1f20;
     --focus-border-width: 1px;
     --selection-highlight-color: var(--light-bg);
-}
-
-.dt-header .dt-cell:not(.dt-cell--highlight) {
-    background-color: #262c2e;
-}
-
-.dt-toast__message {
-    border: 1px solid var(--border-color);
+    --toast-message-border: 1px solid var(--border-color);
+    --header-cell-bg: #262c2e;
 }

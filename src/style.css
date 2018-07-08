@@ -17,6 +17,8 @@
 	--cell-bg: #fff;
 	--focus-border-width: 2px;
 	--selection-highlight-color: var(--light-yellow);
+	--toast-message-border: none;
+	--header-cell-bg: var(--cell-bg);
 }
 
 .datatable {
@@ -132,6 +134,10 @@
 		background-color: var(--light-bg);
 	}
 
+	&--header {
+		background-color: var(--header-cell-bg);
+	}
+
 	&--header &__content {
 		padding-right: var(--spacer-3);
 		font-weight: bold;
@@ -217,6 +223,7 @@
 		color: var(--text-light);
 		border-radius: var(--border-radius);
 		padding: var(--spacer-2) var(--spacer-3);
+		border: var(--toast-message-border);
 	}
 }
 
