@@ -23,6 +23,10 @@
 		<input type="checkbox" id="input-large-data" />
 		<span>Large Data</span>
 	</label>
+	<label>
+		<input type="checkbox" id="dark-theme" />
+		<span>Dark Theme</span>
+	</label>
 	<section style="font-size: 12px; width: 60%; margin: 0 auto;">
 
 	</section>
@@ -47,6 +51,22 @@
 				buildData();
 				makeDatatable();
 			});
+
+			document.querySelector('#dark-theme').addEventListener('change', (e) => {
+				const enabled = document.querySelector('#dark-theme:checked');
+				if (enabled) {
+					const link = document.createElement('link');
+					link.href = 'src/dark.css';
+					link.rel = 'stylesheet'
+					link.id = 'dark-theme-stylesheet'
+					document.head.appendChild(link);
+
+					link.onload = () => datatable.setDimensions()
+				} else {
+					document.getElementById('dark-theme-stylesheet').remove();
+					setTimeout(() => datatable.setDimensions())
+				}
+			})
 
 			function buildData() {
 				columns = [

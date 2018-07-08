@@ -1,4 +1,4 @@
-:root {
+.datatable {
 	--border-color: #d1d8dd;
 	--primary-color: rgb(82, 146, 247);
 	--light-bg: #f5f7fa;
@@ -15,6 +15,8 @@
 	--border-radius: 3px;
 
 	--cell-bg: #fff;
+	--focus-border-width: 2px;
+	--selection-highlight-color: var(--light-yellow);
 }
 
 .datatable {
@@ -35,7 +37,6 @@
 	position: absolute;
 	top: 0;
 	left: 0;
-	background-color: var(--cell-bg);
 }
 
 .dt-body {
@@ -48,7 +49,7 @@
 	border-bottom: 1px solid var(--border-color);
 
 	&--highlight-all {
-		background-color: var(--light-yellow);
+		background-color: var(--selection-highlight-color);
 	}
 
 	&__no-data {
@@ -60,11 +61,11 @@
 }
 
 .dt-row {
-	&--highlight {
-		background-color: var(--light-yellow);
+	&--highlight .dt-cell {
+		background-color: var(--selection-highlight-color);
 	}
 
-	&--unhighlight {
+	&--unhighlight .dt-cell {
 		background-color: var(--cell-bg);
 	}
 
@@ -78,10 +79,12 @@
 	position: relative;
 	outline: none;
 	padding: 0;
+	background-color: var(--cell-bg);
+	color: var(--text-color);
 
 	&__content {
 		padding: var(--spacer-2);
-		border: 2px solid transparent;
+		border: var(--focus-border-width) solid transparent;
 		height: 100%;
 		user-select: none;
 		text-overflow: ellipsis;
@@ -93,7 +96,7 @@
 		display: none;
 		padding: var(--spacer-2);
 		background-color: var(--cell-bg);
-		border: 2px solid var(--orange);
+		border: var(--focus-border-width) solid var(--orange);
 		z-index: 1;
 		height: 100%;
 	}
@@ -225,6 +228,8 @@
 	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
+	background-color: inherit;
+	color: inherit;
 	margin: 0;
 	padding: 0;
 }
