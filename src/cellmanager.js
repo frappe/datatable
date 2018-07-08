@@ -773,13 +773,14 @@ export default class CellManager {
         if (this.options.treeView && !(isHeader || isFilter) && cell.indent !== undefined) {
             const nextRow = this.datamanager.getRow(cell.rowIndex + 1);
             const addToggle = nextRow && nextRow.meta.indent > cell.indent;
+            const leftPadding = 1;
 
             // Add toggle and indent in the first column
             const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
             if (firstColumnIndex === cell.colIndex) {
-                const padding = ((cell.indent || 0) + 1) * 1.5;
+                const padding = ((cell.indent || 0) + 1) * leftPadding;
                 const toggleHTML = addToggle ?
-                    `<span class="dt-tree-node__toggle" style="left: ${padding - 1.5}rem"></span>` : '';
+                    `<span class="dt-tree-node__toggle" style="left: ${padding - leftPadding}rem"></span>` : '';
                 contentHTML = `<span class="dt-tree-node" style="padding-left: ${padding}rem">
                     ${toggleHTML}${contentHTML}</span>`;
             }
