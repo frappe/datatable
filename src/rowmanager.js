@@ -123,6 +123,7 @@ export default class RowManager {
         // highlight all
         this.highlightAll(toggle);
         this.showCheckStatus();
+        this.fireEvent('onCheckRow');
     }
 
     showCheckStatus() {
