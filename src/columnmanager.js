@@ -240,6 +240,8 @@ export default class ColumnManager {
     }
 
     toggleFilter(flag) {
+        if (!this.options.inlineFilters) return;
+
         let showFilter;
         if (flag === undefined) {
             showFilter = !this.isFilterShown;
