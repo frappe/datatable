@@ -100,6 +100,7 @@ class DataTable {
     destroy() {
         this.wrapper.innerHTML = '';
         this.style.destroy();
+        this.fireEvent('onDestroy');
     }
 
     appendRows(rows) {
@@ -193,7 +194,22 @@ class DataTable {
     }
 
     fireEvent(eventName, ...args) {
-        this.events[eventName].apply(this, args);
+        // fire internalEventHandlers if any
+        // and then user events
+        const handlers = [
+            ...(this._internalEventHandlers[eventName] || []),
+            this.events[eventName]
+        ].filter(Boolean);
+
+        for (let handler of handlers) {
+            handler.apply(this, args);
+        }
+    }
+
+    on(event, handler) {
+        this._internalEventHandlers = this._internalEventHandlers || {};
+        this._internalEventHandlers[event] = this._internalEventHandlers[event] || [];
+        this._internalEventHandlers[event].push(handler);
     }
 
     log() {

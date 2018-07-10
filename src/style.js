@@ -30,18 +30,24 @@ export default class Style {
     }
 
     bindResizeWindow() {
+        this.onWindowResize = this.onWindowResize.bind(this);
+        this.onWindowResize = throttle(this.onWindowResize, 300);
+
         if (this.options.layout === 'fluid') {
-            $.on(window, 'resize', throttle(() => {
-                this.distributeRemainingWidth();
-                this.refreshColumnWidth();
-                this.compensateScrollbarWidth();
-                this.setBodyStyle();
-            }, 300));
+            $.on(window, 'resize', this.onWindowResize);
         }
+    }
+
+    onWindowResize() {
+        this.distributeRemainingWidth();
+        this.refreshColumnWidth();
+        this.compensateScrollbarWidth();
+        this.setBodyStyle();
     }
 
     destroy() {
         this.styleEl.remove();
+        $.off(window, 'resize', this.onWindowResize);
     }
 
     setStyle(selector, styleObject) {

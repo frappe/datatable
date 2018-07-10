@@ -78,9 +78,13 @@ export default class ColumnManager {
             }
         });
 
-        $.on(document.body, 'click', (e) => {
+        const deactivateDropdownOnBodyClick = (e) => {
             if (e.target.matches(toggleClass)) return;
             deactivateDropdown();
+        };
+        $.on(document.body, 'click', deactivateDropdownOnBodyClick);
+        this.instance.on('onDestroy', () => {
+            $.off(document.body, 'click', deactivateDropdownOnBodyClick);
         });
 
         const dropdownItems = this.options.headerDropdown;
@@ -126,7 +130,7 @@ export default class ColumnManager {
             startX = e.pageX;
         });
 
-        $.on(document.body, 'mouseup', (e) => {
+        const onMouseup = (e) => {
             document.body.classList.remove('dt-resize');
             if (!$resizingCell) return;
             isDragging = false;
@@ -137,9 +141,13 @@ export default class ColumnManager {
             this.setColumnWidth(colIndex);
             this.style.setBodyStyle();
             $resizingCell = null;
+        };
+        $.on(document.body, 'mouseup', onMouseup);
+        this.instance.on('onDestroy', () => {
+            $.off(document.body, 'mouseup', onMouseup);
         });
 
-        $.on(document.body, 'mousemove', (e) => {
+        const onMouseMove = (e) => {
             if (!isDragging) return;
             const finalWidth = startWidth + (e.pageX - startX);
             const {
@@ -154,6 +162,10 @@ export default class ColumnManager {
                 width: finalWidth
             });
             this.setColumnHeaderWidth(colIndex);
+        };
+        $.on(document.body, 'mousemove', onMouseMove);
+        this.instance.on('onDestroy', () => {
+            $.off(document.body, 'mousemove', onMouseMove);
         });
     }
 

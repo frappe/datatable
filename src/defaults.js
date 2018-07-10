@@ -32,7 +32,8 @@ export default {
         onRemoveColumn(column) {},
         onSwitchColumn(column1, column2) {},
         onSortColumn(column) {},
-        onCheckRow(row) {}
+        onCheckRow(row) {},
+        onDestroy() {}
     },
     sortIndicator: {
         asc: '↑',
