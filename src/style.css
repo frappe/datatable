@@ -1,271 +1,277 @@
 .datatable {
-	--border-color: #d1d8dd;
-	--primary-color: rgb(82, 146, 247);
-	--light-bg: #f5f7fa;
-	--light-red: #FD8B8B;
-	--light-yellow: #fffce7;
-	--orange: rgb(255, 160, 10);
-	--text-color: #000000;
-	--text-light: #dfe2e5;
+    --border-color: #d1d8dd;
+    --primary-color: rgb(82, 146, 247);
+    --light-bg: #f5f7fa;
+    --light-red: #FD8B8B;
+    --light-yellow: #fffce7;
+    --orange: rgb(255, 160, 10);
+    --text-color: #000000;
+    --text-light: #dfe2e5;
 
-	--spacer-1: 0.25rem;
-	--spacer-2: 0.5rem;
-	--spacer-3: 1rem;
+    --spacer-1: 0.25rem;
+    --spacer-2: 0.5rem;
+    --spacer-3: 1rem;
 
-	--border-radius: 3px;
+    --border-radius: 3px;
 
-	--cell-bg: #fff;
-	--focus-border-width: 2px;
-	--selection-highlight-color: var(--light-yellow);
-	--toast-message-border: none;
-	--header-cell-bg: var(--cell-bg);
+    --cell-bg: #fff;
+    --focus-border-width: 2px;
+    --selection-highlight-color: var(--light-yellow);
+    --toast-message-border: none;
+    --header-cell-bg: var(--cell-bg);
 }
 
 .datatable {
     *, *::after, *::before {
-		box-sizing: border-box;
-	}
+        box-sizing: border-box;
+    }
 }
 
 .datatable {
-	position: relative;
-	overflow: auto;
+    position: relative;
+    overflow: auto;
 }
 
 .dt-header {
-	border-collapse: collapse;
-	border-bottom: 1px solid var(--border-color);
+    border-collapse: collapse;
+    border-bottom: 1px solid var(--border-color);
 
-	position: absolute;
-	top: 0;
-	left: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .dt-body {
-	border-collapse: collapse;
+    border-collapse: collapse;
 }
 
 .dt-scrollable {
-	max-height: 40vw;
-	overflow: auto;
-	border-bottom: 1px solid var(--border-color);
+    max-height: 40vw;
+    overflow: auto;
+    border-bottom: 1px solid var(--border-color);
 
-	&--highlight-all {
-		background-color: var(--selection-highlight-color);
-	}
+    &--highlight-all {
+        background-color: var(--selection-highlight-color);
+    }
 
-	&__no-data {
-		text-align: center;
-		padding: var(--spacer-3);
-		border-left: 1px solid var(--border-color);
-		border-right: 1px solid var(--border-color);
-	}
+    &__no-data {
+        text-align: center;
+        padding: var(--spacer-3);
+        border-left: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+    }
 }
 
 .dt-row {
-	&--highlight .dt-cell {
-		background-color: var(--selection-highlight-color);
-	}
+    &--highlight .dt-cell {
+        background-color: var(--selection-highlight-color);
+    }
 
-	&--unhighlight .dt-cell {
-		background-color: var(--cell-bg);
-	}
+    &--unhighlight .dt-cell {
+        background-color: var(--cell-bg);
+    }
 
-	&--hide {
-		display: none;
-	}
+    &--hide {
+        display: none;
+    }
 }
 
 .dt-cell {
-	border: 1px solid var(--border-color);
-	position: relative;
-	outline: none;
-	padding: 0;
-	background-color: var(--cell-bg);
-	color: var(--text-color);
+    border: 1px solid var(--border-color);
+    position: relative;
+    outline: none;
+    padding: 0;
+    background-color: var(--cell-bg);
+    color: var(--text-color);
+    /*
+     Fix for firefox and Edge
+     https://stackoverflow.com/a/16337203
+     firefox paints td background over border
+    */
+    background-clip: padding-box;
 
-	&__content {
-		padding: var(--spacer-2);
-		border: var(--focus-border-width) solid transparent;
-		height: 100%;
-		user-select: none;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		overflow: hidden;
-	}
+    &__content {
+        padding: var(--spacer-2);
+        border: var(--focus-border-width) solid transparent;
+        height: 100%;
+        user-select: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
 
-	&__edit {
-		display: none;
-		padding: var(--spacer-2);
-		background-color: var(--cell-bg);
-		border: var(--focus-border-width) solid var(--orange);
-		z-index: 1;
-		height: 100%;
-	}
+    &__edit {
+        display: none;
+        padding: var(--spacer-2);
+        background-color: var(--cell-bg);
+        border: var(--focus-border-width) solid var(--orange);
+        z-index: 1;
+        height: 100%;
+    }
 
-	&__resize-handle {
-		opacity: 0;
-		position: absolute;
-		right: -3px;
-		top: 0;
-		width: 5px;
-		height: 100%;
-		cursor: col-resize;
-		z-index: 1;
-	}
+    &__resize-handle {
+        opacity: 0;
+        position: absolute;
+        right: -3px;
+        top: 0;
+        width: 5px;
+        height: 100%;
+        cursor: col-resize;
+        z-index: 1;
+    }
 
-	&--editing &__content {
-		display: none;
-	}
+    &--editing &__content {
+        display: none;
+    }
 
-	&--editing &__edit {
-		display: block;
-	}
+    &--editing &__edit {
+        display: block;
+    }
 
-	&--focus &__content {
-		border-color: var(--primary-color);
-	}
+    &--focus &__content {
+        border-color: var(--primary-color);
+    }
 
-	&--highlight {
-		background-color: var(--light-bg);
-	}
+    &--highlight {
+        background-color: var(--light-bg);
+    }
 
-	&--dragging {
-		background-color: var(--light-bg);
-	}
+    &--dragging {
+        background-color: var(--light-bg);
+    }
 
-	&--header {
-		background-color: var(--header-cell-bg);
-	}
+    &--header {
+        background-color: var(--header-cell-bg);
+    }
 
-	&--header &__content {
-		padding-right: var(--spacer-3);
-		font-weight: bold;
-	}
+    &--header &__content {
+        padding-right: var(--spacer-3);
+        font-weight: bold;
+    }
 
-	&--header:hover .dt-dropdown__toggle {
-		opacity: 1;
-	}
+    &--header:hover .dt-dropdown__toggle {
+        opacity: 1;
+    }
 
-	&--tree-close {
-		.dt-tree-node__toggle:before {
-			content: '►';
-		}
-	}
+    &--tree-close {
+        .dt-tree-node__toggle:before {
+            content: '►';
+        }
+    }
 }
 
 .dt-dropdown {
-	position: absolute;
-	right: 10px;
-	display: inline-flex;
-	vertical-align: top;
-	text-align: left;
-	font-weight: normal;
-	cursor: pointer;
+    position: absolute;
+    right: 10px;
+    display: inline-flex;
+    vertical-align: top;
+    text-align: left;
+    font-weight: normal;
+    cursor: pointer;
 
-	&__toggle {
-		opacity: 0;
-	}
+    &__toggle {
+        opacity: 0;
+    }
 
-	&__list {
-		display: none;
+    &__list {
+        display: none;
 
-		position: absolute;
-		min-width: 8rem;
-		top: 100%;
-		right: 0;
-		z-index: 1;
-		background-color: var(--cell-bg);
-		border-radius: var(--border-radius);
-		padding: var(--spacer-2) 0;
-		box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
-	}
+        position: absolute;
+        min-width: 8rem;
+        top: 100%;
+        right: 0;
+        z-index: 1;
+        background-color: var(--cell-bg);
+        border-radius: var(--border-radius);
+        padding: var(--spacer-2) 0;
+        box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
+    }
 
-	&__list-item {
-		padding: var(--spacer-2) var(--spacer-3);
+    &__list-item {
+        padding: var(--spacer-2) var(--spacer-3);
 
-		&:hover {
-			background-color: var(--light-bg);
-		}
-	}
+        &:hover {
+            background-color: var(--light-bg);
+        }
+    }
 
-	&--active &__list {
-		display: block;
-	}
+    &--active &__list {
+        display: block;
+    }
 }
 
 .dt-tree-node {
-	display: inline-block;
-	position: relative;
+    display: inline-block;
+    position: relative;
 
-	&__toggle {
-		display: inline-block;
-		position: absolute;
-		font-size: 10px;
-		padding: 2px;
-		cursor: pointer;
-	}
+    &__toggle {
+        display: inline-block;
+        position: absolute;
+        font-size: 10px;
+        padding: 2px;
+        cursor: pointer;
+    }
 
-	&__toggle:before {
-		content: '▼';
-	}
+    &__toggle:before {
+        content: '▼';
+    }
 }
 
 .dt-toast {
-	position: absolute;
-	bottom: var(--spacer-3);
-	left: 50%;
-	transform: translateX(-50%);
+    position: absolute;
+    bottom: var(--spacer-3);
+    left: 50%;
+    transform: translateX(-50%);
 
-	&__message {
-		display: inline-block;
-		background-color: rgba(0, 0, 0, 0.8);
-		color: var(--text-light);
-		border-radius: var(--border-radius);
-		padding: var(--spacer-2) var(--spacer-3);
-		border: var(--toast-message-border);
-	}
+    &__message {
+        display: inline-block;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: var(--text-light);
+        border-radius: var(--border-radius);
+        padding: var(--spacer-2) var(--spacer-3);
+        border: var(--toast-message-border);
+    }
 }
 
 .dt-input {
-	outline: none;
-	width: 100%;
-	border: none;
-	overflow: visible;
-	font-family: inherit;
-	font-size: inherit;
-	line-height: inherit;
-	background-color: inherit;
-	color: inherit;
-	margin: 0;
-	padding: 0;
+    outline: none;
+    width: 100%;
+    border: none;
+    overflow: visible;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    background-color: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
 }
 
 .dt-freeze {
-	display: flex;
-	justify-content: center;
-	align-content: center;
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 0;
-	bottom: 0;
-	background-color: var(--light-bg);
-	opacity: 0.5;
-	font-size: 2em;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: var(--light-bg);
+    opacity: 0.5;
+    font-size: 2em;
 
-	&__message {
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-	}
+    &__message {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+    }
 }
 
 .dt-paste-target {
-	position: fixed;
-	left: -999em;
+    position: fixed;
+    left: -999em;
 }
 
 body.dt-resize {
-	cursor: col-resize;
+    cursor: col-resize;
 }
