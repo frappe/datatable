@@ -3,6 +3,8 @@
   "version": "0.0.0-development",
   "description": "A modern datatable library for the web",
   "main": "dist/frappe-datatable.cjs.js",
+  "unpkg": "dist/frappe-datatable.min.js",
+  "jsdelivr": "dist/frappe-datatable.min.js",
   "scripts": {
     "start": "yarn run dev",
     "build": "rollup -c && rollup -c --production",
