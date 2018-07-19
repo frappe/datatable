@@ -8,7 +8,7 @@ import customProperties from 'postcss-custom-properties';
 import eslint from 'rollup-plugin-eslint';
 import merge from 'deepmerge';
 
-const production = process.env.NODE_ENV === '--production';
+const production = process.env.NODE_ENV === 'production';
 
 const baseJS = {
     input: 'src/index.js',
