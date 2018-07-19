@@ -1,11 +1,11 @@
 .datatable {
-    --border-color: #424242;
-    --light-bg: #2e3538;
-    --text-color: #dfe2e5;
-    --text-light: #dfe2e5;
-    --cell-bg: #1c1f20;
-    --focus-border-width: 1px;
-    --selection-highlight-color: var(--light-bg);
-    --toast-message-border: 1px solid var(--border-color);
-    --header-cell-bg: #262c2e;
+    --dt-border-color: #424242;
+    --dt-light-bg: #2e3538;
+    --dt-text-color: #dfe2e5;
+    --dt-text-light: #dfe2e5;
+    --dt-cell-bg: #1c1f20;
+    --dt-focus-border-width: 1px;
+    --dt-selection-highlight-color: var(--dt-light-bg);
+    --dt-toast-message-border: 1px solid var(--dt-border-color);
+    --dt-header-cell-bg: #262c2e;
 }

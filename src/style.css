@@ -1,24 +1,21 @@
 :root {
-    --border-color: #d1d8dd;
-    --primary-color: rgb(82, 146, 247);
-    --light-bg: #f5f7fa;
-    --light-red: #FD8B8B;
-    --light-yellow: #fffce7;
-    --orange: rgb(255, 160, 10);
-    --text-color: #000000;
-    --text-light: #dfe2e5;
-
-    --spacer-1: 0.25rem;
-    --spacer-2: 0.5rem;
-    --spacer-3: 1rem;
-
-    --border-radius: 3px;
-
-    --cell-bg: #fff;
-    --focus-border-width: 2px;
-    --selection-highlight-color: var(--light-yellow);
-    --toast-message-border: none;
-    --header-cell-bg: var(--cell-bg);
+    --dt-border-color: #d1d8dd;
+    --dt-primary-color: rgb(82, 146, 247);
+    --dt-light-bg: #f5f7fa;
+    --dt-light-red: #FD8B8B;
+    --dt-light-yellow: #fffce7;
+    --dt-orange: rgb(255, 160, 10);
+    --dt-text-color: #000000;
+    --dt-text-light: #dfe2e5;
+    --dt-spacer-1: 0.25rem;
+    --dt-spacer-2: 0.5rem;
+    --dt-spacer-3: 1rem;
+    --dt-border-radius: 3px;
+    --dt-cell-bg: #fff;
+    --dt-focus-border-width: 2px;
+    --dt-selection-highlight-color: var(--dt-light-yellow);
+    --dt-toast-message-border: none;
+    --dt-header-cell-bg: var(--dt-cell-bg);
 }
 
 .datatable {
@@ -34,7 +31,7 @@
 
 .dt-header {
     border-collapse: collapse;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--dt-border-color);
 
     position: absolute;
     top: 0;
@@ -48,27 +45,27 @@
 .dt-scrollable {
     max-height: 40vw;
     overflow: auto;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--dt-border-color);
 
     &--highlight-all {
-        background-color: var(--selection-highlight-color);
+        background-color: var(--dt-selection-highlight-color);
     }
 
     &__no-data {
         text-align: center;
-        padding: var(--spacer-3);
-        border-left: 1px solid var(--border-color);
-        border-right: 1px solid var(--border-color);
+        padding: var(--dt-spacer-3);
+        border-left: 1px solid var(--dt-border-color);
+        border-right: 1px solid var(--dt-border-color);
     }
 }
 
 .dt-row {
     &--highlight .dt-cell {
-        background-color: var(--selection-highlight-color);
+        background-color: var(--dt-selection-highlight-color);
     }
 
     &--unhighlight .dt-cell {
-        background-color: var(--cell-bg);
+        background-color: var(--dt-cell-bg);
     }
 
     &--hide {
@@ -77,12 +74,12 @@
 }
 
 .dt-cell {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--dt-border-color);
     position: relative;
     outline: none;
     padding: 0;
-    background-color: var(--cell-bg);
-    color: var(--text-color);
+    background-color: var(--dt-cell-bg);
+    color: var(--dt-text-color);
     /*
      Fix for firefox and Edge
      https://stackoverflow.com/a/16337203
@@ -91,8 +88,8 @@
     background-clip: padding-box;
 
     &__content {
-        padding: var(--spacer-2);
-        border: var(--focus-border-width) solid transparent;
+        padding: var(--dt-spacer-2);
+        border: var(--dt-focus-border-width) solid transparent;
         height: 100%;
         user-select: none;
         text-overflow: ellipsis;
@@ -102,9 +99,9 @@
 
     &__edit {
         display: none;
-        padding: var(--spacer-2);
-        background-color: var(--cell-bg);
-        border: var(--focus-border-width) solid var(--orange);
+        padding: var(--dt-spacer-2);
+        background-color: var(--dt-cell-bg);
+        border: var(--dt-focus-border-width) solid var(--dt-orange);
         z-index: 1;
         height: 100%;
     }
@@ -129,23 +126,23 @@
     }
 
     &--focus &__content {
-        border-color: var(--primary-color);
+        border-color: var(--dt-primary-color);
     }
 
     &--highlight {
-        background-color: var(--light-bg);
+        background-color: var(--dt-light-bg);
     }
 
     &--dragging {
-        background-color: var(--light-bg);
+        background-color: var(--dt-light-bg);
     }
 
     &--header {
-        background-color: var(--header-cell-bg);
+        background-color: var(--dt-header-cell-bg);
     }
 
     &--header &__content {
-        padding-right: var(--spacer-3);
+        padding-right: var(--dt-spacer-3);
         font-weight: bold;
     }
 
@@ -181,17 +178,17 @@
         top: 100%;
         right: 0;
         z-index: 1;
-        background-color: var(--cell-bg);
-        border-radius: var(--border-radius);
-        padding: var(--spacer-2) 0;
+        background-color: var(--dt-cell-bg);
+        border-radius: var(--dt-border-radius);
+        padding: var(--dt-spacer-2) 0;
         box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
     }
 
     &__list-item {
-        padding: var(--spacer-2) var(--spacer-3);
+        padding: var(--dt-spacer-2) var(--dt-spacer-3);
 
         &:hover {
-            background-color: var(--light-bg);
+            background-color: var(--dt-light-bg);
         }
     }
 
@@ -219,17 +216,17 @@
 
 .dt-toast {
     position: absolute;
-    bottom: var(--spacer-3);
+    bottom: var(--dt-spacer-3);
     left: 50%;
     transform: translateX(-50%);
 
     &__message {
         display: inline-block;
         background-color: rgba(0, 0, 0, 0.8);
-        color: var(--text-light);
-        border-radius: var(--border-radius);
-        padding: var(--spacer-2) var(--spacer-3);
-        border: var(--toast-message-border);
+        color: var(--dt-text-light);
+        border-radius: var(--dt-border-radius);
+        padding: var(--dt-spacer-2) var(--dt-spacer-3);
+        border: var(--dt-toast-message-border);
     }
 }
 
@@ -256,7 +253,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: var(--light-bg);
+    background-color: var(--dt-light-bg);
     opacity: 0.5;
     font-size: 2em;
 
