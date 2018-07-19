@@ -295,6 +295,10 @@ export default class Style {
                 $.style($body, {
                     height: '0px'
                 });
+
+                $.style($('tbody', $body), {
+                    height: '100%'
+                });
             }
 
             $.style(this.bodyScrollable, {
