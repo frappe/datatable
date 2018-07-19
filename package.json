@@ -7,7 +7,7 @@
   "jsdelivr": "dist/frappe-datatable.min.js",
   "scripts": {
     "start": "yarn run dev",
-    "build": "rollup -c && rollup -c --production",
+    "build": "rollup -c && NODE_ENV=production rollup -c",
     "dev": "rollup -c -w",
     "cy:server": "http-server -p 8989",
     "cy:open": "cypress open",
@@ -33,7 +33,7 @@
     "eslint-plugin-import": "^2.11.0",
     "http-server": "^0.11.1",
     "mocha": "3.3.0",
-    "postcss-cssnext": "^3.1.0",
+    "postcss-custom-properties": "^7.0.0",
     "postcss-nested": "^3.0.0",
     "rollup": "^0.59.4",
     "rollup-plugin-commonjs": "^8.3.0",

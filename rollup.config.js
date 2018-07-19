@@ -4,11 +4,11 @@ import nodeResolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import postcss from 'rollup-plugin-postcss';
 import nested from 'postcss-nested';
-import cssnext from 'postcss-cssnext';
+import customProperties from 'postcss-custom-properties';
 import eslint from 'rollup-plugin-eslint';
 import merge from 'deepmerge';
 
-const production = process.argv[3] === '--production';
+const production = process.env.NODE_ENV === '--production';
 
 const baseJS = {
     input: 'src/index.js',
@@ -40,8 +40,8 @@ const baseCSS = {
             extract: true,
             minimize: production,
             plugins: [
-                nested(),
-                cssnext()
+                customProperties(),
+                nested()
             ]
         })
     ]
@@ -85,24 +85,8 @@ const prodCSS = merge(devCSS, {
     }
 });
 
-// docs
-const docJS = merge(devIIFE, {
-    output: {
-        file: 'docs/assets/js/frappe-datatable.js'
-    }
-});
-
-const docCSS = merge(devCSS, {
-    output: {
-        file: 'docs/assets/css/frappe-datatable.css'
-    }
-});
-
 const developmentAssets = [devIIFE, devCjs, devCSS];
-const documentationAssets = [docJS, docCSS];
 const productionAssets = [prodIIFE, prodCSS];
-
-const docs = process.argv[3] === '--docs';
-const assets = docs ? documentationAssets : production ? productionAssets : developmentAssets;
+const assets = production ? productionAssets : developmentAssets;
 
 export default assets;

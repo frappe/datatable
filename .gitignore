@@ -41,3 +41,5 @@ cypress/videos
 
 # dist
 dist
+
+.env
