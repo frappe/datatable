@@ -86,12 +86,12 @@
      firefox paints td background over border
     */
     background-clip: padding-box;
+    user-select: none;
 
     &__content {
         padding: var(--dt-spacer-2);
         border: var(--dt-focus-border-width) solid transparent;
         height: 100%;
-        user-select: none;
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;

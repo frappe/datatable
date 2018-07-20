@@ -5,6 +5,7 @@ import commonjs from 'rollup-plugin-commonjs';
 import postcss from 'rollup-plugin-postcss';
 import nested from 'postcss-nested';
 import customProperties from 'postcss-custom-properties';
+import autoprefixer from 'autoprefixer';
 import eslint from 'rollup-plugin-eslint';
 import merge from 'deepmerge';
 
@@ -41,7 +42,8 @@ const baseCSS = {
             minimize: production,
             plugins: [
                 customProperties(),
-                nested()
+                nested(),
+                autoprefixer()
             ]
         })
     ]
