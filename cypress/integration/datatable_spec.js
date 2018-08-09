@@ -95,7 +95,7 @@ describe('DataTable', function () {
         });
 
         it('mouse selection', function () {
-            // TODO
+            // TODO:
             // cy.getCell(2, 1)
             //     .trigger('mousedown', { which: 1, pageX: 331, pageY: 207, force: true })
             //     .trigger('mousemove', { which: 1, pageX: 489, pageY: 312 })
@@ -160,6 +160,53 @@ describe('DataTable', function () {
             cy.get('[data-row-index="0"]').should('have.class', 'dt-row--highlight');
 
             cy.get('.dt-toast').contains('1 row selected');
+        });
+    });
+
+    describe('Inline Filters', function () {
+        before(function () {
+            cy.visit('/');
+        });
+
+        beforeEach(function () {
+            cy.get('.dt-filter[data-col-index=5]').as('filterInput5');
+        });
+
+        afterEach(function () {
+            cy.get('@filterInput5').clear();
+            cy.get('.dt-row[data-row-index=0]').should('be.visible');
+        });
+
+        it('simple text filter', function () {
+            cy.getCell(4, 0).click().type('{ctrl}f');
+
+            cy.get('.dt-filter[data-col-index=4]').as('filterInput4').type('edin');
+            cy.get('.dt-row[data-row-index=0]').should('be.visible');
+            cy.get('.dt-row[data-row-index=1]').should('not.be.visible');
+            cy.get('@filterInput4').clear();
+
+            cy.get('@filterInput5').type('15');
+            cy.get('.dt-row[data-row-index=2]').should('be.visible');
+            cy.get('.dt-row[data-row-index=15]').should('be.visible');
+            cy.get('.dt-row[data-row-index=22]').should('not.be.visible');
+        });
+
+        it('greater than', function () {
+            cy.get('@filterInput5').type('> 6000');
+            cy.get('.dt-row[data-row-index=0]').should('not.be.visible');
+            cy.get('.dt-row[data-row-index=3]').should('be.visible');
+        });
+
+        it('less than', function () {
+            cy.get('@filterInput5').type('< 2000');
+            cy.get('.dt-row[data-row-index=0]').should('not.be.visible');
+            cy.get('.dt-row[data-row-index=51]').should('be.visible');
+        });
+
+        it('range', function () {
+            cy.get('@filterInput5').type(' 2000: 5000');
+            cy.get('.dt-row[data-row-index=4]').should('not.be.visible');
+            cy.get('.dt-row[data-row-index=5]').should('be.visible');
         });
     });
 });
