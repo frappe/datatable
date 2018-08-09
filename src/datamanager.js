@@ -11,7 +11,6 @@ export default class DataManager {
         this.sortRows = nextTick(this.sortRows, this);
         this.switchColumn = nextTick(this.switchColumn, this);
         this.removeColumn = nextTick(this.removeColumn, this);
-        this.filterRows = nextTick(this.filterRows, this);
     }
 
     init(data, columns) {
@@ -423,31 +422,36 @@ export default class DataManager {
     }
 
     filterRows(keyword, colIndex) {
-        let rowsToHide = [];
-        let rowsToShow = [];
         const cells = this.rows.map(row => row[colIndex]);
+        let result = this.options.filterRows(keyword, cells, colIndex);
 
-        cells.forEach(cell => {
-            const hay = String(cell.content || '').toLowerCase();
-            const needle = (keyword || '').toLowerCase();
+        if (!result) {
+            result = this.getAllRowIndices();
+        }
 
-            if (!needle || hay.includes(needle)) {
-                rowsToShow.push(cell.rowIndex);
-            } else {
-                rowsToHide.push(cell.rowIndex);
-            }
+        if (!result.then) {
+            result = Promise.resolve(result);
+        }
+
+        return result.then(rowsToShow => {
+            this._filteredRows = rowsToShow;
+
+            const rowsToHide = this.getAllRowIndices()
+                .filter(index => !rowsToShow.includes(index));
+
+            return {
+                rowsToHide,
+                rowsToShow
+            };
         });
-
-        this._filteredRows = rowsToShow;
-
-        return {
-            rowsToHide,
-            rowsToShow
-        };
     }
 
     getFilteredRowIndices() {
-        return this._filteredRows || this.rows.map(row => row.meta.rowIndex);
+        return this._filteredRows || this.getAllRowIndices();
+    }
+
+    getAllRowIndices() {
+        return this.rows.map(row => row.meta.rowIndex);
     }
 
     getRowCount() {

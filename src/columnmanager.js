@@ -269,22 +269,24 @@ export default class ColumnManager {
     bindFilter() {
         if (!this.options.inlineFilters) return;
         const handler = e => {
-            const $filterCell = $.closest('.dt-cell', e.target);
-            const {
-                colIndex
-            } = $.data($filterCell);
+            this.$filterCell = $.closest('.dt-cell', e.target);
+            const { colIndex } = $.data(this.$filterCell);
             const keyword = e.target.value;
 
-            this.datamanager.filterRows(keyword, colIndex)
-                .then(({
-                    rowsToHide,
-                    rowsToShow
-                }) => {
-                    this.rowmanager.hideRows(rowsToHide);
-                    this.rowmanager.showRows(rowsToShow);
-                });
+            this.applyFilter(keyword, colIndex);
         };
         $.on(this.header, 'keydown', '.dt-filter', debounce(handler, 300));
+    }
+
+    applyFilter(keyword, colIndex) {
+        this.datamanager.filterRows(keyword, colIndex)
+            .then(({
+                rowsToHide,
+                rowsToShow
+            }) => {
+                this.rowmanager.hideRows(rowsToHide);
+                this.rowmanager.showRows(rowsToShow);
+            });
     }
 
     applyDefaultSortOrder() {

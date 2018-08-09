@@ -13,6 +13,7 @@ export default class CellManager {
             'wrapper',
             'options',
             'style',
+            'header',
             'bodyScrollable',
             'columnmanager',
             'rowmanager',
@@ -120,6 +121,10 @@ export default class CellManager {
 
                 this.activateFilter(colIndex);
                 return true;
+            });
+
+            $.on(this.header, 'focusin', '.dt-filter', () => {
+                this.unfocusCell(this.$focusedCell);
             });
         }
     }
@@ -244,6 +249,19 @@ export default class CellManager {
         $cell.focus();
 
         this.highlightRowColumnHeader($cell);
+    }
+
+    unfocusCell($cell) {
+        if (!$cell) return;
+
+        // remove cell border
+        $cell.classList.remove('dt-cell--focus');
+        this.$focusedCell = null;
+
+        // reset header background
+        if (this.lastHeaders) {
+            this.lastHeaders.forEach(header => header.classList.remove('dt-cell--highlight'));
+        }
     }
 
     highlightRowColumnHeader($cell) {

@@ -1,3 +1,5 @@
+import filterRows from './filterRows';
+
 export default {
     columns: [],
     data: [],
@@ -40,6 +42,7 @@ export default {
         desc: '↓',
         none: ''
     },
+    filterRows: filterRows,
     freezeMessage: '',
     getEditor: null,
     serialNoColumn: true,

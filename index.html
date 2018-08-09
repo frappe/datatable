@@ -99,6 +99,11 @@
 					data,
 					inlineFilters: true,
 					dynamicRowHeight: true,
+					// filterRows(keyword, cells, colIndex) {
+					// 	return cells
+					// 		.filter(cell => cell.content.includes(keyword))
+					// 		.map(cell => cell.rowIndex);
+					// },
 					getEditor(colIndex, rowIndex, value, parent) {
 						// editing obj only for date field
 						if (colIndex != 6) return;

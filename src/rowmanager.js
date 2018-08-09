@@ -277,7 +277,7 @@ export default class RowManager {
 
     getFilterInput(props) {
         const dataAttr = makeDataAttributeString(props);
-        return `<input class="dt-filter dt-input" type="text" ${dataAttr} />`;
+        return `<input class="dt-filter dt-input" type="text" ${dataAttr} tabindex="1" />`;
     }
 
     selector(rowIndex) {
