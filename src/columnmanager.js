@@ -79,7 +79,8 @@ export default class ColumnManager {
         });
 
         const deactivateDropdownOnBodyClick = (e) => {
-            if (e.target.matches(toggleClass)) return;
+            const selector = [toggleClass, toggleClass + ' *'].join(',');
+            if (e.target.matches(selector)) return;
             deactivateDropdown();
         };
         $.on(document.body, 'click', deactivateDropdownOnBodyClick);

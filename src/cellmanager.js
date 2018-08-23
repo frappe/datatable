@@ -5,6 +5,7 @@ import {
     linkProperties
 } from './utils';
 import $ from './dom';
+import icons from './icons';
 
 export default class CellManager {
     constructor(instance) {
@@ -791,16 +792,22 @@ export default class CellManager {
         if (this.options.treeView && !(isHeader || isFilter) && cell.indent !== undefined) {
             const nextRow = this.datamanager.getRow(cell.rowIndex + 1);
             const addToggle = nextRow && nextRow.meta.indent > cell.indent;
-            const leftPadding = 1;
+            const leftPadding = 20;
+            const unit = 'px';
 
             // Add toggle and indent in the first column
             const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
             if (firstColumnIndex === cell.colIndex) {
-                const padding = ((cell.indent || 0) + 1) * leftPadding;
+                const padding = ((cell.indent || 0)) * leftPadding;
                 const toggleHTML = addToggle ?
-                    `<span class="dt-tree-node__toggle" style="left: ${padding - leftPadding}rem"></span>` : '';
-                contentHTML = `<span class="dt-tree-node" style="padding-left: ${padding}rem">
-                    ${toggleHTML}${contentHTML}</span>`;
+                    `<span class="dt-tree-node__toggle" style="left: ${padding - leftPadding}${unit}">
+                        <span class="icon-open">${icons.chevronDown}</span>
+                        <span class="icon-close">${icons.chevronRight}</span>
+                    </span>` : '';
+                contentHTML = `<span class="dt-tree-node" style="padding-left: ${padding}${unit}">
+                    ${toggleHTML}
+                    <span>${contentHTML}</span>
+                </span>`;
             }
         }
 

@@ -151,10 +151,27 @@
     }
 
     &--tree-close {
-        .dt-tree-node__toggle:before {
-            content: '►';
+        .icon-open {
+            display: none;
+        }
+
+        .icon-close {
+            display: flex;
         }
     }
+}
+
+.icon-open, .icon-close {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-open {
+    display: flex;
+}
+
+.icon-close {
+    display: none;
 }
 
 .dt-dropdown {
@@ -198,19 +215,14 @@
 }
 
 .dt-tree-node {
-    display: inline-block;
+    display: flex;
+    align-items: center;
     position: relative;
 
     &__toggle {
         display: inline-block;
-        position: absolute;
-        font-size: 10px;
-        padding: 2px;
         cursor: pointer;
-    }
-
-    &__toggle:before {
-        content: '▼';
+        margin-right: 0.2rem;
     }
 }
 

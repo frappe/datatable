@@ -1,9 +1,10 @@
 import filterRows from './filterRows';
+import icons from './icons';
 
 export default {
     columns: [],
     data: [],
-    dropdownButton: '▼',
+    dropdownButton: icons.chevronDown,
     headerDropdown: [
         {
             label: 'Sort Ascending',
