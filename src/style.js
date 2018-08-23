@@ -206,6 +206,8 @@ export default class Style {
     }
 
     compensateScrollbarWidth() {
+        if (!$.hasVerticalOverflow(this.bodyScrollable)) return;
+
         requestAnimationFrame(() => {
             const scrollbarWidth = $.scrollbarWidth();
             const lastCol = this.datamanager.getColumn(-1);

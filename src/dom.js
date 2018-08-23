@@ -200,3 +200,7 @@ $.scrollbarWidth = function scrollbarWidth() {
 
     return scrollbarWidth;
 };
+
+$.hasVerticalOverflow = function (element) {
+    return element.scrollHeight > element.offsetHeight + 10;
+};
