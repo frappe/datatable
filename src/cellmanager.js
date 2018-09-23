@@ -615,7 +615,7 @@ export default class CellManager {
 
         if (!this.columnmanager.isFilterShown) {
             // put focus back on cell
-            this.$focusedCell.focus();
+            this.$focusedCell && this.$focusedCell.focus();
         }
     }
 

@@ -34,7 +34,7 @@ export default class ColumnManager {
         // refresh html
         $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
 
-        this.$filterRow = $('.dt-row[data-is-filter]', this.header);
+        this.$filterRow = $('.dt-row-filter', this.header);
         if (this.$filterRow) {
             $.style(this.$filterRow, { display: 'none' });
         }
@@ -263,7 +263,7 @@ export default class ColumnManager {
     focusFilter(colIndex) {
         if (!this.isFilterShown) return;
 
-        const $filterInput = $(`[data-col-index="${colIndex}"] .dt-filter`, this.$filterRow);
+        const $filterInput = $(`.dt-cell--col-${colIndex} .dt-filter`, this.$filterRow);
         $filterInput.focus();
     }
 

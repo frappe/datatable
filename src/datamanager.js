@@ -11,6 +11,7 @@ export default class DataManager {
         this.sortRows = nextTick(this.sortRows, this);
         this.switchColumn = nextTick(this.switchColumn, this);
         this.removeColumn = nextTick(this.removeColumn, this);
+        this.options.filterRows = nextTick(this.options.filterRows, this);
     }
 
     init(data, columns) {
@@ -423,27 +424,29 @@ export default class DataManager {
 
     filterRows(keyword, colIndex) {
         const cells = this.rows.map(row => row[colIndex]);
-        let result = this.options.filterRows(keyword, cells, colIndex);
 
-        if (!result) {
-            result = this.getAllRowIndices();
-        }
+        return this.options.filterRows(keyword, cells, colIndex)
+            .then(result => {
+                if (!result) {
+                    result = this.getAllRowIndices();
+                }
 
-        if (!result.then) {
-            result = Promise.resolve(result);
-        }
+                if (!result.then) {
+                    result = Promise.resolve(result);
+                }
 
-        return result.then(rowsToShow => {
-            this._filteredRows = rowsToShow;
+                return result.then(rowsToShow => {
+                    this._filteredRows = rowsToShow;
 
-            const rowsToHide = this.getAllRowIndices()
-                .filter(index => !rowsToShow.includes(index));
+                    const rowsToHide = this.getAllRowIndices()
+                        .filter(index => !rowsToShow.includes(index));
 
-            return {
-                rowsToHide,
-                rowsToShow
-            };
-        });
+                    return {
+                        rowsToHide,
+                        rowsToShow
+                    };
+                });
+            });
     }
 
     getFilteredRowIndices() {

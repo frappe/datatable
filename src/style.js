@@ -147,7 +147,7 @@ export default class Style {
     }
 
     setupMinWidth() {
-        $.each('.dt-cell[data-is-header]', this.header).map(col => {
+        $.each('.dt-cell--header', this.header).map(col => {
             const { colIndex } = $.data(col);
             const column = this.getColumn(colIndex);
 
@@ -163,7 +163,7 @@ export default class Style {
         if (!$('.dt-row')) return;
 
         // set initial width as naturally calculated by table's first row
-        $.each('.dt-row[data-row-index="0"] .dt-cell', this.bodyScrollable).map($cell => {
+        $.each('.dt-row-0 .dt-cell', this.bodyScrollable).map($cell => {
             const {
                 colIndex
             } = $.data($cell);
@@ -259,7 +259,7 @@ export default class Style {
     setDefaultCellHeight() {
         if (this.options.dynamicRowHeight) return;
         if (this.__cellHeightSet) return;
-        const $firstCell = $('.dt-cell[data-is-header]', this.instance.header);
+        const $firstCell = $('.dt-cell--header', this.instance.header);
         if (!$firstCell) return;
 
         const height = this.options.cellHeight || $.style($firstCell, 'height');
@@ -339,7 +339,7 @@ export default class Style {
     getColumnHeaderElement(colIndex) {
         colIndex = +colIndex;
         if (colIndex < 0) return null;
-        return $(`.dt-cell[data-col-index="${colIndex}"]`, this.header);
+        return $(`.dt-cell--col-${colIndex}`, this.header);
     }
 
     getRowIndexColumnWidth(baseWidth) {

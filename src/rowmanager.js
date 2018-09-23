@@ -40,7 +40,7 @@ export default class RowManager {
         // map of checked rows
         this.checkMap = [];
 
-        $.on(this.wrapper, 'click', '.dt-cell[data-col-index="0"] [type="checkbox"]', (e, $checkbox) => {
+        $.on(this.wrapper, 'click', '.dt-cell--col-0 [type="checkbox"]', (e, $checkbox) => {
             const $cell = $checkbox.closest('.dt-cell');
             const {
                 rowIndex,
@@ -92,8 +92,7 @@ export default class RowManager {
 
     checkRow(rowIndex, toggle) {
         const value = toggle ? 1 : 0;
-        const selector = rowIndex =>
-            `.dt-cell[data-row-index="${rowIndex}"][data-col-index="0"] [type="checkbox"]`;
+        const selector = rowIndex => `.dt-cell--0-${rowIndex} [type="checkbox"]`;
         // update internal map
         this.checkMap[rowIndex] = value;
         // set checkbox value explicitly
@@ -117,7 +116,7 @@ export default class RowManager {
             this.checkMap = [];
         }
         // set checkbox value
-        $.each('.dt-cell[data-col-index="0"] [type="checkbox"]', this.bodyScrollable)
+        $.each('.dt-cell--col-0 [type="checkbox"]', this.bodyScrollable)
             .map(input => {
                 input.checked = toggle;
             });
@@ -255,6 +254,7 @@ export default class RowManager {
 
     getRowHTML(row, props) {
         const dataAttr = makeDataAttributeString(props);
+        let rowIdentifier = props.rowIndex;
 
         if (props.isFilter) {
             row = row.map(cell => (Object.assign({}, cell, {
@@ -265,10 +265,16 @@ export default class RowManager {
                 isHeader: undefined,
                 editable: false
             })));
+
+            rowIdentifier = 'filter';
+        }
+
+        if (props.isHeader) {
+            rowIdentifier = 'header';
         }
 
         return `
-            <tr class="dt-row" ${dataAttr}>
+            <tr class="dt-row dt-row-${rowIdentifier}" ${dataAttr}>
                 ${row.map(cell => this.cellmanager.getCellHTML(cell)).join('')}
             </tr>
         `;
@@ -280,6 +286,6 @@ export default class RowManager {
     }
 
     selector(rowIndex) {
-        return `.dt-row[data-row-index="${rowIndex}"]`;
+        return `.dt-row-${rowIndex}`;
     }
 }
