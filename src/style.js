@@ -60,14 +60,14 @@ export default class Style {
             return;
         }
 
+        selector = selector.trim();
+        if (!selector) return;
+
         this._styleRulesMap = this._styleRulesMap || {};
         const prefixedSelector = this._getPrefixedSelector(selector);
 
         if (this._styleRulesMap[prefixedSelector]) {
-            // find and remove
-            const index = Array.from(this.stylesheet.cssRules)
-                .findIndex(rule => rule.selectorText === prefixedSelector);
-            this.stylesheet.deleteRule(index);
+            this.removeStyle(selector);
 
             // merge with old styleobject
             styleObject = Object.assign({}, this._styleRulesMap[prefixedSelector], styleObject);
@@ -78,6 +78,28 @@ export default class Style {
 
         this._styleRulesMap[prefixedSelector] = styleObject;
         this.stylesheet.insertRule(ruleString);
+    }
+
+    removeStyle(selector) {
+        if (selector.includes(',')) {
+            selector.split(',')
+                .map(s => s.trim())
+                .forEach(selector => {
+                    this.removeStyle(selector);
+                });
+            return;
+        }
+
+        selector = selector.trim();
+        if (!selector) return;
+
+        // find and remove
+        const prefixedSelector = this._getPrefixedSelector(selector);
+        const index = Array.from(this.stylesheet.cssRules)
+            .findIndex(rule => rule.selectorText === prefixedSelector);
+
+        if (index === -1) return;
+        this.stylesheet.deleteRule(index);
     }
 
     _getPrefixedSelector(selector) {

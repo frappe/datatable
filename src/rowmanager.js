@@ -14,7 +14,8 @@ export default class RowManager {
             'fireEvent',
             'wrapper',
             'bodyScrollable',
-            'bodyRenderer'
+            'bodyRenderer',
+            'style'
         ]);
 
         this.bindEvents();
@@ -176,18 +177,16 @@ export default class RowManager {
 
     hideRows(rowIndices) {
         rowIndices = ensureArray(rowIndices);
-        rowIndices.map(rowIndex => {
-            const $tr = this.getRow$(rowIndex);
-            $tr.classList.add('dt-row--hide');
+        const selector = rowIndices.map(this.selector).join(',');
+        this.style.setStyle(selector, {
+            display: 'none'
         });
     }
 
     showRows(rowIndices) {
         rowIndices = ensureArray(rowIndices);
-        rowIndices.map(rowIndex => {
-            const $tr = this.getRow$(rowIndex);
-            $tr.classList.remove('dt-row--hide');
-        });
+        const selector = rowIndices.map(this.selector).join(',');
+        this.style.removeStyle(selector);
     }
 
     openSingleNode(rowIndex) {
