@@ -80,6 +80,9 @@ const datatable = new DataTable('#datatable', {
 * Run `yarn lint` before commiting changes
 * This project uses [commitizen](https://github.com/commitizen/cz-cli) for conventional commit messages, use `yarn commit` command instead of `git commit`
 
+## Read the blog
+
+[Making a new datatable for the web](https://medium.com/frapp%C3%A9-thoughts/things-i-learned-building-a-library-for-the-web-6846a588bf53)
 
 
 ## License
