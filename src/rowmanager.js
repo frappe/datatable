@@ -188,6 +188,11 @@ export default class RowManager {
         this.style.removeStyle(selector);
     }
 
+    showAllRows() {
+        const rowIndices = this.datamanager.getAllRowIndices();
+        this.showRows(rowIndices);
+    }
+
     openSingleNode(rowIndex) {
         const rowsToShow = this.datamanager.getImmediateChildren(rowIndex);
         this.showRows(rowsToShow);

@@ -16,7 +16,7 @@
     "travis-deploy-once": "travis-deploy-once",
     "semantic-release": "semantic-release",
     "lint": "eslint src",
-    "commit": "git cz"
+    "commit": "npx git-cz"
   },
   "files": [
     "dist",

@@ -67,6 +67,7 @@ export default class BodyRenderer {
     }
 
     restoreState() {
+        this.rowmanager.showAllRows();
         this.rowmanager.highlightCheckedRows();
         this.cellmanager.selectAreaOnClusterChanged();
         this.cellmanager.focusCellOnClusterChanged();
