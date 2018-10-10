@@ -119,31 +119,14 @@ export default class Style {
     }
 
     setDimensions() {
-        this.setHeaderStyle();
-
         this.setupMinWidth();
         this.setupNaturalColumnWidth();
         this.setupColumnWidth();
         this.distributeRemainingWidth();
         this.setColumnStyle();
         this.compensateScrollbarWidth();
-
         this.setDefaultCellHeight();
         this.setBodyStyle();
-    }
-
-    setHeaderStyle() {
-        if (this.options.layout === 'fluid') {
-            // setting width as 0 will ensure that the
-            // header doesn't take the available space
-            $.style(this.header, {
-                width: 0
-            });
-        }
-
-        $.style(this.header, {
-            margin: 0
-        });
     }
 
     setupMinWidth() {
@@ -228,7 +211,7 @@ export default class Style {
     }
 
     compensateScrollbarWidth() {
-        if (!$.hasVerticalOverflow(this.bodyScrollable)) return;
+        if (!$.hasVerticalOverflow($('.dt-body', this.bodyScrollable))) return;
 
         requestAnimationFrame(() => {
             const scrollbarWidth = $.scrollbarWidth();
@@ -313,25 +296,8 @@ export default class Style {
                 width: width + 'px'
             });
 
-            const $body = $('.dt-body', this.bodyScrollable);
-
-            if ($body) {
-                $.style($body, {
-                    height: '0px'
-                });
-
-                $.style($('tbody', $body), {
-                    height: '100%'
-                });
-            }
-
             $.style(this.bodyScrollable, {
                 marginTop: $.style(this.header, 'height') + 'px'
-            });
-
-            $.style($('table', this.bodyScrollable), {
-                margin: 0,
-                width: '100%'
             });
         });
     }

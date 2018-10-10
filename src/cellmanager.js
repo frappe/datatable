@@ -749,9 +749,9 @@ export default class CellManager {
         ].join(' ');
 
         return `
-            <td class="${className}" ${dataAttr} tabindex="0">
+            <div class="${className}" ${dataAttr} tabindex="0">
                 ${this.getCellContent(cell)}
-            </td>
+            </div>
         `;
     }
 

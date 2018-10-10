@@ -69,8 +69,8 @@ class DataTable {
     prepareDom() {
         this.wrapper.innerHTML = `
             <div class="datatable">
-                <table class="dt-header">
-                </table>
+                <div class="dt-header">
+                </div>
                 <div class="dt-scrollable">
                 </div>
                 <div class="dt-freeze">
