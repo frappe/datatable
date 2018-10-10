@@ -1,6 +1,5 @@
-import Clusterize from 'clusterize.js';
+import HyperList from 'hyperlist';
 import $ from './dom';
-import { nextTick } from './utils';
 
 export default class BodyRenderer {
     constructor(instance) {
@@ -11,59 +10,45 @@ export default class BodyRenderer {
         this.cellmanager = instance.cellmanager;
         this.bodyScrollable = instance.bodyScrollable;
         this.log = instance.log;
-        this.appendRemainingData = nextTick(this.appendRemainingData, this);
+    }
+
+    renderRows(rows) {
+        let config = {
+            itemHeight: 40,
+            total: rows.length,
+            generate: (index) => {
+                const el = document.createElement('div');
+                const rowHTML = this.rowmanager.getRowHTML(rows[index], rows[index].meta);
+                el.innerHTML = rowHTML;
+                return el.children[0];
+            }
+        };
+        this.hyperlist.refresh($('.dt-body', this.bodyScrollable), config);
     }
 
     render() {
-        if (this.options.clusterize) {
-            this.renderBodyWithClusterize();
-        } else {
-            this.renderBodyHTML();
-        }
-    }
-
-    renderBodyHTML() {
         const rows = this.datamanager.getRowsForView();
 
-        this.bodyScrollable.innerHTML = this.getBodyHTML(rows);
-        this.instance.setDimensions();
-        this.restoreState();
-    }
+        let config = {
+            itemHeight: 40,
+            total: rows.length,
+            generate: (index) => {
+                const el = document.createElement('div');
+                const rowHTML = this.rowmanager.getRowHTML(rows[index], rows[index].meta);
+                el.innerHTML = rowHTML;
+                return el.children[0];
+            }
+        };
 
-    renderBodyWithClusterize() {
-        // first page
-        const rows = this.datamanager.getRowsForView(0, 20);
-        let initialData = this.getDataForClusterize(rows);
-
-        if (initialData.length === 0) {
-            initialData = [this.getNoDataHTML()];
-        }
-
-        if (!this.clusterize) {
-            // empty body
-            this.bodyScrollable.innerHTML = this.getBodyHTML([]);
-
-            // first 20 rows will appended
-            // rest of them in nextTick
-            this.clusterize = new Clusterize({
-                rows: initialData,
-                scrollElem: this.bodyScrollable,
-                contentElem: $('tbody', this.bodyScrollable),
-                callbacks: {
-                    clusterChanged: () => this.restoreState()
-                },
-                /* eslint-disable */
-                show_no_data_row: false,
-                /* eslint-enable */
-            });
-
-            // setDimensions requires atleast 1 row to exist in dom
-            this.instance.setDimensions();
+        if (!this.hyperlist) {
+            this.bodyScrollable.innerHTML = '<div class="dt-body"></div>';
+            this.hyperlist = new HyperList($('.dt-body', this.bodyScrollable), config);
         } else {
-            this.clusterize.update(initialData);
+            this.renderRows(rows);
         }
 
-        this.appendRemainingData();
+        // setDimensions requires atleast 1 row to exist in dom
+        this.instance.setDimensions();
     }
 
     restoreState() {
@@ -71,12 +56,6 @@ export default class BodyRenderer {
         this.rowmanager.highlightCheckedRows();
         this.cellmanager.selectAreaOnClusterChanged();
         this.cellmanager.focusCellOnClusterChanged();
-    }
-
-    appendRemainingData() {
-        const rows = this.datamanager.getRowsForView(20);
-        const data = this.getDataForClusterize(rows);
-        this.clusterize.append(data);
     }
 
     showToastMessage(message, hideAfter) {
@@ -99,11 +78,11 @@ export default class BodyRenderer {
 
     getBodyHTML(rows) {
         return `
-            <table class="dt-body">
-                <tbody>
+            <div class="dt-body">
+                <div>
                     ${rows.map(row => this.rowmanager.getRowHTML(row, row.meta)).join('')}
-                </tbody>
-            </table>
+                </div>
+            </div>
         `;
     }
 

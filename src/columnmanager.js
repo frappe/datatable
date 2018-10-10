@@ -17,14 +17,15 @@ export default class ColumnManager {
             'style',
             'wrapper',
             'rowmanager',
-            'bodyScrollable'
+            'bodyScrollable',
+            'bodyRenderer'
         ]);
 
         this.bindEvents();
     }
 
     renderHeader() {
-        this.header.innerHTML = '<thead></thead>';
+        this.header.innerHTML = '<div></div>';
         this.refreshHeader();
     }
 
@@ -32,7 +33,7 @@ export default class ColumnManager {
         const columns = this.datamanager.getColumns();
 
         // refresh html
-        $('thead', this.header).innerHTML = this.getHeaderHTML(columns);
+        $('div', this.header).innerHTML = this.getHeaderHTML(columns);
 
         this.$filterRow = $('.dt-row-filter', this.header);
         if (this.$filterRow) {
@@ -282,11 +283,10 @@ export default class ColumnManager {
     applyFilter(keyword, colIndex) {
         this.datamanager.filterRows(keyword, colIndex)
             .then(({
-                rowsToHide,
                 rowsToShow
             }) => {
-                this.rowmanager.hideRows(rowsToHide);
-                this.rowmanager.showRows(rowsToShow);
+                const rows = rowsToShow.map(rowIndex => this.datamanager.getRow(rowIndex));
+                this.bodyRenderer.renderRows(rows);
             });
     }
 

@@ -1493,11 +1493,6 @@ clone@^1.0.2:
   resolved "https://registry.yarnpkg.com/clone/-/clone-1.0.3.tgz#298d7e2231660f40c003c2ed3140decf3f53085f"
   integrity sha1-KY1+IjFmD0DAA8LtMUDezz9TCF8=
 
-clusterize.js@^0.18.0:
-  version "0.18.0"
-  resolved "https://registry.yarnpkg.com/clusterize.js/-/clusterize.js-0.18.0.tgz#32dce7267c5e934bfb205ba65a98760005041331"
-  integrity sha512-13AqtsPStx5OawyggucdPawJaJmPl56HbG32Urya79VE39T7ZlpgVUGIOPwr9TIwf/duZAXjhXDQxC2eiMe6AA==
-
 co@^4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/co/-/co-4.6.0.tgz#6ea6bdf3d853ae54ccb8e47bfa0bf3f9031fb184"
@@ -3330,6 +3325,11 @@ https-proxy-agent@^2.2.0, https-proxy-agent@^2.2.1:
   dependencies:
     agent-base "^4.1.0"
     debug "^3.1.0"
+
+hyperlist@^1.0.0-beta:
+  version "1.0.0-beta"
+  resolved "https://registry.yarnpkg.com/hyperlist/-/hyperlist-1.0.0-beta.tgz#2cbbd77f4498c2ecc290b7f3c6745b3f0288247e"
+  integrity sha1-LLvXf0SYwuzCkLfzxnRbPwKIJH4=
 
 iconv-lite@^0.4.17:
   version "0.4.21"

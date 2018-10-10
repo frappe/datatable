@@ -43,7 +43,7 @@
 }
 
 .dt-scrollable {
-    max-height: 40vw;
+    height: 40vw;
     overflow: auto;
     border-bottom: 1px solid var(--dt-border-color);
 
@@ -60,6 +60,8 @@
 }
 
 .dt-row {
+    display: flex;
+
     &--highlight .dt-cell {
         background-color: var(--dt-selection-highlight-color);
     }
@@ -75,6 +77,8 @@
 
 .dt-cell {
     border: 1px solid var(--dt-border-color);
+    border-bottom: none;
+    border-right: none;
     position: relative;
     outline: none;
     padding: 0;
@@ -139,6 +143,10 @@
 
     &--header {
         background-color: var(--dt-header-cell-bg);
+    }
+
+    &--header:last-child {
+        border-right: 1px solid var(--dt-border-color);
     }
 
     &--header &__content {

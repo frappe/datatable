@@ -279,9 +279,9 @@ export default class RowManager {
         }
 
         return `
-            <tr class="dt-row dt-row-${rowIdentifier}" ${dataAttr}>
+            <div class="dt-row dt-row-${rowIdentifier}" ${dataAttr}>
                 ${row.map(cell => this.cellmanager.getCellHTML(cell)).join('')}
-            </tr>
+            </div>
         `;
     }
 

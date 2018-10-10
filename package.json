@@ -13,6 +13,7 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "test": "start-server-and-test cy:server http://localhost:8989 cy:run",
+    "test-local": "start-server-and-test cy:server http://localhost:8989 cy:open",
     "travis-deploy-once": "travis-deploy-once",
     "semantic-release": "semantic-release",
     "lint": "eslint src",
@@ -64,7 +65,7 @@
   },
   "homepage": "https://frappe.github.io/datatable",
   "dependencies": {
-    "clusterize.js": "^0.18.0",
+    "hyperlist": "^1.0.0-beta",
     "lodash": "^4.17.5",
     "sortablejs": "^1.7.0"
   },
