@@ -14,7 +14,7 @@ export default class BodyRenderer {
 
     renderRows(rows) {
         let config = {
-            itemHeight: 40,
+            itemHeight: this.options.cellHeight,
             total: rows.length,
             generate: (index) => {
                 const el = document.createElement('div');
@@ -30,7 +30,7 @@ export default class BodyRenderer {
         const rows = this.datamanager.getRowsForView();
 
         let config = {
-            itemHeight: 40,
+            itemHeight: this.options.cellHeight,
             total: rows.length,
             generate: (index) => {
                 const el = document.createElement('div');

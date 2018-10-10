@@ -52,7 +52,7 @@ export default {
     logs: false,
     layout: 'fixed', // fixed, fluid, ratio
     noDataMessage: 'No Data',
-    cellHeight: null,
+    cellHeight: 40,
     inlineFilters: false,
     treeView: false,
     checkedRowStatus: true,
