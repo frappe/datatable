@@ -205,8 +205,7 @@ $.hasVerticalOverflow = function (element) {
     return element.scrollHeight > element.offsetHeight + 10;
 };
 
-
-$.measureTextWidth = function(text) {
+$.measureTextWidth = function (text) {
     const div = document.createElement('div');
     div.style.position = 'absolute';
     div.style.visibility = 'hidden';
@@ -216,4 +215,4 @@ $.measureTextWidth = function(text) {
     div.innerText = text;
     document.body.appendChild(div);
     return div.clientWidth + 1;
-}
+};
