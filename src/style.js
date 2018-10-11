@@ -145,6 +145,17 @@ export default class Style {
     setupNaturalColumnWidth() {
         if (!$('.dt-row')) return;
 
+        $.each('.dt-row-header .dt-cell', this.header).map($headerCell => {
+            const { colIndex } = $.data($headerCell);
+            const column = this.datamanager.getColumn(colIndex);
+            let width = $.style($('.dt-cell__content', $headerCell), 'width');
+            if (typeof width === 'number' && width >= this.options.minimumColumnWidth) {
+                column.naturalWidth = width;
+            } else {
+                column.naturalWidth = this.options.minimumColumnWidth;
+            }
+        });
+
         // set initial width as naturally calculated by table's first row
         $.each('.dt-row-0 .dt-cell', this.bodyScrollable).map($cell => {
             const {
@@ -155,11 +166,15 @@ export default class Style {
             let naturalWidth = $.style($('.dt-cell__content', $cell), 'width');
 
             if (column.id === '_rowIndex') {
-                naturalWidth = this.getRowIndexColumnWidth(naturalWidth);
+                naturalWidth = this.getRowIndexColumnWidth();
                 column.width = naturalWidth;
             }
 
-            column.naturalWidth = naturalWidth;
+            if (typeof naturalWidth === 'number' && naturalWidth >= this.options.minimumColumnWidth) {
+                column.naturalWidth = naturalWidth;
+            } else {
+                column.naturalWidth = this.options.minimumColumnWidth;
+            }
         });
     }
 
@@ -308,16 +323,9 @@ export default class Style {
         return $(`.dt-cell--col-${colIndex}`, this.header);
     }
 
-    getRowIndexColumnWidth(baseWidth) {
-        this._rowIndexColumnWidthMap = this._rowIndexColumnWidthMap || {};
+    getRowIndexColumnWidth() {
         const rowCount = this.datamanager.getRowCount();
-        const digits = (rowCount + '').length;
-
-        if (!this._rowIndexColumnWidthMap[digits]) {
-            // add 8px for each unit
-            this._rowIndexColumnWidthMap[digits] = baseWidth + ((digits - 1) * 8);
-        }
-
-        return this._rowIndexColumnWidthMap[digits];
+        const padding = 22;
+        return $.measureTextWidth(rowCount + '') + padding;
     }
 }

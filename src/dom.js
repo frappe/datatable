@@ -204,3 +204,16 @@ $.scrollbarWidth = function scrollbarWidth() {
 $.hasVerticalOverflow = function (element) {
     return element.scrollHeight > element.offsetHeight + 10;
 };
+
+
+$.measureTextWidth = function(text) {
+    const div = document.createElement('div');
+    div.style.position = 'absolute';
+    div.style.visibility = 'hidden';
+    div.style.height = 'auto';
+    div.style.width = 'auto';
+    div.style.whiteSpace = 'nowrap';
+    div.innerText = text;
+    document.body.appendChild(div);
+    return div.clientWidth + 1;
+}
