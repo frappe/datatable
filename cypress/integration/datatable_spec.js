@@ -169,10 +169,12 @@ describe('DataTable', function () {
         });
 
         beforeEach(function () {
+            cy.get('.dt-filter[data-col-index=4]').as('filterInput4');
             cy.get('.dt-filter[data-col-index=5]').as('filterInput5');
         });
 
         afterEach(function () {
+            cy.get('@filterInput4').clear();
             cy.get('@filterInput5').clear();
             cy.get('.dt-row[data-row-index=0]').should('be.visible');
         });
@@ -180,10 +182,12 @@ describe('DataTable', function () {
         it('simple text filter', function () {
             cy.getCell(4, 0).click().type('{ctrl}f');
 
-            cy.get('.dt-filter[data-col-index=4]').as('filterInput4').type('edin');
+            cy.get('@filterInput4').type('edin');
             cy.get('.dt-row[data-row-index=0]').should('be.visible');
             cy.get('.dt-row[data-row-index=1]').should('not.be.visible');
             cy.get('@filterInput4').clear();
+
+            cy.wait(500);
 
             cy.get('@filterInput5').type('15');
             cy.get('.dt-row[data-row-index=2]').should('be.visible');
@@ -207,6 +211,15 @@ describe('DataTable', function () {
             cy.get('@filterInput5').type(' 2000: 5000');
             cy.get('.dt-row[data-row-index=4]').should('not.be.visible');
             cy.get('.dt-row[data-row-index=5]').should('be.visible');
+        });
+
+        it('multiple filters', function () {
+            cy.get('@filterInput4').type('to');
+            cy.get('@filterInput5').type('54');
+
+            cy.get('.dt-row[data-row-index=0]').should('be.visible');
+            cy.get('.dt-row[data-row-index=4]').should('be.visible');
+            cy.get('.dt-row[data-row-index=1]').should('not.be.visible');
         });
     });
 });
