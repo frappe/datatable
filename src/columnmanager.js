@@ -270,18 +270,19 @@ export default class ColumnManager {
 
     bindFilter() {
         if (!this.options.inlineFilters) return;
+        this.appliedFilters = this.appliedFilters || {};
         const handler = e => {
             this.$filterCell = $.closest('.dt-cell', e.target);
             const { colIndex } = $.data(this.$filterCell);
             const keyword = e.target.value;
-
-            this.applyFilter(keyword, colIndex);
+            this.appliedFilters[colIndex] = keyword;
+            this.applyFilter(this.appliedFilters);
         };
         $.on(this.header, 'keydown', '.dt-filter', debounce(handler, 300));
     }
 
-    applyFilter(keyword, colIndex) {
-        this.datamanager.filterRows(keyword, colIndex)
+    applyFilter(filters) {
+        this.datamanager.filterRows(filters)
             .then(({
                 rowsToShow
             }) => {

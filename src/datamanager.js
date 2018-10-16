@@ -422,10 +422,8 @@ export default class DataManager {
         return column;
     }
 
-    filterRows(keyword, colIndex) {
-        const cells = this.rows.map(row => row[colIndex]);
-
-        return this.options.filterRows(keyword, cells, colIndex)
+    filterRows(filters) {
+        return this.options.filterRows(this.rows, filters)
             .then(result => {
                 if (!result) {
                     result = this.getAllRowIndices();

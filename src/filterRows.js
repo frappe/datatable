@@ -1,14 +1,28 @@
 import { isNumber } from './utils';
 
-export default function filterRows(keyword, cells, colIndex) {
-    let filter = guessFilter(keyword);
-    let filterMethod = getFilterMethod(filter);
+export default function filterRows(rows, filters) {
+    let filteredRowIndices = [];
 
-    if (filterMethod) {
-        return filterMethod(filter.text, cells);
+    for (let colIndex in filters) {
+        const keyword = filters[colIndex];
+
+        const filteredRows = filteredRowIndices.length ?
+            filteredRowIndices.map(i => rows[i]) :
+            rows;
+
+        const cells = filteredRows.map(row => row[colIndex]);
+
+        let filter = guessFilter(keyword);
+        let filterMethod = getFilterMethod(filter);
+
+        if (filterMethod) {
+            filteredRowIndices = filterMethod(filter.text, cells);
+        } else {
+            filteredRowIndices = cells.map(cell => cell.rowIndex);
+        }
     }
 
-    return cells.map(cell => cell.rowIndex);
+    return filteredRowIndices;
 };
 
 function getFilterMethod(filter) {
