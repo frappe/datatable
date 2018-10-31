@@ -9,7 +9,10 @@ export default class BodyRenderer {
         this.rowmanager = instance.rowmanager;
         this.cellmanager = instance.cellmanager;
         this.bodyScrollable = instance.bodyScrollable;
+        this.bodyDiv = $('.dt-body', this.bodyScrollable);
         this.log = instance.log;
+
+        this.bindEvents();
     }
 
     renderRows(rows) {
@@ -23,7 +26,8 @@ export default class BodyRenderer {
                 return el.children[0];
             }
         };
-        this.hyperlist.refresh($('.dt-body', this.bodyScrollable), config);
+        this.hyperlist.refresh(this.bodyDiv, config);
+        this.visibleRows = rows.map(row => row.meta.rowIndex);
     }
 
     render() {
@@ -41,8 +45,8 @@ export default class BodyRenderer {
         };
 
         if (!this.hyperlist) {
-            this.bodyScrollable.innerHTML = '<div class="dt-body"></div>';
-            this.hyperlist = new HyperList($('.dt-body', this.bodyScrollable), config);
+            this.hyperlist = new HyperList(this.bodyDiv, config);
+            this.visibleRows = rows.map(row => row.meta.rowIndex);
         } else {
             this.renderRows(rows);
         }

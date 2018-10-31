@@ -193,6 +193,7 @@ export default class DataManager {
                 row.meta.isLeaf = !nextRow ||
                     notSet(nextRow.meta.indent) ||
                     nextRow.meta.indent <= row.meta.indent;
+                row.meta.isTreeNodeClose = false;
             }
         });
     }

@@ -286,8 +286,7 @@ export default class ColumnManager {
             .then(({
                 rowsToShow
             }) => {
-                const rows = rowsToShow.map(rowIndex => this.datamanager.getRow(rowIndex));
-                this.bodyRenderer.renderRows(rows);
+                this.rowmanager.showRows(rowsToShow);
             });
     }
 

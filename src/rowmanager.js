@@ -3,7 +3,8 @@ import {
     makeDataAttributeString,
     nextTick,
     ensureArray,
-    linkProperties
+    linkProperties,
+    uniq
 } from './utils';
 
 export default class RowManager {
@@ -174,18 +175,10 @@ export default class RowManager {
         }
     }
 
-    hideRows(rowIndices) {
-        rowIndices = ensureArray(rowIndices);
-        const selector = rowIndices.map(this.selector).join(',');
-        this.style.setStyle(selector, {
-            display: 'none'
-        });
-    }
-
     showRows(rowIndices) {
         rowIndices = ensureArray(rowIndices);
-        const selector = rowIndices.map(this.selector).join(',');
-        this.style.removeStyle(selector);
+        const rows = rowIndices.map(rowIndex => this.datamanager.getRow(rowIndex));
+        this.bodyRenderer.renderRows(rows);
     }
 
     showAllRows() {
@@ -194,25 +187,32 @@ export default class RowManager {
     }
 
     openSingleNode(rowIndex) {
-        const rowsToShow = this.datamanager.getImmediateChildren(rowIndex);
+        const row = this.datamanager.getRow(rowIndex);
+        row.meta.isTreeNodeClose = false;
+
+        const childrenToShow = this.datamanager.getImmediateChildren(rowIndex);
+        const visibleRows = this.bodyRenderer.visibleRows;
+        const rowsToShow = uniq([...childrenToShow, ...visibleRows]).sort();
+
         this.showRows(rowsToShow);
-        this.cellmanager.toggleTreeButton(rowIndex, true);
     }
 
     closeSingleNode(rowIndex) {
-        const children = this.datamanager.getImmediateChildren(rowIndex);
-        children.forEach(childIndex => {
-            const row = this.datamanager.getRow(childIndex);
-            if (row.meta.isLeaf) {
-                // close
-                this.hideRows(childIndex);
-                this.cellmanager.toggleTreeButton(childIndex, false);
-            } else {
-                this.closeSingleNode(childIndex);
-                this.hideRows(childIndex);
+        const row = this.datamanager.getRow(rowIndex);
+        row.meta.isTreeNodeClose = true;
+
+        const rowsToHide = this.datamanager.getChildren(rowIndex);
+        const visibleRows = this.bodyRenderer.visibleRows;
+        const rowsToShow = visibleRows.filter(rowIndex => !rowsToHide.includes(rowIndex));
+
+        rowsToHide.forEach(rowIndex => {
+            const row = this.datamanager.getRow(rowIndex);
+            if (!row.meta.isLeaf) {
+                row.meta.isTreeNodeClose = true;
             }
         });
-        this.cellmanager.toggleTreeButton(rowIndex, false);
+
+        this.showRows(rowsToShow);
     }
 
     getRow$(rowIndex) {

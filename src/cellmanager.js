@@ -736,6 +736,8 @@ export default class CellManager {
             isFilter
         });
 
+        const row = this.datamanager.getRow(rowIndex);
+
         const isBodyCell = !(isHeader || isFilter);
 
         const className = [
@@ -745,7 +747,8 @@ export default class CellManager {
             isBodyCell ? 'dt-cell--row-' + rowIndex : '',
             isHeader ? 'dt-cell--header' : '',
             isHeader ? `dt-cell--header-${colIndex}` : '',
-            isFilter ? 'dt-cell--filter' : ''
+            isFilter ? 'dt-cell--filter' : '',
+            isBodyCell && row.meta.isTreeNodeClose ? 'dt-cell--tree-close' : ''
         ].join(' ');
 
         return `

@@ -1,5 +1,6 @@
 import _throttle from 'lodash/throttle';
 import _debounce from 'lodash/debounce';
+import _uniq from 'lodash/uniq';
 
 export function camelCaseToDash(str) {
     return str.replace(/([A-Z])/g, (g) => `-${g[0].toLowerCase()}`);
@@ -124,4 +125,8 @@ export function ensureArray(val) {
         return [val];
     }
     return val;
+}
+
+export function uniq(arr) {
+    return _uniq(arr);
 }

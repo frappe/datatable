@@ -72,6 +72,7 @@ class DataTable {
                 <div class="dt-header">
                 </div>
                 <div class="dt-scrollable">
+                    <div class="dt-body"></div>
                 </div>
                 <div class="dt-freeze">
                     <span class="dt-freeze__message">
