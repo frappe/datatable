@@ -24,31 +24,19 @@ export default class BodyRenderer {
                 return el.children[0];
             }
         };
-        this.hyperlist.refresh(this.bodyDiv, config);
+
+        if (!this.hyperlist) {
+            this.hyperlist = new HyperList(this.bodyDiv, config);
+        } else {
+            this.hyperlist.refresh(this.bodyDiv, config);
+        }
+
         this.visibleRows = rows.map(row => row.meta.rowIndex);
     }
 
     render() {
         const rows = this.datamanager.getRowsForView();
-
-        let config = {
-            itemHeight: this.options.cellHeight,
-            total: rows.length,
-            generate: (index) => {
-                const el = document.createElement('div');
-                const rowHTML = this.rowmanager.getRowHTML(rows[index], rows[index].meta);
-                el.innerHTML = rowHTML;
-                return el.children[0];
-            }
-        };
-
-        if (!this.hyperlist) {
-            this.hyperlist = new HyperList(this.bodyDiv, config);
-            this.visibleRows = rows.map(row => row.meta.rowIndex);
-        } else {
-            this.renderRows(rows);
-        }
-
+        this.renderRows(rows);
         // setDimensions requires atleast 1 row to exist in dom
         this.instance.setDimensions();
     }

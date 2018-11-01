@@ -19,6 +19,7 @@
 <body>
 	<h1>Frappé DataTable</h1>
 	<button onclick="datatable.render()">Refresh</button>
+	<button onclick="switchToTreeView()" data-action="treeview">TreeView</button>
 	<label>
 		<input type="checkbox" id="input-large-data" />
 		<span>Large Data</span>
@@ -150,7 +151,7 @@
 				}
 			}
 
-			function makeDatatable() {
+			function makeDatatable(treeView = false) {
 				console.log('No of Rows:', data.length)
 
 				const start = performance.now();
@@ -162,7 +163,7 @@
 					data,
 					inlineFilters: true,
 					dynamicRowHeight: true,
-					// treeView: true,
+					treeView: treeView,
 					// filterRows(keyword, cells, colIndex) {
 					// 	return cells
 					// 		.filter(cell => cell.content.includes(keyword))
@@ -198,8 +199,13 @@
 				window.datatable = datatable;
 			}
 
+			window.switchToTreeView = function() {
+				datatable.destroy();
+				buildTreeData();
+				makeDatatable(true);
+			}
+
 			buildData();
-			// buildTreeData();
 			makeDatatable();
 		})
 	</script>

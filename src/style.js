@@ -12,7 +12,7 @@ export default class Style {
         linkProperties(this, this.instance, [
             'options', 'datamanager', 'columnmanager',
             'header', 'bodyScrollable', 'datatableWrapper',
-            'getColumn'
+            'getColumn', 'bodyRenderer'
         ]);
 
         this.scopeClass = 'dt-instance-' + instance.constructor.instances;
@@ -310,6 +310,16 @@ export default class Style {
             $.style(this.bodyScrollable, {
                 width: width + 'px'
             });
+
+            // when there are less rows than the container
+            // adapt the container height
+            const height = $.getStyle(this.bodyScrollable, 'height');
+            const scrollHeight = (this.bodyRenderer.hyperlist || {})._scrollHeight || Infinity;
+            if (scrollHeight < height) {
+                $.style(this.bodyScrollable, {
+                    height: (scrollHeight + 1) + 'px'
+                });
+            }
 
             $.style(this.bodyScrollable, {
                 marginTop: $.style(this.header, 'height') + 'px'
