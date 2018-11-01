@@ -11,8 +11,6 @@ export default class BodyRenderer {
         this.bodyScrollable = instance.bodyScrollable;
         this.bodyDiv = $('.dt-body', this.bodyScrollable);
         this.log = instance.log;
-
-        this.bindEvents();
     }
 
     renderRows(rows) {
