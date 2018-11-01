@@ -130,3 +130,7 @@ export function ensureArray(val) {
 export function uniq(arr) {
     return _uniq(arr);
 }
+
+export function numberSortAsc(a, b) {
+    return a - b;
+};

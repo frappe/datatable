@@ -77,6 +77,12 @@
 
 				data = [
 					{
+					'Files': 'All Folders',
+					'Size': '2M',
+					'Last Updated': '',
+					'indent': -1
+					},
+					{
 					'Files': 'Documents',
 					'Size': '2M',
 					'Last Updated': '',
@@ -130,7 +136,15 @@
 					'Last Updated': 'A few seconds ago',
 					'indent': 2
 					},
+					{
+					'Files': 'dist',
+					'Size': '21k',
+					'Last Updated': 'A few seconds ago',
+					'indent': 2
+					},
 				]
+
+				data.map(d => d.indent++)
 			}
 
 			function buildData() {

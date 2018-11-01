@@ -4,7 +4,8 @@ import {
     nextTick,
     ensureArray,
     linkProperties,
-    uniq
+    uniq,
+    numberSortAsc
 } from './utils';
 
 export default class RowManager {
@@ -192,7 +193,7 @@ export default class RowManager {
 
         const childrenToShow = this.datamanager.getImmediateChildren(rowIndex);
         const visibleRows = this.bodyRenderer.visibleRows;
-        const rowsToShow = uniq([...childrenToShow, ...visibleRows]).sort();
+        const rowsToShow = uniq([...childrenToShow, ...visibleRows]).sort(numberSortAsc);
 
         this.showRows(rowsToShow);
     }
@@ -203,7 +204,9 @@ export default class RowManager {
 
         const rowsToHide = this.datamanager.getChildren(rowIndex);
         const visibleRows = this.bodyRenderer.visibleRows;
-        const rowsToShow = visibleRows.filter(rowIndex => !rowsToHide.includes(rowIndex));
+        const rowsToShow = visibleRows
+            .filter(rowIndex => !rowsToHide.includes(rowIndex))
+            .sort(numberSortAsc);
 
         rowsToHide.forEach(rowIndex => {
             const row = this.datamanager.getRow(rowIndex);
