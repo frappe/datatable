@@ -59,7 +59,7 @@ yarn add frappe-datatable
 npm install frappe-datatable
 ```
 
-> Note: [`sortablejs`](https://github.com/RubaXa/Sortable) and [`clusterize.js`](https://github.com/NeXTs/Clusterize.js) are required to be installed as well.
+> Note: [`sortablejs`](https://github.com/RubaXa/Sortable) is required to be installed as well.
 
 ## Usage
 
