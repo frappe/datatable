@@ -125,7 +125,6 @@ export default class Style {
         this.distributeRemainingWidth();
         this.setColumnStyle();
         this.compensateScrollbarWidth();
-        this.setDefaultCellHeight();
         this.setBodyStyle();
     }
 
@@ -228,12 +227,10 @@ export default class Style {
     compensateScrollbarWidth() {
         if (!$.hasVerticalOverflow($('.dt-body', this.bodyScrollable))) return;
 
-        requestAnimationFrame(() => {
-            const scrollbarWidth = $.scrollbarWidth();
-            const lastCol = this.datamanager.getColumn(-1);
-            const width = lastCol.width - scrollbarWidth;
-            this.columnmanager.setColumnWidth(lastCol.colIndex, width);
-        });
+        const scrollbarWidth = $.scrollbarWidth();
+        const lastCol = this.datamanager.getColumn(-1);
+        const width = lastCol.width - scrollbarWidth;
+        this.columnmanager.setColumnWidth(lastCol.colIndex, width);
     }
 
     distributeRemainingWidth() {
@@ -251,25 +248,6 @@ export default class Style {
             this.datamanager.updateColumn(col.colIndex, {
                 width: finalWidth
             });
-        });
-    }
-
-    setDefaultCellHeight() {
-        if (this.options.dynamicRowHeight) return;
-        if (this.__cellHeightSet) return;
-        const $firstCell = $('.dt-cell--header', this.instance.header);
-        if (!$firstCell) return;
-
-        const height = this.options.cellHeight || $.style($firstCell, 'height');
-        if (height) {
-            this.setCellHeight(height);
-            this.__cellHeightSet = true;
-        }
-    }
-
-    setCellHeight(height) {
-        this.setStyle('.dt-cell__content, .dt-cell__edit', {
-            height: height + 'px'
         });
     }
 
@@ -292,7 +270,6 @@ export default class Style {
                 this.columnmanager.setColumnHeaderWidth(column.colIndex);
                 this.columnmanager.setColumnWidth(column.colIndex);
             });
-        this.setBodyStyle();
     }
 
     refreshColumnWidth() {
@@ -304,26 +281,24 @@ export default class Style {
     }
 
     setBodyStyle() {
-        requestAnimationFrame(() => {
-            const width = $.style(this.header, 'width');
+        const width = $.style(this.header, 'width');
 
+        $.style(this.bodyScrollable, {
+            width: width + 'px'
+        });
+
+        // when there are less rows than the container
+        // adapt the container height
+        const height = $.getStyle(this.bodyScrollable, 'height');
+        const scrollHeight = (this.bodyRenderer.hyperlist || {})._scrollHeight || Infinity;
+        if (scrollHeight < height) {
             $.style(this.bodyScrollable, {
-                width: width + 'px'
+                height: (scrollHeight + 1) + 'px'
             });
+        }
 
-            // when there are less rows than the container
-            // adapt the container height
-            const height = $.getStyle(this.bodyScrollable, 'height');
-            const scrollHeight = (this.bodyRenderer.hyperlist || {})._scrollHeight || Infinity;
-            if (scrollHeight < height) {
-                $.style(this.bodyScrollable, {
-                    height: (scrollHeight + 1) + 'px'
-                });
-            }
-
-            $.style(this.bodyScrollable, {
-                marginTop: $.style(this.header, 'height') + 'px'
-            });
+        $.style(this.bodyScrollable, {
+            marginTop: $.style(this.header, 'height') + 'px'
         });
     }
 
