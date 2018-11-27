@@ -287,6 +287,9 @@ export default class Style {
             width: width + 'px'
         });
 
+        // remove the body height, so that it resets to it's original
+        $.removeStyle(this.bodyScrollable, 'height');
+
         // when there are less rows than the container
         // adapt the container height
         const height = $.getStyle(this.bodyScrollable, 'height');
