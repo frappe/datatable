@@ -192,8 +192,8 @@ export default class RowManager {
         row.meta.isTreeNodeClose = false;
 
         const childrenToShow = this.datamanager.getImmediateChildren(rowIndex);
-        const visibleRows = this.bodyRenderer.visibleRows;
-        const rowsToShow = uniq([...childrenToShow, ...visibleRows]).sort(numberSortAsc);
+        const visibleRowIndices = this.bodyRenderer.visibleRowIndices;
+        const rowsToShow = uniq([...childrenToShow, ...visibleRowIndices]).sort(numberSortAsc);
 
         this.showRows(rowsToShow);
     }
@@ -203,7 +203,7 @@ export default class RowManager {
         row.meta.isTreeNodeClose = true;
 
         const rowsToHide = this.datamanager.getChildren(rowIndex);
-        const visibleRows = this.bodyRenderer.visibleRows;
+        const visibleRows = this.bodyRenderer.visibleRowIndices;
         const rowsToShow = visibleRows
             .filter(rowIndex => !rowsToHide.includes(rowIndex))
             .sort(numberSortAsc);

@@ -74,6 +74,8 @@ class DataTable {
                 <div class="dt-scrollable">
                     <div class="dt-body"></div>
                 </div>
+                <div class="dt-footer">
+                </div>
                 <div class="dt-freeze">
                     <span class="dt-freeze__message">
                         ${this.options.freezeMessage}
@@ -86,6 +88,7 @@ class DataTable {
 
         this.datatableWrapper = $('.datatable', this.wrapper);
         this.header = $('.dt-header', this.wrapper);
+        this.footer = $('.dt-footer', this.wrapper);
         this.bodyScrollable = $('.dt-scrollable', this.wrapper);
         this.freezeContainer = $('.dt-freeze', this.wrapper);
         this.toastMessage = $('.dt-toast', this.wrapper);

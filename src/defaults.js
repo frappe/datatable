@@ -58,5 +58,6 @@ export default {
     treeView: false,
     checkedRowStatus: true,
     dynamicRowHeight: false,
-    pasteFromClipboard: false
+    pasteFromClipboard: false,
+    showTotalRow: false
 };
