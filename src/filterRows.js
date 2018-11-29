@@ -1,4 +1,4 @@
-import { isNumber } from './utils';
+import { isNumber, stripHTML } from './utils';
 
 export default function filterRows(rows, filters) {
     let filteredRowIndices = [];
@@ -30,7 +30,7 @@ function getFilterMethod(filter) {
         contains(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const hay = String(cell.content || '').toLowerCase();
+                    const hay = String(stripHTML(cell.html) || '').toLowerCase();
                     const needle = (keyword || '').toLowerCase();
                     return !needle || hay.includes(needle);
                 })
@@ -40,7 +40,7 @@ function getFilterMethod(filter) {
         greaterThan(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const value = Number(cell.content);
+                    const value = Number(stripHTML(cell.html));
                     return value > keyword;
                 })
                 .map(cell => cell.rowIndex);
@@ -49,7 +49,7 @@ function getFilterMethod(filter) {
         lessThan(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const value = Number(cell.content);
+                    const value = Number(stripHTML(cell.html));
                     return value < keyword;
                 })
                 .map(cell => cell.rowIndex);
@@ -58,7 +58,7 @@ function getFilterMethod(filter) {
         range(rangeValues, cells) {
             return cells
                 .filter(cell => {
-                    const value = Number(cell.content);
+                    const value = Number(stripHTML(cell.html));
                     return value >= rangeValues[0] && value <= rangeValues[1];
                 })
                 .map(cell => cell.rowIndex);

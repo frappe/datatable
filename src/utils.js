@@ -134,3 +134,7 @@ export function uniq(arr) {
 export function numberSortAsc(a, b) {
     return a - b;
 };
+
+export function stripHTML(html) {
+    return html.replace(/<[^>]*>/g, '');
+};
