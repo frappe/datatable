@@ -40,7 +40,7 @@ function getFilterMethod(filter) {
         greaterThan(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const value = Number(stripHTML(cell.html));
+                    const value = parseFloat(cell.content);
                     return value > keyword;
                 })
                 .map(cell => cell.rowIndex);
@@ -49,7 +49,7 @@ function getFilterMethod(filter) {
         lessThan(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const value = Number(stripHTML(cell.html));
+                    const value = parseFloat(cell.content);
                     return value < keyword;
                 })
                 .map(cell => cell.rowIndex);
@@ -58,7 +58,7 @@ function getFilterMethod(filter) {
         range(rangeValues, cells) {
             return cells
                 .filter(cell => {
-                    const value = Number(stripHTML(cell.html));
+                    const value = parseFloat(cell.content);
                     return value >= rangeValues[0] && value <= rangeValues[1];
                 })
                 .map(cell => cell.rowIndex);
