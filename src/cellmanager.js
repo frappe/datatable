@@ -727,18 +727,20 @@ export default class CellManager {
             rowIndex,
             colIndex,
             isHeader,
-            isFilter
+            isFilter,
+            isTotalRow
         } = cell;
         const dataAttr = makeDataAttributeString({
             rowIndex,
             colIndex,
             isHeader,
-            isFilter
+            isFilter,
+            isTotalRow
         });
 
         const row = this.datamanager.getRow(rowIndex);
 
-        const isBodyCell = !(isHeader || isFilter);
+        const isBodyCell = !(isHeader || isFilter || isTotalRow);
 
         const className = [
             'dt-cell',
