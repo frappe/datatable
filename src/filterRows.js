@@ -30,7 +30,7 @@ function getFilterMethod(filter) {
         contains(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const hay = String(stripHTML(cell.html) || '').toLowerCase();
+                    const hay = String(stripHTML(cell.html || '') || cell.content || '').toLowerCase();
                     const needle = (keyword || '').toLowerCase();
                     return !needle || hay.includes(needle);
                 })
@@ -68,8 +68,8 @@ function getFilterMethod(filter) {
     return filterMethodMap[filter.type];
 }
 
-function guessFilter(keyword) {
-    if (keyword.length === 1) return {};
+function guessFilter(keyword = '') {
+    if (keyword.length === 0) return {};
 
     if (keyword.startsWith('>')) {
         if (isNumber(keyword.slice(1))) {
