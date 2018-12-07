@@ -47,6 +47,13 @@ export default class BodyRenderer {
     renderFooter() {
         if (!this.options.showTotalRow) return;
 
+        const totalRow = this.getTotalRow();
+        let html = this.rowmanager.getRowHTML(totalRow, { isTotalRow: 1, rowIndex: 'totalRow' });
+
+        this.footer.innerHTML = html;
+    }
+
+    getTotalRow() {
         const columns = this.datamanager.getColumns();
         const totalRowTemplate = columns.map(col => {
             let content = 0;
@@ -60,7 +67,6 @@ export default class BodyRenderer {
                 column: col
             };
         });
-
         const totalRow = this.visibleRows.reduce((acc, prevRow) => {
             return acc.map((cell, i) => {
                 const prevCell = prevRow[i];
@@ -73,10 +79,7 @@ export default class BodyRenderer {
                 return Object.assign({}, cell);
             });
         }, totalRowTemplate);
-
-        let html = this.rowmanager.getRowHTML(totalRow, { isTotalRow: 1, rowIndex: 'totalRow' });
-
-        this.footer.innerHTML = html;
+        return totalRow;
     }
 
     restoreState() {
