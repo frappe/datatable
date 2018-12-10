@@ -15,12 +15,24 @@ export default class BodyRenderer {
     }
 
     renderRows(rows) {
+        this.visibleRows = rows;
+        this.visibleRowIndices = rows.map(row => row.meta.rowIndex);
+
+        const rowViewOrder = this.datamanager.rowViewOrder.map(index => {
+            if (this.visibleRowIndices.includes(index)) {
+                return index;
+            }
+            return null;
+        }).filter(index => index !== null);
+
         let config = {
             itemHeight: this.options.cellHeight,
             total: rows.length,
             generate: (index) => {
                 const el = document.createElement('div');
-                const rowHTML = this.rowmanager.getRowHTML(rows[index], rows[index].meta);
+                const rowIndex = rowViewOrder[index];
+                const row = this.datamanager.getRow(rowIndex);
+                const rowHTML = this.rowmanager.getRowHTML(row, row.meta);
                 el.innerHTML = rowHTML;
                 return el.children[0];
             }
@@ -32,8 +44,6 @@ export default class BodyRenderer {
             this.hyperlist.refresh(this.bodyDiv, config);
         }
 
-        this.visibleRows = rows;
-        this.visibleRowIndices = rows.map(row => row.meta.rowIndex);
         this.renderFooter();
     }
 
