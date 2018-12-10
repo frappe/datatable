@@ -222,4 +222,20 @@ describe('DataTable', function () {
             cy.get('.dt-row[data-row-index=1]').should('not.be.visible');
         });
     });
+
+    describe('Inline filters with sorting', function () {
+        before(function () {
+            cy.visit('/');
+        });
+
+        it('filters with sorting', function () {
+            cy.clickDropdown(7);
+            cy.clickDropdownItem(7, 'Sort Descending');
+            cy.get('.dt-filter[data-col-index=5]').as('filterInput5');
+            cy.getCell(5, 24).click().type('{ctrl}f');
+            cy.get('@filterInput5').type('>3000');
+
+            cy.get('.dt-body .dt-row').first().should('have.class', 'dt-row-24');
+        });
+    });
 });
