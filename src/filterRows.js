@@ -55,6 +55,15 @@ function getFilterMethod(filter) {
                 .map(cell => cell.rowIndex);
         },
 
+        equals(keyword, cells) {
+            return cells
+                .filter(cell => {
+                    const value = parseFloat(cell.content);
+                    return value === keyword;
+                })
+                .map(cell => cell.rowIndex);
+        },
+
         range(rangeValues, cells) {
             return cells
                 .filter(cell => {
@@ -98,6 +107,17 @@ function guessFilter(keyword = '') {
             type: 'range',
             text: keyword.split(':').map(v => v.trim()).map(Number)
         };
+    }
+
+    if (keyword.startsWith('=')) {
+        if (isNumber(keyword.slice(1))) {
+            return {
+                type: 'equals',
+                text: Number(keyword.slice(1).trim())
+            };
+        }
+
+        keyword = keyword.slice(1);
     }
 
     return {
