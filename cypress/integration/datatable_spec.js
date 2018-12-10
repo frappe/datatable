@@ -213,6 +213,11 @@ describe('DataTable', function () {
             cy.get('.dt-row[data-row-index=5]').should('be.visible');
         });
 
+        it('equals', function () {
+            cy.get('@filterInput5').type('=9608');
+            cy.get('.dt-row-6').should('be.visible');
+        });
+
         it('multiple filters', function () {
             cy.get('@filterInput4').type('to');
             cy.get('@filterInput5').type('54');
