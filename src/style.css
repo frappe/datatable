@@ -29,14 +29,10 @@
     overflow: hidden;
 }
 
-.dt-header {
-    border-collapse: collapse;
-}
-
 .dt-scrollable {
     height: 40vw;
     overflow: auto;
-    border-top: 1px solid var(--dt-border-color);
+    border-top: 2px solid var(--dt-border-color);
 
     &--highlight-all {
         background-color: var(--dt-selection-highlight-color);
@@ -65,7 +61,7 @@
         display: none;
     }
 
-    &:last-child {
+    &:last-child:not(.dt-row-filter) {
         border-bottom: 1px solid var(--dt-border-color);
     }
 }
