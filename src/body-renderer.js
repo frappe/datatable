@@ -1,5 +1,4 @@
 import HyperList from 'hyperlist';
-import $ from './dom';
 
 export default class BodyRenderer {
     constructor(instance) {
@@ -9,7 +8,6 @@ export default class BodyRenderer {
         this.rowmanager = instance.rowmanager;
         this.cellmanager = instance.cellmanager;
         this.bodyScrollable = instance.bodyScrollable;
-        this.bodyDiv = $('.dt-body', this.bodyScrollable);
         this.footer = this.instance.footer;
         this.log = instance.log;
     }
@@ -39,9 +37,9 @@ export default class BodyRenderer {
         };
 
         if (!this.hyperlist) {
-            this.hyperlist = new HyperList(this.bodyDiv, config);
+            this.hyperlist = new HyperList(this.bodyScrollable, config);
         } else {
-            this.hyperlist.refresh(this.bodyDiv, config);
+            this.hyperlist.refresh(this.bodyScrollable, config);
         }
 
         this.renderFooter();
@@ -111,16 +109,6 @@ export default class BodyRenderer {
 
     clearToastMessage() {
         this.instance.toastMessage.innerHTML = '';
-    }
-
-    getBodyHTML(rows) {
-        return `
-            <div class="dt-body">
-                <div>
-                    ${rows.map(row => this.rowmanager.getRowHTML(row, row.meta)).join('')}
-                </div>
-            </div>
-        `;
     }
 
     getNoDataHTML() {

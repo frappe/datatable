@@ -23,6 +23,7 @@ export default class Style {
         this.styleEl = styleEl;
 
         this.bindResizeWindow();
+        this.bindScrollHeader();
     }
 
     get stylesheet() {
@@ -38,10 +39,27 @@ export default class Style {
         }
     }
 
+    bindScrollHeader() {
+        this._settingHeaderPosition = false;
+
+        $.on(this.bodyScrollable, 'scroll', (e) => {
+            if (this._settingHeaderPosition) return;
+
+            this._settingHeaderPosition = true;
+
+            requestAnimationFrame(() => {
+                const scrollLeft = e.target.scrollLeft;
+                $.style(this.header, {
+                    transform: `translateX(-${scrollLeft}px)`
+                });
+                this._settingHeaderPosition = false;
+            });
+        });
+    }
+
     onWindowResize() {
         this.distributeRemainingWidth();
         this.refreshColumnWidth();
-        this.compensateScrollbarWidth();
         this.setBodyStyle();
     }
 
@@ -124,7 +142,6 @@ export default class Style {
         this.setupColumnWidth();
         this.distributeRemainingWidth();
         this.setColumnStyle();
-        this.compensateScrollbarWidth();
         this.setBodyStyle();
     }
 
@@ -224,22 +241,13 @@ export default class Style {
         }
     }
 
-    compensateScrollbarWidth() {
-        if (!$.hasVerticalOverflow($('.dt-body', this.bodyScrollable))) return;
-
-        const scrollbarWidth = $.scrollbarWidth();
-        const lastCol = this.datamanager.getColumn(-1);
-        const width = lastCol.width - scrollbarWidth;
-        this.columnmanager.setColumnWidth(lastCol.colIndex, width);
-    }
-
     distributeRemainingWidth() {
         if (this.options.layout !== 'fluid') return;
 
         const wrapperWidth = $.style(this.instance.datatableWrapper, 'width');
-        const headerWidth = $.style(this.header, 'width');
+        const firstRowWidth = $.style($('.dt-row', this.bodyScrollable), 'width');
         const resizableColumns = this.datamanager.getColumns().filter(col => col.resizable);
-        const deltaWidth = (wrapperWidth - headerWidth) / resizableColumns.length;
+        const deltaWidth = (wrapperWidth - firstRowWidth) / resizableColumns.length;
 
         resizableColumns.map(col => {
             const width = $.style(this.getColumnHeaderElement(col.colIndex), 'width');
@@ -281,8 +289,11 @@ export default class Style {
     }
 
     setBodyStyle() {
-        const width = $.style(this.header, 'width');
+        const bodyWidth = $.style(this.datatableWrapper, 'width');
+        const firstRow = $('.dt-row', this.bodyScrollable);
+        const rowWidth = $.style(firstRow, 'width');
 
+        let width = bodyWidth > rowWidth ? rowWidth : bodyWidth;
         $.style(this.bodyScrollable, {
             width: width + 'px'
         });
@@ -300,9 +311,11 @@ export default class Style {
             });
         }
 
-        $.style(this.bodyScrollable, {
-            marginTop: $.style(this.header, 'height') + 'px'
-        });
+        if (this.options.layout === 'fluid') {
+            $.style(this.bodyScrollable, {
+                overflowX: 'hidden'
+            });
+        }
     }
 
     getColumnHeaderElement(colIndex) {

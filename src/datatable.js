@@ -69,13 +69,9 @@ class DataTable {
     prepareDom() {
         this.wrapper.innerHTML = `
             <div class="datatable">
-                <div class="dt-header">
-                </div>
-                <div class="dt-scrollable">
-                    <div class="dt-body"></div>
-                </div>
-                <div class="dt-footer">
-                </div>
+                <div class="dt-header"></div>
+                <div class="dt-scrollable"></div>
+                <div class="dt-footer"></div>
                 <div class="dt-freeze">
                     <span class="dt-freeze__message">
                         ${this.options.freezeMessage}

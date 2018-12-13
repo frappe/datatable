@@ -26,25 +26,17 @@
 
 .datatable {
     position: relative;
-    overflow: auto;
+    overflow: hidden;
 }
 
 .dt-header {
-    border-collapse: collapse;
-    border-bottom: 1px solid var(--dt-border-color);
-
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-.dt-body {
     border-collapse: collapse;
 }
 
 .dt-scrollable {
     height: 40vw;
     overflow: auto;
+    border-top: 1px solid var(--dt-border-color);
 
     &--highlight-all {
         background-color: var(--dt-selection-highlight-color);
