@@ -135,7 +135,7 @@ describe('DataTable', function () {
                 .its('currentSort.colIndex')
                 .should('eq', 2);
 
-            cy.get('.dt-body .dt-row:first')
+            cy.get('.dt-scrollable .dt-row:first')
                 .contains('Airi Satou');
 
             cy.clickDropdownItem(2, 'Reset sorting');
@@ -153,7 +153,7 @@ describe('DataTable', function () {
 
     describe('Row', function () {
         it('check / uncheck row', function () {
-            cy.get('.dt-body .dt-row:first')
+            cy.get('.dt-scrollable .dt-row:first')
                 .find('input[type="checkbox"]')
                 .click();
 
@@ -240,7 +240,7 @@ describe('DataTable', function () {
             cy.getCell(5, 24).click().type('{ctrl}f');
             cy.get('@filterInput5').type('>3000');
 
-            cy.get('.dt-body .dt-row').first().should('have.class', 'dt-row-24');
+            cy.get('.dt-scrollable .dt-row').first().should('have.class', 'dt-row-24');
         });
     });
 });
