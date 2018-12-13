@@ -23,7 +23,11 @@ export default class BodyRenderer {
             return null;
         }).filter(index => index !== null);
 
+        const computedStyle = getComputedStyle(this.bodyScrollable);
+
         let config = {
+            width: computedStyle.width,
+            height: computedStyle.height,
             itemHeight: this.options.cellHeight,
             total: rows.length,
             generate: (index) => {
