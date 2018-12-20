@@ -201,6 +201,27 @@ $.scrollbarWidth = function scrollbarWidth() {
     return scrollbarWidth;
 };
 
+$.scrollbarHeight = function scrollbarHeight() {
+    // Create the measurement node
+    const scrollDiv = document.createElement('div');
+    $.style(scrollDiv, {
+        width: '100px',
+        height: '100px',
+        overflow: 'scroll',
+        position: 'absolute',
+        top: '-9999px'
+    });
+    document.body.appendChild(scrollDiv);
+
+    // Get the scrollbar height
+    const scrollbarHeight = scrollDiv.offsetHeight - scrollDiv.clientHeight;
+
+    // Delete the DIV
+    document.body.removeChild(scrollDiv);
+
+    return scrollbarHeight;
+};
+
 $.hasVerticalOverflow = function (element) {
     return element.scrollHeight > element.offsetHeight + 10;
 };

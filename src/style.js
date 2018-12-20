@@ -11,7 +11,7 @@ export default class Style {
 
         linkProperties(this, this.instance, [
             'options', 'datamanager', 'columnmanager',
-            'header', 'bodyScrollable', 'datatableWrapper',
+            'header', 'footer', 'bodyScrollable', 'datatableWrapper',
             'getColumn', 'bodyRenderer'
         ]);
 
@@ -50,6 +50,9 @@ export default class Style {
             requestAnimationFrame(() => {
                 const scrollLeft = e.target.scrollLeft;
                 $.style(this.header, {
+                    transform: `translateX(-${scrollLeft}px)`
+                });
+                $.style(this.footer, {
                     transform: `translateX(-${scrollLeft}px)`
                 });
                 this._settingHeaderPosition = false;
@@ -305,9 +308,10 @@ export default class Style {
         // adapt the container height
         const height = $.getStyle(this.bodyScrollable, 'height');
         const scrollHeight = (this.bodyRenderer.hyperlist || {})._scrollHeight || Infinity;
+        const scrollbarHeight = $.scrollbarHeight();
         if (scrollHeight < height) {
             $.style(this.bodyScrollable, {
-                height: (scrollHeight + 1) + 'px'
+                height: (scrollHeight + scrollbarHeight + 2) + 'px'
             });
         }
 
