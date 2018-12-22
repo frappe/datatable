@@ -11,7 +11,7 @@ export default class Style {
 
         linkProperties(this, this.instance, [
             'options', 'datamanager', 'columnmanager',
-            'header', 'bodyScrollable', 'datatableWrapper',
+            'header', 'footer', 'bodyScrollable', 'datatableWrapper',
             'getColumn', 'bodyRenderer'
         ]);
 
@@ -50,6 +50,9 @@ export default class Style {
             requestAnimationFrame(() => {
                 const scrollLeft = e.target.scrollLeft;
                 $.style(this.header, {
+                    transform: `translateX(-${scrollLeft}px)`
+                });
+                $.style(this.footer, {
                     transform: `translateX(-${scrollLeft}px)`
                 });
                 this._settingHeaderPosition = false;
@@ -303,11 +306,33 @@ export default class Style {
 
         // when there are less rows than the container
         // adapt the container height
-        const height = $.getStyle(this.bodyScrollable, 'height');
+        let bodyHeight = $.getStyle(this.bodyScrollable, 'height');
         const scrollHeight = (this.bodyRenderer.hyperlist || {})._scrollHeight || Infinity;
-        if (scrollHeight < height) {
+        const hasHorizontalOverflow = $.hasHorizontalOverflow(this.bodyScrollable);
+
+        let height;
+
+        if (scrollHeight < bodyHeight) {
+            height = scrollHeight;
+
+            // account for scrollbar size when
+            // there is horizontal overflow
+            if (hasHorizontalOverflow) {
+                height += $.scrollbarSize();
+            }
+
             $.style(this.bodyScrollable, {
-                height: (scrollHeight + 1) + 'px'
+                height: height + 'px'
+            });
+        }
+
+        const verticalOverflow = this.bodyScrollable.scrollHeight - this.bodyScrollable.offsetHeight;
+        if (verticalOverflow < $.scrollbarSize()) {
+            // if verticalOverflow is less than scrollbar size
+            // then most likely scrollbar is causing the scroll
+            // which is not needed
+            $.style(this.bodyScrollable, {
+                overflowY: 'hidden'
             });
         }
 
