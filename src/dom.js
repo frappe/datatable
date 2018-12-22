@@ -180,7 +180,16 @@ $.scrollTop = function scrollTop(element, pixels) {
     });
 };
 
-$.scrollbarWidth = function scrollbarWidth() {
+$.scrollbarSize = function scrollbarSize() {
+    if (!$.scrollBarSizeValue) {
+        $.scrollBarSizeValue = getScrollBarSize();
+    }
+    return $.scrollBarSizeValue;
+};
+
+function getScrollBarSize() {
+    // assume scrollbar width and height would be the same
+
     // Create the measurement node
     const scrollDiv = document.createElement('div');
     $.style(scrollDiv, {
@@ -199,31 +208,14 @@ $.scrollbarWidth = function scrollbarWidth() {
     document.body.removeChild(scrollDiv);
 
     return scrollbarWidth;
-};
-
-$.scrollbarHeight = function scrollbarHeight() {
-    // Create the measurement node
-    const scrollDiv = document.createElement('div');
-    $.style(scrollDiv, {
-        width: '100px',
-        height: '100px',
-        overflow: 'scroll',
-        position: 'absolute',
-        top: '-9999px'
-    });
-    document.body.appendChild(scrollDiv);
-
-    // Get the scrollbar height
-    const scrollbarHeight = scrollDiv.offsetHeight - scrollDiv.clientHeight;
-
-    // Delete the DIV
-    document.body.removeChild(scrollDiv);
-
-    return scrollbarHeight;
-};
+}
 
 $.hasVerticalOverflow = function (element) {
     return element.scrollHeight > element.offsetHeight + 10;
+};
+
+$.hasHorizontalOverflow = function (element) {
+    return element.scrollWidth > element.offsetWidth + 10;
 };
 
 $.measureTextWidth = function (text) {

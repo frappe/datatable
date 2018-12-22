@@ -306,12 +306,33 @@ export default class Style {
 
         // when there are less rows than the container
         // adapt the container height
-        const height = $.getStyle(this.bodyScrollable, 'height');
+        let bodyHeight = $.getStyle(this.bodyScrollable, 'height');
         const scrollHeight = (this.bodyRenderer.hyperlist || {})._scrollHeight || Infinity;
-        const scrollbarHeight = $.scrollbarHeight();
-        if (scrollHeight < height) {
+        const hasHorizontalOverflow = $.hasHorizontalOverflow(this.bodyScrollable);
+
+        let height;
+
+        if (scrollHeight < bodyHeight) {
+            height = scrollHeight;
+
+            // account for scrollbar size when
+            // there is horizontal overflow
+            if (hasHorizontalOverflow) {
+                height += $.scrollbarSize();
+            }
+
             $.style(this.bodyScrollable, {
-                height: (scrollHeight + scrollbarHeight + 2) + 'px'
+                height: height + 'px'
+            });
+        }
+
+        const verticalOverflow = this.bodyScrollable.scrollHeight - this.bodyScrollable.offsetHeight;
+        if (verticalOverflow < $.scrollbarSize()) {
+            // if verticalOverflow is less than scrollbar size
+            // then most likely scrollbar is causing the scroll
+            // which is not needed
+            $.style(this.bodyScrollable, {
+                overflowY: 'hidden'
             });
         }
 
