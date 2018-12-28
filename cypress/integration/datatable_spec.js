@@ -163,7 +163,7 @@ describe('DataTable', function () {
         });
     });
 
-    describe('Inline Filters', function () {
+    describe.only('Inline Filters', function () {
         before(function () {
             cy.visit('/');
         });
@@ -171,11 +171,13 @@ describe('DataTable', function () {
         beforeEach(function () {
             cy.get('.dt-filter[data-col-index=4]').as('filterInput4');
             cy.get('.dt-filter[data-col-index=5]').as('filterInput5');
+            cy.get('.dt-filter[data-col-index=6]').as('filterInput6');
         });
 
         afterEach(function () {
             cy.get('@filterInput4').clear();
             cy.get('@filterInput5').clear();
+            cy.get('@filterInput6').clear();
             cy.get('.dt-row[data-row-index=0]').should('be.visible');
         });
 
@@ -185,10 +187,9 @@ describe('DataTable', function () {
             cy.get('@filterInput4').type('edin');
             cy.get('.dt-row[data-row-index=0]').should('be.visible');
             cy.get('.dt-row[data-row-index=1]').should('not.be.visible');
-            cy.get('@filterInput4').clear();
+        });
 
-            cy.wait(500);
-
+        it('simple number filter', function () {
             cy.get('@filterInput5').type('15');
             cy.get('.dt-row[data-row-index=2]').should('be.visible');
             cy.get('.dt-row[data-row-index=15]').should('be.visible');
@@ -225,6 +226,15 @@ describe('DataTable', function () {
             cy.get('.dt-row[data-row-index=0]').should('be.visible');
             cy.get('.dt-row[data-row-index=4]').should('be.visible');
             cy.get('.dt-row[data-row-index=1]').should('not.be.visible');
+        });
+
+        it('greater than for string type filters', function () {
+            cy.get('@filterInput6').type('> 2011/07/01');
+            cy.wait(500);
+            cy.get('.dt-row[data-row-index=0]').should('not.be.visible');
+            cy.get('.dt-row[data-row-index=1]').should('be.visible');
+            cy.get('.dt-row[data-row-index=3]').should('be.visible');
+            cy.get('.dt-row[data-row-index=5]').should('be.visible');
         });
     });
 
