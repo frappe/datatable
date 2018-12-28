@@ -191,13 +191,10 @@
     }
 
     &__list {
-        display: none;
-
-        position: absolute;
+        position: fixed;
         min-width: 8rem;
-        top: 100%;
-        right: 0;
         z-index: 1;
+        cursor: pointer;
         background-color: var(--dt-cell-bg);
         border-radius: var(--dt-border-radius);
         padding: var(--dt-spacer-2) 0;

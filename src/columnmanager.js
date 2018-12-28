@@ -63,51 +63,72 @@ export default class ColumnManager {
     }
 
     bindDropdown() {
-        let $activeDropdown;
-        let activeClass = 'dt-dropdown--active';
         let toggleClass = '.dt-dropdown__toggle';
+        let dropdownClass = '.dt-dropdown__list';
 
-        $.on(this.header, 'click', toggleClass, (e, $button) => {
-            const $dropdown = $.closest('.dt-dropdown', $button);
+        // attach the dropdown list to container
+        this.instance.dropdownContainer.innerHTML = this.getDropdownListHTML();
+        this.$dropdownList = this.instance.dropdownContainer.firstElementChild;
 
-            if (!$dropdown.classList.contains(activeClass)) {
-                deactivateDropdown();
-                $dropdown.classList.add(activeClass);
-                $activeDropdown = $dropdown;
-            } else {
-                deactivateDropdown();
-            }
+        $.on(this.header, 'click', toggleClass, e => {
+            this.openDropdown(e);
         });
 
         const deactivateDropdownOnBodyClick = (e) => {
-            const selector = [toggleClass, toggleClass + ' *'].join(',');
+            const selector = [
+                toggleClass, toggleClass + ' *',
+                dropdownClass, dropdownClass + ' *'
+            ].join(',');
             if (e.target.matches(selector)) return;
             deactivateDropdown();
         };
         $.on(document.body, 'click', deactivateDropdownOnBodyClick);
+        document.addEventListener('scroll', deactivateDropdown, true);
+
         this.instance.on('onDestroy', () => {
             $.off(document.body, 'click', deactivateDropdownOnBodyClick);
+            $.off(document, 'scroll', deactivateDropdown);
         });
 
-        const dropdownItems = this.options.headerDropdown;
-
-        $.on(this.header, 'click', '.dt-dropdown__list-item', (e, $item) => {
-            const $col = $.closest('.dt-cell', $item);
-            const {
-                index
-            } = $.data($item);
-            const {
-                colIndex
-            } = $.data($col);
+        $.on(this.$dropdownList, 'click', '.dt-dropdown__list-item', (e, $item) => {
+            if (!this._dropdownActiveColIndex) return;
+            const dropdownItems = this.options.headerDropdown;
+            const { index } = $.data($item);
+            const colIndex = this._dropdownActiveColIndex;
             let callback = dropdownItems[index].action;
 
             callback && callback.call(this.instance, this.getColumn(colIndex));
+            this.hideDropdown();
         });
 
+        const _this = this;
         function deactivateDropdown(e) {
-            $activeDropdown && $activeDropdown.classList.remove(activeClass);
-            $activeDropdown = null;
+            _this.hideDropdown();
         }
+
+        this.hideDropdown();
+    }
+
+    openDropdown(e) {
+        if (!this._dropdownWidth) {
+            $.style(this.$dropdownList, { display: '' });
+            this._dropdownWidth = $.style(this.$dropdownList, 'width');
+        }
+        $.style(this.$dropdownList, {
+            display: '',
+            left: (e.clientX - this._dropdownWidth + 4) + 'px',
+            top: (e.clientY + 4) + 'px'
+        });
+        const $cell = $.closest('.dt-cell', e.target);
+        const { colIndex } = $.data($cell);
+        this._dropdownActiveColIndex = colIndex;
+    }
+
+    hideDropdown() {
+        $.style(this.$dropdownList, {
+            display: 'none'
+        });
+        this._dropdownActiveColIndex = null;
     }
 
     bindResizeColumn() {
@@ -370,17 +391,24 @@ export default class ColumnManager {
     }
 
     getDropdownHTML() {
-        const { dropdownButton, headerDropdown: dropdownItems } = this.options;
+        const { dropdownButton } = this.options;
 
         return `
             <div class="dt-dropdown">
                 <div class="dt-dropdown__toggle">${dropdownButton}</div>
-                <div class="dt-dropdown__list">
-                ${dropdownItems.map((d, i) => `
-                    <div class="dt-dropdown__list-item" data-index="${i}">${d.label}</div>
-                `).join('')}
-                </div>
             </div>
       `;
+    }
+
+    getDropdownListHTML() {
+        const { headerDropdown: dropdownItems } = this.options;
+
+        return `
+            <div class="dt-dropdown__list">
+            ${dropdownItems.map((d, i) => `
+                <div class="dt-dropdown__list-item" data-index="${i}">${d.label}</div>
+            `).join('')}
+            </div>
+        `;
     }
 }
