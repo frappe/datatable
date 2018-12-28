@@ -270,13 +270,8 @@ export default class ColumnManager {
 
     bindFilter() {
         if (!this.options.inlineFilters) return;
-        this.appliedFilters = this.appliedFilters || {};
         const handler = e => {
-            this.$filterCell = $.closest('.dt-cell', e.target);
-            const { colIndex } = $.data(this.$filterCell);
-            const keyword = e.target.value;
-            this.appliedFilters[colIndex] = keyword;
-            this.applyFilter(this.appliedFilters);
+            this.applyFilter(this.getAppliedFilters());
         };
         $.on(this.header, 'keydown', '.dt-filter', debounce(handler, 300));
     }
@@ -288,6 +283,17 @@ export default class ColumnManager {
             }) => {
                 this.rowmanager.showRows(rowsToShow);
             });
+    }
+
+    getAppliedFilters() {
+        const filters = {};
+        $.each('.dt-filter', this.header).map((input) => {
+            const value = input.value;
+            if (value) {
+                filters[input.dataset.colIndex] = value;
+            }
+        });
+        return filters;
     }
 
     applyDefaultSortOrder() {

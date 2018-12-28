@@ -3,6 +3,10 @@ import { isNumber, stripHTML } from './utils';
 export default function filterRows(rows, filters) {
     let filteredRowIndices = [];
 
+    if (Object.keys(filters).length === 0) {
+        return rows.map(row => row.meta.rowIndex);
+    }
+
     for (let colIndex in filters) {
         const keyword = filters[colIndex];
 
@@ -40,7 +44,7 @@ function getFilterMethod(filter) {
         greaterThan(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const value = parseFloat(cell.content);
+                    const value = cell.content;
                     return value > keyword;
                 })
                 .map(cell => cell.rowIndex);
@@ -49,7 +53,7 @@ function getFilterMethod(filter) {
         lessThan(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const value = parseFloat(cell.content);
+                    const value = cell.content;
                     return value < keyword;
                 })
                 .map(cell => cell.rowIndex);
@@ -67,7 +71,7 @@ function getFilterMethod(filter) {
         range(rangeValues, cells) {
             return cells
                 .filter(cell => {
-                    const value = parseFloat(cell.content);
+                    const value = cell.content;
                     return value >= rangeValues[0] && value <= rangeValues[1];
                 })
                 .map(cell => cell.rowIndex);
@@ -80,48 +84,49 @@ function getFilterMethod(filter) {
 function guessFilter(keyword = '') {
     if (keyword.length === 0) return {};
 
+    let compareString = keyword;
+
+    if (['>', '<', '='].includes(compareString[0])) {
+        compareString = keyword.slice(1);
+    }
+
     if (keyword.startsWith('>')) {
-        if (isNumber(keyword.slice(1))) {
+        if (compareString) {
             return {
                 type: 'greaterThan',
-                text: Number(keyword.slice(1).trim())
+                text: compareString.trim()
             };
         }
-
-        keyword = keyword.slice(1);
     }
 
     if (keyword.startsWith('<')) {
-        if (isNumber(keyword.slice(1))) {
+        if (compareString) {
             return {
                 type: 'lessThan',
-                text: Number(keyword.slice(1).trim())
+                text: compareString.trim()
             };
         }
-
-        keyword = keyword.slice(1);
-    }
-
-    if (keyword.split(':').length === 2 && keyword.split(':').every(isNumber)) {
-        return {
-            type: 'range',
-            text: keyword.split(':').map(v => v.trim()).map(Number)
-        };
     }
 
     if (keyword.startsWith('=')) {
-        if (isNumber(keyword.slice(1))) {
+        if (isNumber(compareString)) {
             return {
                 type: 'equals',
                 text: Number(keyword.slice(1).trim())
             };
         }
+    }
 
-        keyword = keyword.slice(1);
+    if (keyword.split(':').length === 2) {
+        compareString = keyword.split(':');
+        return {
+            type: 'range',
+            text: compareString.map(v => v.trim())
+        };
     }
 
     return {
         type: 'contains',
-        text: keyword.toLowerCase()
+        text: compareString.toLowerCase()
     };
 }
