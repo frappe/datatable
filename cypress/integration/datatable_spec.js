@@ -113,12 +113,11 @@ describe('DataTable', function () {
                 .find('.dt-dropdown__toggle')
                 .as('toggle')
                 .click();
-            cy.getColumnCell(2)
-                .find('.dt-dropdown__list')
+            cy.get('.dt-dropdown__list')
                 .as('dropdown-list')
                 .should('be.visible');
 
-            cy.get('@toggle').click();
+            cy.getColumnCell(2).click();
 
             cy.get('@dropdown-list').should('not.be.visible');
         });
@@ -152,6 +151,10 @@ describe('DataTable', function () {
     });
 
     describe('Row', function () {
+        before(function () {
+            cy.visit('/');
+        });
+
         it('check / uncheck row', function () {
             cy.get('.dt-scrollable .dt-row:first')
                 .find('input[type="checkbox"]')

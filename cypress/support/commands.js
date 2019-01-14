@@ -43,8 +43,7 @@ Cypress.Commands.add('clickDropdown', (col) => {
 });
 
 Cypress.Commands.add('clickDropdownItem', (col, item) => {
-    return cy.getColumnCell(col)
-        .find(`.dt-dropdown__list-item:contains("${item}")`)
+    return cy.get(`.dt-dropdown__list-item:contains("${item}")`)
         .click({ force: true });
 });
 
