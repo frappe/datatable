@@ -30,11 +30,31 @@ export default function filterRows(rows, filters) {
 };
 
 function getFilterMethod(filter) {
+    const stringCompareValue = cell =>
+        String(stripHTML(cell.html || '') || cell.content || '').toLowerCase();
+
+    const numberCompareValue = cell => parseFloat(cell.content);
+
+    const getCompareValues = (cell, keyword) => {
+        if (cell.column.compareValue) {
+            const compareValues = cell.column.compareValue(cell, keyword);
+            if (compareValues && Array.isArray(compareValues)) return compareValues;
+        }
+
+        // check if it can be converted to number
+        const float = numberCompareValue(cell);
+        if (!isNaN(float)) {
+            return [float, keyword];
+        }
+
+        return [stringCompareValue(cell), keyword];
+    };
+
     let filterMethodMap = {
         contains(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const hay = String(stripHTML(cell.html || '') || cell.content || '').toLowerCase();
+                    const hay = stringCompareValue(cell);
                     const needle = (keyword || '').toLowerCase();
                     return !needle || hay.includes(needle);
                 })
@@ -44,8 +64,8 @@ function getFilterMethod(filter) {
         greaterThan(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const value = cell.content;
-                    return value > keyword;
+                    const [compareValue, keywordValue] = getCompareValues(cell, keyword);
+                    return compareValue > keywordValue;
                 })
                 .map(cell => cell.rowIndex);
         },
@@ -53,8 +73,8 @@ function getFilterMethod(filter) {
         lessThan(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const value = cell.content;
-                    return value < keyword;
+                    const [compareValue, keywordValue] = getCompareValues(cell, keyword);
+                    return compareValue < keywordValue;
                 })
                 .map(cell => cell.rowIndex);
         },
@@ -71,8 +91,10 @@ function getFilterMethod(filter) {
         range(rangeValues, cells) {
             return cells
                 .filter(cell => {
-                    const value = cell.content;
-                    return value >= rangeValues[0] && value <= rangeValues[1];
+                    const values1 = getCompareValues(cell, rangeValues[0]);
+                    const values2 = getCompareValues(cell, rangeValues[1]);
+                    const value = values1[0];
+                    return value >= values1[1] && value <= values2[1];
                 })
                 .map(cell => cell.rowIndex);
         }

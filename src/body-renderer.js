@@ -37,6 +37,9 @@ export default class BodyRenderer {
                 const rowHTML = this.rowmanager.getRowHTML(row, row.meta);
                 el.innerHTML = rowHTML;
                 return el.children[0];
+            },
+            afterRender: () => {
+                this.restoreState();
             }
         };
 
@@ -95,7 +98,6 @@ export default class BodyRenderer {
     }
 
     restoreState() {
-        this.rowmanager.showAllRows();
         this.rowmanager.highlightCheckedRows();
         this.cellmanager.selectAreaOnClusterChanged();
         this.cellmanager.focusCellOnClusterChanged();

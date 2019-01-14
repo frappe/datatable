@@ -163,7 +163,7 @@ describe('DataTable', function () {
         });
     });
 
-    describe.only('Inline Filters', function () {
+    describe('Inline Filters', function () {
         before(function () {
             cy.visit('/');
         });
@@ -229,7 +229,7 @@ describe('DataTable', function () {
         });
 
         it('greater than for string type filters', function () {
-            cy.get('@filterInput6').type('> 2011/07/01');
+            cy.get('@filterInput6').type('> 01/07/2011');
             cy.wait(500);
             cy.get('.dt-row[data-row-index=0]').should('not.be.visible');
             cy.get('.dt-row[data-row-index=1]').should('be.visible');
