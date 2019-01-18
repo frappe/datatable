@@ -10,6 +10,7 @@ export default class BodyRenderer {
         this.bodyScrollable = instance.bodyScrollable;
         this.footer = this.instance.footer;
         this.log = instance.log;
+        this.events = instance.events;
     }
 
     renderRows(rows) {
@@ -82,12 +83,25 @@ export default class BodyRenderer {
                 column: col
             };
         });
+
+        const rowCount = this.visibleRows.length;
         const totalRow = this.visibleRows.reduce((acc, prevRow) => {
             return acc.map((cell, i) => {
                 const prevCell = prevRow[i];
-                if (typeof prevCell.content === 'number') {
-                    cell.content += prevRow[i].content;
+
+                let useDefaultAccumulator = true;
+                if (this.events.accumulator) {
+                    const rowData = this.datamanager.getData(prevRow.meta.rowIndex);
+                    const res = this.events.accumulator(cell, prevCell, rowData, rowCount);
+                    if (res !== false) {
+                        useDefaultAccumulator = false;
+                    }
                 }
+
+                if (useDefaultAccumulator && typeof prevCell.content === 'number') {
+                    cell.content += prevCell.content;
+                }
+
                 if (!cell.format && prevCell.format) {
                     cell.format = prevCell.format;
                 }
