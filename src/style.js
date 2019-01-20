@@ -4,6 +4,7 @@ import {
     linkProperties,
     throttle
 } from './utils';
+import { detectScrollType } from 'normalize-scroll-left';
 
 export default class Style {
     constructor(instance) {
@@ -49,12 +50,25 @@ export default class Style {
 
             requestAnimationFrame(() => {
                 const scrollLeft = e.target.scrollLeft;
-                $.style(this.header, {
-                    transform: `translateX(-${scrollLeft}px)`
-                });
-                $.style(this.footer, {
-                    transform: `translateX(-${scrollLeft}px)`
-                });
+                const direction = getComputedStyle(document.getElementsByTagName('body')[0]).direction;
+                if (direction === 'rtl' && detectScrollType() === 'default') {
+                    const scrollWidth = e.target.scrollWidth;
+                    const clientWidth = e.target.clientWidth;
+                    $.style(this.header, {
+                        transform: `translateX(${scrollWidth - clientWidth - scrollLeft}px)`
+                    });
+                    $.style(this.footer, {
+                        transform: `translateX(${scrollWidth - clientWidth - scrollLeft}px)`
+                    });
+                }
+                else {
+                    $.style(this.header, {
+                        transform: `translateX(${-scrollLeft}px)`
+                    });
+                    $.style(this.footer, {
+                        transform: `translateX(${-scrollLeft}px)`
+                    });
+                }
                 this._settingHeaderPosition = false;
             });
         });

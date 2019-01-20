@@ -67,6 +67,7 @@
   "dependencies": {
     "hyperlist": "^1.0.0-beta",
     "lodash": "^4.17.5",
+    "normalize-scroll-left": "^0.1.2",
     "sortablejs": "^1.7.0"
   },
   "config": {
