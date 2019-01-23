@@ -10,7 +10,7 @@ export default class BodyRenderer {
         this.bodyScrollable = instance.bodyScrollable;
         this.footer = this.instance.footer;
         this.log = instance.log;
-        this.events = instance.events;
+        this.hooks = instance.hooks;
     }
 
     renderRows(rows) {
@@ -70,8 +70,9 @@ export default class BodyRenderer {
     }
 
     getTotalRow() {
-        const columns = this.datamanager.getColumns();
-        const totalRowTemplate = columns.map(col => {
+        const self = this;
+        const columns = self.datamanager.getColumns();
+        const totalRow = columns.map(col => {
             let content = 0;
             if (['_rowIndex', '_checkbox'].includes(col.id)) {
                 content = '';
@@ -84,30 +85,47 @@ export default class BodyRenderer {
             };
         });
 
-        const rowCount = this.visibleRows.length;
-        const totalRow = this.visibleRows.reduce((acc, prevRow) => {
-            return acc.map((cell, i) => {
-                const prevCell = prevRow[i];
+        for (let column of columns) {
+            if (['_rowIndex', '_checkbox'].includes(column.id)) {
+                continue;
+            }
 
-                let useDefaultAccumulator = true;
-                if (this.events.accumulator) {
-                    const rowData = this.datamanager.getData(prevRow.meta.rowIndex);
-                    const res = this.events.accumulator(cell, prevCell, rowData, rowCount);
-                    if (res !== false) {
-                        useDefaultAccumulator = false;
+            let useDefaultAccumulator = !self.hooks.totalAccumulator;
+            let total = 0;
+
+            if (!useDefaultAccumulator) {
+                const values = self.visibleRows.map(row => {
+                    return {rowIndex: row.meta.rowIndex, content: row[column.colIndex].content};
+                });
+                const result = self.hooks.totalAccumulator.call(self.instance, column, values);
+                if (result === false) {
+                    useDefaultAccumulator = true;
+                } else {
+                    total = result;
+                }
+            }
+
+            if (useDefaultAccumulator) {
+                for (let i = 0; i < self.visibleRows.length; ++i) {
+                    const cell = self.visibleRows[i][column.colIndex];
+                    if (typeof cell.content === 'number') {
+                        total += cell.content;
                     }
                 }
+            }
 
-                if (useDefaultAccumulator && typeof prevCell.content === 'number') {
-                    cell.content += prevCell.content;
+            let format = null;
+            for (let i = 0; i < self.visibleRows.length; ++i) {
+                const cell = self.visibleRows[i][column.colIndex];
+                if (cell.format) {
+                    format = cell.format;
+                    break;
                 }
+            }
 
-                if (!cell.format && prevCell.format) {
-                    cell.format = prevCell.format;
-                }
-                return Object.assign({}, cell);
-            });
-        }, totalRowTemplate);
+            totalRow[column.colIndex].content = total;
+            totalRow[column.colIndex].format = format;
+        }
         return totalRow;
     }
 
