@@ -91,7 +91,7 @@ export default class BodyRenderer {
             }
 
             let useDefaultAccumulator = !self.hooks.totalAccumulator;
-            let total = 0;
+            let total = null;
 
             if (!useDefaultAccumulator) {
                 const values = self.visibleRows.map(row => {
@@ -109,6 +109,9 @@ export default class BodyRenderer {
                 for (let i = 0; i < self.visibleRows.length; ++i) {
                     const cell = self.visibleRows[i][column.colIndex];
                     if (typeof cell.content === 'number') {
+                        if (total == null) {
+                            total = 0;
+                        }
                         total += cell.content;
                     }
                 }
