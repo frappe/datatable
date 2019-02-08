@@ -72,7 +72,7 @@ export default class BodyRenderer {
     getTotalRow() {
         const columns = this.datamanager.getColumns();
         const totalRowTemplate = columns.map(col => {
-            let content = 0;
+            let content = null;
             if (['_rowIndex', '_checkbox'].includes(col.id)) {
                 content = '';
             }
@@ -85,7 +85,7 @@ export default class BodyRenderer {
         });
 
         const totalRow = totalRowTemplate.map((cell, i) => {
-            if (typeof cell.content !== 'number') return cell;
+            if (cell.content === '') return cell;
 
             if (this.options.hooks.columnTotal) {
                 const columnValues = this.visibleRows.map(row => row[i].content);
@@ -99,6 +99,7 @@ export default class BodyRenderer {
             cell.content = this.visibleRows.reduce((acc, prevRow) => {
                 const prevCell = prevRow[i];
                 if (typeof prevCell.content === 'number') {
+                    if (acc == null) acc = 0;
                     return acc + prevCell.content;
                 }
                 return acc;
