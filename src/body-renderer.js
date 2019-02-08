@@ -70,9 +70,8 @@ export default class BodyRenderer {
     }
 
     getTotalRow() {
-        const self = this;
-        const columns = self.datamanager.getColumns();
-        const totalRow = columns.map(col => {
+        const columns = this.datamanager.getColumns();
+        const totalRowTemplate = columns.map(col => {
             let content = 0;
             if (['_rowIndex', '_checkbox'].includes(col.id)) {
                 content = '';
@@ -85,50 +84,29 @@ export default class BodyRenderer {
             };
         });
 
-        for (let column of columns) {
-            if (['_rowIndex', '_checkbox'].includes(column.id)) {
-                continue;
-            }
+        const totalRow = totalRowTemplate.map((cell, i) => {
+            if (typeof cell.content !== 'number') return cell;
 
-            let useDefaultAccumulator = !self.hooks.totalAccumulator;
-            let total = null;
-
-            if (!useDefaultAccumulator) {
-                const values = self.visibleRows.map(row => {
-                    return {rowIndex: row.meta.rowIndex, content: row[column.colIndex].content};
-                });
-                const result = self.hooks.totalAccumulator.call(self.instance, column, values);
-                if (result === false) {
-                    useDefaultAccumulator = true;
-                } else {
-                    total = result;
+            if (this.options.hooks.columnTotal) {
+                const columnValues = this.visibleRows.map(row => row[i].content);
+                const result = this.options.hooks.columnTotal.call(this.instance, columnValues, cell);
+                if (result != null) {
+                    cell.content = result;
+                    return cell;
                 }
             }
 
-            if (useDefaultAccumulator) {
-                for (let i = 0; i < self.visibleRows.length; ++i) {
-                    const cell = self.visibleRows[i][column.colIndex];
-                    if (typeof cell.content === 'number') {
-                        if (total == null) {
-                            total = 0;
-                        }
-                        total += cell.content;
-                    }
+            cell.content = this.visibleRows.reduce((acc, prevRow) => {
+                const prevCell = prevRow[i];
+                if (typeof prevCell.content === 'number') {
+                    return acc + prevCell.content;
                 }
-            }
+                return acc;
+            }, cell.content);
 
-            let format = null;
-            for (let i = 0; i < self.visibleRows.length; ++i) {
-                const cell = self.visibleRows[i][column.colIndex];
-                if (cell.format) {
-                    format = cell.format;
-                    break;
-                }
-            }
+            return cell;
+        });
 
-            totalRow[column.colIndex].content = total;
-            totalRow[column.colIndex].format = format;
-        }
         return totalRow;
     }
 

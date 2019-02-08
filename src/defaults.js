@@ -38,6 +38,9 @@ export default {
         onCheckRow(row) {},
         onDestroy() {}
     },
+    hooks: {
+        columnTotal: null
+    },
     sortIndicator: {
         asc: '↑',
         desc: '↓',
