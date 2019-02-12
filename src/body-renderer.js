@@ -10,7 +10,6 @@ export default class BodyRenderer {
         this.bodyScrollable = instance.bodyScrollable;
         this.footer = this.instance.footer;
         this.log = instance.log;
-        this.hooks = instance.hooks;
     }
 
     renderRows(rows) {
