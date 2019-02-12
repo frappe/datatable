@@ -59,13 +59,6 @@ class DataTable {
             options.events || {}
         );
         this.fireEvent = this.fireEvent.bind(this);
-
-        // custom user events
-        this.hooks = Object.assign(
-            {},
-            this.options.hooks || {},
-            options.events || {}
-        );
     }
 
     prepare() {
