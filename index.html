@@ -216,7 +216,24 @@
 								return format($input.value);
 							}
 						}
-					}
+                    },
+                    hooks: {
+                        columnTotal(columnValues, cell) {
+                            if (cell.colIndex === 5) {
+                                // calculated average for 5th column
+                                const sum = columnValues.reduce((acc, value) => {
+                                    if (typeof value === 'number') {
+                                        return acc + value
+                                    }
+                                    return acc
+                                }, 0);
+                                return sum / columnValues.length
+                            }
+                            if (cell.colIndex === 2) {
+                                return 'Total'
+                            }
+                        }
+                    }
 				});
 				console.log(performance.now() - start);
 

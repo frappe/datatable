@@ -71,7 +71,7 @@ export default class BodyRenderer {
     getTotalRow() {
         const columns = this.datamanager.getColumns();
         const totalRowTemplate = columns.map(col => {
-            let content = 0;
+            let content = null;
             if (['_rowIndex', '_checkbox'].includes(col.id)) {
                 content = '';
             }
@@ -82,18 +82,31 @@ export default class BodyRenderer {
                 column: col
             };
         });
-        const totalRow = this.visibleRows.reduce((acc, prevRow) => {
-            return acc.map((cell, i) => {
+
+        const totalRow = totalRowTemplate.map((cell, i) => {
+            if (cell.content === '') return cell;
+
+            if (this.options.hooks.columnTotal) {
+                const columnValues = this.visibleRows.map(row => row[i].content);
+                const result = this.options.hooks.columnTotal.call(this.instance, columnValues, cell);
+                if (result != null) {
+                    cell.content = result;
+                    return cell;
+                }
+            }
+
+            cell.content = this.visibleRows.reduce((acc, prevRow) => {
                 const prevCell = prevRow[i];
                 if (typeof prevCell.content === 'number') {
-                    cell.content += prevRow[i].content;
+                    if (acc == null) acc = 0;
+                    return acc + prevCell.content;
                 }
-                if (!cell.format && prevCell.format) {
-                    cell.format = prevCell.format;
-                }
-                return Object.assign({}, cell);
-            });
-        }, totalRowTemplate);
+                return acc;
+            }, cell.content);
+
+            return cell;
+        });
+
         return totalRow;
     }
 
