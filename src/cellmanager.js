@@ -212,7 +212,9 @@ export default class CellManager {
     }
 
     focusCell($cell, {
-        skipClearSelection = 0
+        skipClearSelection = 0,
+        skipDOMFocus = 0,
+        skipScrollToCell = 0
     } = {}) {
         if (!$cell) return;
 
@@ -232,7 +234,9 @@ export default class CellManager {
             return;
         }
 
-        this.scrollToCell($cell);
+        if (!skipScrollToCell) {
+            this.scrollToCell($cell);
+        }
 
         this.deactivateEditing();
         if (!skipClearSelection) {
@@ -246,8 +250,10 @@ export default class CellManager {
         this.$focusedCell = $cell;
         $cell.classList.add('dt-cell--focus');
 
-        // so that keyboard nav works
-        $cell.focus();
+        if (!skipDOMFocus) {
+            // so that keyboard nav works
+            $cell.focus();
+        }
 
         this.highlightRowColumnHeader($cell);
     }
@@ -313,11 +319,15 @@ export default class CellManager {
         const $cell = this.getCell$(colIndex, rowIndex);
 
         if (!$cell) return;
-        // this function is called after selectAreaOnClusterChanged,
+        // this function is called after hyperlist renders the rows after scroll,
         // focusCell calls clearSelection which resets the area selection
         // so a flag to skip it
+        // we also skip DOM focus and scroll to cell
+        // because it fights with the user scroll
         this.focusCell($cell, {
-            skipClearSelection: 1
+            skipClearSelection: 1,
+            skipDOMFocus: 1,
+            skipScrollToCell: 1
         });
     }
 
