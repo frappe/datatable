@@ -43,4 +43,22 @@ describe('Column', function () {
 
         cy.get('.dt-cell--header').should('have.length', 7);
     });
+
+    it('resize column with mouse drag', function () {
+        cy.get('.dt-cell--header-3 .dt-cell__resize-handle').as('resize-handle');
+        cy
+            .get('@resize-handle')
+            .trigger('mousedown')
+            .trigger('mousemove', { pageX: 510, pageY: 20, which: 1 })
+            .trigger('mouseup');
+
+        cy.getColumnCell(3).should('have.css', 'width', '123px');
+        cy.getCell(3, 1).should('have.css', 'width', '123px');
+    });
+
+    it('resize column using double click', function () {
+        cy.get('.dt-cell--header-4 .dt-cell__resize-handle').trigger('dblclick');
+        cy.getColumnCell(4).should('have.css', 'width', '94px');
+        cy.getCell(4, 1).should('have.css', 'width', '94px');
+    });
 });
