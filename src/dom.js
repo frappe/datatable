@@ -138,6 +138,10 @@ $.removeStyle = (elements, styleProps) => {
 };
 
 $.getStyle = (element, prop) => {
+    if (!prop) {
+        return getComputedStyle(element);
+    }
+
     let val = getComputedStyle(element)[prop];
 
     if (['width', 'height'].includes(prop)) {
