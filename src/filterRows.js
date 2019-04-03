@@ -88,6 +88,15 @@ function getFilterMethod(filter) {
                 .map(cell => cell.rowIndex);
         },
 
+        notEquals(keyword, cells) {
+            return cells
+                .filter(cell => {
+                    const value = parseFloat(cell.content);
+                    return value !== keyword;
+                })
+                .map(cell => cell.rowIndex);
+        },
+
         range(rangeValues, cells) {
             return cells
                 .filter(cell => {
@@ -110,6 +119,8 @@ function guessFilter(keyword = '') {
 
     if (['>', '<', '='].includes(compareString[0])) {
         compareString = keyword.slice(1);
+    } else if (compareString.startsWith('!=')) {
+        compareString = keyword.slice(2);
     }
 
     if (keyword.startsWith('>')) {
@@ -135,6 +146,15 @@ function guessFilter(keyword = '') {
             return {
                 type: 'equals',
                 text: Number(keyword.slice(1).trim())
+            };
+        }
+    }
+
+    if (keyword.startsWith('!=')) {
+        if (isNumber(compareString)) {
+            return {
+                type: 'notEquals',
+                text: Number(keyword.slice(2).trim())
             };
         }
     }
