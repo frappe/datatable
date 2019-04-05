@@ -218,6 +218,22 @@ export default class RowManager {
         this.showRows(rowsToShow);
     }
 
+    expandAllNodes() {
+        let rows = this.datamanager.getRows();
+        let rootNodes = rows.filter(row => !row.meta.isLeaf);
+        rootNodes.map(row => {
+            this.openSingleNode(row.meta.rowIndex);
+        });
+    }
+
+    collapseAllNodes() {
+        let rows = this.datamanager.getRows();
+        let rootNodes = rows.filter(row => row.meta.indent === 0);
+        rootNodes.map(row => {
+            this.closeSingleNode(row.meta.rowIndex);
+        });
+    }
+
     getRow$(rowIndex) {
         return $(this.selector(rowIndex), this.bodyScrollable);
     }
