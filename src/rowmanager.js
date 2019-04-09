@@ -187,27 +187,26 @@ export default class RowManager {
         this.showRows(rowIndices);
     }
 
-    openSingleNode(rowIndex) {
+    _openSingleNode(rowIndex) {
         const row = this.datamanager.getRow(rowIndex);
         row.meta.isTreeNodeClose = false;
 
-        const childrenToShow = this.datamanager.getImmediateChildren(rowIndex);
+        return this.datamanager.getImmediateChildren(rowIndex);
+    }
+
+    openSingleNode(rowIndex) {
+        const childrenToShow = this._openSingleNode(rowIndex);
         const visibleRowIndices = this.bodyRenderer.visibleRowIndices;
         const rowsToShow = uniq([...childrenToShow, ...visibleRowIndices]).sort(numberSortAsc);
 
         this.showRows(rowsToShow);
     }
 
-    closeSingleNode(rowIndex) {
+    _closeSingleNode(rowIndex) {
         const row = this.datamanager.getRow(rowIndex);
         row.meta.isTreeNodeClose = true;
 
         const rowsToHide = this.datamanager.getChildren(rowIndex);
-        const visibleRows = this.bodyRenderer.visibleRowIndices;
-        const rowsToShow = visibleRows
-            .filter(rowIndex => !rowsToHide.includes(rowIndex))
-            .sort(numberSortAsc);
-
         rowsToHide.forEach(rowIndex => {
             const row = this.datamanager.getRow(rowIndex);
             if (!row.meta.isLeaf) {
@@ -215,23 +214,66 @@ export default class RowManager {
             }
         });
 
+        return rowsToHide;
+    }
+
+    closeSingleNode(rowIndex) {
+        const rowsToHide = this._closeSingleNode(rowIndex);
+        const visibleRows = this.bodyRenderer.visibleRowIndices;
+        const rowsToShow = visibleRows
+            .filter(rowIndex => !rowsToHide.includes(rowIndex))
+            .sort(numberSortAsc);
+
         this.showRows(rowsToShow);
     }
 
     expandAllNodes() {
         let rows = this.datamanager.getRows();
         let rootNodes = rows.filter(row => !row.meta.isLeaf);
-        rootNodes.map(row => {
-            this.openSingleNode(row.meta.rowIndex);
-        });
+
+        const childrenToShow = rootNodes.map(row => this._openSingleNode(row.meta.rowIndex)).flat();
+        const visibleRowIndices = this.bodyRenderer.visibleRowIndices;
+        const rowsToShow = uniq([...childrenToShow, ...visibleRowIndices]).sort(numberSortAsc);
+
+        this.showRows(rowsToShow);
     }
 
     collapseAllNodes() {
         let rows = this.datamanager.getRows();
         let rootNodes = rows.filter(row => row.meta.indent === 0);
-        rootNodes.map(row => {
-            this.closeSingleNode(row.meta.rowIndex);
+
+        const rowsToHide = rootNodes.map(row => this._closeSingleNode(row.meta.rowIndex)).flat();
+        const visibleRows = this.bodyRenderer.visibleRowIndices;
+        const rowsToShow = visibleRows
+            .filter(rowIndex => !rowsToHide.includes(rowIndex))
+            .sort(numberSortAsc);
+
+        this.showRows(rowsToShow);
+    }
+
+    setTreeDepth(depth) {
+        let rows = this.datamanager.getRows();
+
+        const rowsToOpen = rows.filter(row => row.meta.indent < depth);
+        const rowsToClose = rows.filter(row => row.meta.indent >= depth);
+        const rowsToHide = rowsToClose.filter(row => row.meta.indent > depth);
+
+        rowsToClose.forEach(row => {
+            if (!row.meta.isLeaf) {
+                row.meta.isTreeNodeClose = true;
+            }
         });
+        rowsToOpen.forEach(row => {
+            if (!row.meta.isLeaf) {
+                row.meta.isTreeNodeClose = false;
+            }
+        });
+
+        const rowsToShow = rows
+            .filter(row => !rowsToHide.includes(row))
+            .map(row => row.meta.rowIndex)
+            .sort(numberSortAsc);
+        this.showRows(rowsToShow);
     }
 
     getRow$(rowIndex) {
