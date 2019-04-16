@@ -20,9 +20,9 @@ describe('Inline Filters', function () {
     });
 
     it('simple number filter', function () {
-        cy.get('@filterInput5').type('15');
-        cy.get('.dt-row[data-row-index=2]').should('be.visible');
-        cy.get('.dt-row[data-row-index=15]').should('be.visible');
+        cy.get('@filterInput5').type('2360');
+        cy.get('.dt-row[data-row-index=8]').should('be.visible');
+        cy.get('.dt-row[data-row-index=15]').should('not.be.visible');
         cy.get('.dt-row[data-row-index=22]').should('not.be.visible');
         cy.get('@filterInput5').clear();
     });
