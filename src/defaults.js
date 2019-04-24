@@ -56,7 +56,7 @@ export default {
     layout: 'fixed', // fixed, fluid, ratio
     noDataMessage: 'No Data',
     cellHeight: 40,
-    minimumColumnWidth: 70,
+    minimumColumnWidth: 30,
     inlineFilters: false,
     treeView: false,
     checkedRowStatus: true,

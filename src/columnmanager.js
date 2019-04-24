@@ -179,7 +179,7 @@ export default class ColumnManager {
                 colIndex
             } = $.data($resizingCell);
 
-            let columnMinWidth = 30;
+            let columnMinWidth = this.options.minimumColumnWidth;
             if (columnMinWidth > finalWidth) {
                 // don't resize past 30 pixels
                 return;

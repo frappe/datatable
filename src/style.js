@@ -189,10 +189,10 @@ export default class Style {
                 column.width = naturalWidth;
             }
 
-            if (typeof naturalWidth === 'number' && naturalWidth >= this.options.minimumColumnWidth) {
+            if (typeof naturalWidth === 'number' && naturalWidth >= column.naturalWidth) {
                 column.naturalWidth = naturalWidth;
             } else {
-                column.naturalWidth = this.options.minimumColumnWidth;
+                column.naturalWidth = column.naturalWidth;
             }
         });
     }
@@ -237,8 +237,8 @@ export default class Style {
                     if (!column.width) {
                         column.width = column.naturalWidth;
                     }
-                    if (column.width < column.minWidth) {
-                        column.width = column.minWidth;
+                    if (column.width < this.options.minimumColumnWidth) {
+                        column.width = this.options.minimumColumnWidth;
                     }
                 });
         }
