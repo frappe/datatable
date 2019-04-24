@@ -54,10 +54,10 @@ describe('Column', function () {
 
         cy.getColumnCell(3)
             .should('have.css', 'width')
-            .and('match', /12\dpx/);
+            .and('match', /13\dpx/);
         cy.getCell(3, 1)
             .should('have.css', 'width')
-            .and('match', /12\dpx/);
+            .and('match', /13\dpx/);
     });
 
     it('resize column using double click', function () {
