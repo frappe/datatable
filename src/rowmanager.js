@@ -187,7 +187,7 @@ export default class RowManager {
         this.showRows(rowIndices);
     }
 
-    _openSingleNode(rowIndex) {
+    getChildrenToShowForNode(rowIndex) {
         const row = this.datamanager.getRow(rowIndex);
         row.meta.isTreeNodeClose = false;
 
@@ -195,14 +195,14 @@ export default class RowManager {
     }
 
     openSingleNode(rowIndex) {
-        const childrenToShow = this._openSingleNode(rowIndex);
+        const childrenToShow = this.getChildrenToShowForNode(rowIndex);
         const visibleRowIndices = this.bodyRenderer.visibleRowIndices;
         const rowsToShow = uniq([...childrenToShow, ...visibleRowIndices]).sort(numberSortAsc);
 
         this.showRows(rowsToShow);
     }
 
-    _closeSingleNode(rowIndex) {
+    getChildrenToHideForNode(rowIndex) {
         const row = this.datamanager.getRow(rowIndex);
         row.meta.isTreeNodeClose = true;
 
@@ -218,7 +218,7 @@ export default class RowManager {
     }
 
     closeSingleNode(rowIndex) {
-        const rowsToHide = this._closeSingleNode(rowIndex);
+        const rowsToHide = this.getChildrenToHideForNode(rowIndex);
         const visibleRows = this.bodyRenderer.visibleRowIndices;
         const rowsToShow = visibleRows
             .filter(rowIndex => !rowsToHide.includes(rowIndex))
@@ -231,7 +231,7 @@ export default class RowManager {
         let rows = this.datamanager.getRows();
         let rootNodes = rows.filter(row => !row.meta.isLeaf);
 
-        const childrenToShow = rootNodes.map(row => this._openSingleNode(row.meta.rowIndex)).flat();
+        const childrenToShow = rootNodes.map(row => this.getChildrenToShowForNode(row.meta.rowIndex)).flat();
         const visibleRowIndices = this.bodyRenderer.visibleRowIndices;
         const rowsToShow = uniq([...childrenToShow, ...visibleRowIndices]).sort(numberSortAsc);
 
@@ -242,7 +242,7 @@ export default class RowManager {
         let rows = this.datamanager.getRows();
         let rootNodes = rows.filter(row => row.meta.indent === 0);
 
-        const rowsToHide = rootNodes.map(row => this._closeSingleNode(row.meta.rowIndex)).flat();
+        const rowsToHide = rootNodes.map(row => this.getChildrenToHideForNode(row.meta.rowIndex)).flat();
         const visibleRows = this.bodyRenderer.visibleRowIndices;
         const rowsToShow = visibleRows
             .filter(rowIndex => !rowsToHide.includes(rowIndex))
