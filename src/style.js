@@ -50,9 +50,7 @@ export default class Style {
             requestAnimationFrame(() => {
                 const { scrollLeft, scrollWidth, clientWidth } = e.target;
 
-                let left = this.options.direction === 'rtl'
-                    ? scrollWidth - clientWidth - scrollLeft
-                    : -scrollLeft;
+                let left = this.options.direction === 'rtl' ? scrollWidth - clientWidth - scrollLeft : -scrollLeft;
 
                 $.style(this.header, {
                     transform: `translateX(${left}px)`
