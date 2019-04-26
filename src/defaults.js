@@ -62,5 +62,6 @@ export default {
     checkedRowStatus: true,
     dynamicRowHeight: false,
     pasteFromClipboard: false,
-    showTotalRow: false
+    showTotalRow: false,
+    direction: 'ltr'
 };
