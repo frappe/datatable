@@ -48,12 +48,17 @@ export default class Style {
             this._settingHeaderPosition = true;
 
             requestAnimationFrame(() => {
-                const scrollLeft = e.target.scrollLeft;
+                const { scrollLeft, scrollWidth, clientWidth } = e.target;
+
+                let left = this.options.direction === 'rtl'
+                    ? scrollWidth - clientWidth - scrollLeft
+                    : -scrollLeft;
+
                 $.style(this.header, {
-                    transform: `translateX(-${scrollLeft}px)`
+                    transform: `translateX(${left}px)`
                 });
                 $.style(this.footer, {
-                    transform: `translateX(-${scrollLeft}px)`
+                    transform: `translateX(${left}px)`
                 });
                 this._settingHeaderPosition = false;
             });
