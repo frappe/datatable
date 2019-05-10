@@ -87,7 +87,7 @@ export default class BodyRenderer {
             if (cell.content === '') return cell;
 
             if (this.options.hooks.columnTotal) {
-                const columnValues = this.visibleRows.map(row => row[i].content);
+                const columnValues = this.visibleRows.filter(d => !d.meta.excludeFromTotal).map(row => row[i].content);
                 const result = this.options.hooks.columnTotal.call(this.instance, columnValues, cell);
                 if (result != null) {
                     cell.content = result;
@@ -95,7 +95,7 @@ export default class BodyRenderer {
                 }
             }
 
-            cell.content = this.visibleRows.reduce((acc, prevRow) => {
+            cell.content = this.visibleRows.filter(d => !d.meta.excludeFromTotal).reduce((acc, prevRow) => {
                 const prevCell = prevRow[i];
                 if (typeof prevCell.content === 'number') {
                     if (acc == null) acc = 0;
