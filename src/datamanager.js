@@ -209,8 +209,10 @@ export default class DataManager {
     }
 
     addGroupObject(group) {
+        let view = group.totals ? 'tree' : 'list';
+
         let parentIndent;
-        if (group.totals) {
+        if (view === 'tree' && group.totals) {
             group.totals._excludeFromTotal = true;
             group.totals._isGroupTotal = true;
             group.totals.indent = group.indent || 0;
@@ -218,18 +220,27 @@ export default class DataManager {
             this.addRow(group.totals);
         }
 
-        for (let d of group.rows || []) {
+        for (let i = 0; i < group.rows.length; ++i) {
+            let row = group.rows[i];
+
             // if group has a total row, make sure its child rows are indented properly
             if (parentIndent != null) {
-                d.indent = parentIndent + 1;
+                row.indent = parentIndent + 1;
             }
 
-            this.addRow(d);
-        }
+            // padding row for list view
+            if (view === 'list' && row._isGroup && this.rows.length) {
+                this.addRow({});
+            }
 
-        // insert empty row for groups without totals row
-        if (group.rows && group.rows.length && !group.totals) {
-            this.addRow({});
+            this.addRow(row);
+
+            // padding row for list view
+            if (view === 'list' && row._isGroup) {
+                if (i + 1 < group.rows.length && !group.rows[i + 1]._isGroup) {
+                    this.addRow({});
+                }
+            }
         }
     }
 
