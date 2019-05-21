@@ -56,7 +56,7 @@ function getFilterMethod(filter) {
                 .filter(cell => {
                     const hay = stringCompareValue(cell);
                     const needle = (keyword || '').toLowerCase();
-                    return !needle || hay.includes(needle) || hay.replace(/\,/g,"").includes(needle);
+                    return !needle || hay.includes(needle) || hay.replace(/\,/g, '').includes(needle);
                 })
                 .map(cell => cell.rowIndex);
         },
