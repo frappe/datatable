@@ -150,13 +150,6 @@ function guessFilter(keyword = '') {
         }
     }
 
-    if (isNumber(compareString)) {
-        return {
-            type: 'equals',
-            text: parseInt(keyword, 10)
-        };
-    }
-
     if (keyword.startsWith('!=')) {
         if (isNumber(compareString)) {
             return {
