@@ -112,7 +112,7 @@ function getFilterMethod(filter) {
             return cells
                 .filter(cell => {
                     const hay = numberCompareValue(cell);
-                    const needle = keyword
+                    const needle = keyword;
                     return !needle || hay.toString().includes(needle);
                 })
                 .map(cell => cell.rowIndex);
@@ -163,7 +163,7 @@ function guessFilter(keyword = '') {
     if (isNumber(compareString)) {
         return {
             type: 'containsNumber',
-            text: parseInt(keyword)
+            text: parseInt(keyword, 10)
         };
     }
 
