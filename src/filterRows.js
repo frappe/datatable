@@ -106,6 +106,16 @@ function getFilterMethod(filter) {
                     return value >= values1[1] && value <= values2[1];
                 })
                 .map(cell => cell.rowIndex);
+        },
+
+        containsNumber(keyword, cells) {
+            return cells
+                .filter(cell => {
+                    const hay = numberCompareValue(cell);
+                    const needle = keyword;
+                    return !needle || hay.toString().includes(needle);
+                })
+                .map(cell => cell.rowIndex);
         }
     };
 
@@ -152,7 +162,7 @@ function guessFilter(keyword = '') {
 
     if (isNumber(compareString)) {
         return {
-            type: 'equals',
+            type: 'containsNumber',
             text: parseInt(keyword, 10)
         };
     }
