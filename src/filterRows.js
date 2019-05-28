@@ -163,7 +163,7 @@ function guessFilter(keyword = '') {
     if (isNumber(compareString)) {
         return {
             type: 'containsNumber',
-            text: parseInt(keyword, 10)
+            text: parseFloat(keyword, 10)
         };
     }
 
