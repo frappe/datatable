@@ -111,7 +111,11 @@ function getFilterMethod(filter) {
         containsNumber(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const hay = numberCompareValue(cell);
+                    let hay = numberCompareValue(cell);
+                    if (isNaN(hay))
+                    {
+                        hay = getCompareValues(cell);
+                    }
                     const needle = keyword;
                     return !needle || hay.toString().includes(needle);
                 })
