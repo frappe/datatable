@@ -188,6 +188,7 @@
 
     &__toggle {
         opacity: 0;
+        background-color: var(--dt-header-cell-bg);
     }
 
     &__list {
