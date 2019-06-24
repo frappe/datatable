@@ -111,12 +111,12 @@ function getFilterMethod(filter) {
         containsNumber(keyword, cells) {
             return cells
                 .filter(cell => {
-                    let hay = numberCompareValue(cell);
-                    if (isNaN(hay)) {
-                        hay = stringCompareValue(cell);
-                    }
-                    const needle = keyword;
-                    return !needle || hay.toString().includes(needle);
+                    let number = parseFloat(keyword, 10);
+                    let string = keyword;
+                    let hayNumber = numberCompareValue(cell);
+                    let hayString = stringCompareValue(cell);
+
+                    return number === hayNumber || hayString.includes(string);
                 })
                 .map(cell => cell.rowIndex);
         }
@@ -166,7 +166,7 @@ function guessFilter(keyword = '') {
     if (isNumber(compareString)) {
         return {
             type: 'containsNumber',
-            text: parseFloat(keyword, 10)
+            text: compareString
         };
     }
 
