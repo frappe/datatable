@@ -51,34 +51,19 @@ export default class CellManager {
                 this.activateEditing(this.$focusedCell);
             } else if (this.$editingCell) {
                 // enter keypress on editing cell
-                this.submitEditing();
                 this.deactivateEditing();
+            }
+        });
+        this.keyboard.on('tab, shift+tab', (e) => {
+            if (this.$editingCell) {
+                // tab keypress on editing cell
+                this.deactivateEditing();
+                this.focusCellInDirection(e.shiftKey ? 'left' : 'right');
             }
         });
     }
 
     bindKeyboardNav() {
-        const focusCell = (direction) => {
-            if (!this.$focusedCell || this.$editingCell) {
-                return false;
-            }
-
-            let $cell = this.$focusedCell;
-
-            if (direction === 'left' || direction === 'shift+tab') {
-                $cell = this.getLeftCell$($cell);
-            } else if (direction === 'right' || direction === 'tab') {
-                $cell = this.getRightCell$($cell);
-            } else if (direction === 'up') {
-                $cell = this.getAboveCell$($cell);
-            } else if (direction === 'down') {
-                $cell = this.getBelowCell$($cell);
-            }
-
-            this.focusCell($cell);
-            return true;
-        };
-
         const focusLastCell = (direction) => {
             if (!this.$focusedCell || this.$editingCell) {
                 return false;
@@ -105,13 +90,13 @@ export default class CellManager {
         };
 
         ['left', 'right', 'up', 'down', 'tab', 'shift+tab']
-            .map(direction => this.keyboard.on(direction, () => focusCell(direction)));
+            .map(direction => this.keyboard.on(direction, () => this.focusCellInDirection(direction)));
 
         ['left', 'right', 'up', 'down']
             .map(direction => this.keyboard.on(`ctrl+${direction}`, () => focusLastCell(direction)));
 
         this.keyboard.on('esc', () => {
-            this.deactivateEditing();
+            this.deactivateEditing(false);
             this.columnmanager.toggleFilter(false);
         });
 
@@ -463,7 +448,10 @@ export default class CellManager {
         }
     }
 
-    deactivateEditing() {
+    deactivateEditing(submitValue = true) {
+        if (submitValue) {
+            this.submitEditing();
+        }
         // keep focus on the cell so that keyboard navigation works
         if (this.$focusedCell) this.$focusedCell.focus();
 
@@ -514,7 +502,9 @@ export default class CellManager {
     }
 
     submitEditing() {
-        if (!this.$editingCell) return;
+        let promise = Promise.resolve();
+        if (!this.$editingCell) return promise;
+
         const $cell = this.$editingCell;
         const {
             rowIndex,
@@ -533,7 +523,7 @@ export default class CellManager {
                     valuePromise = Promise.resolve(valuePromise);
                 }
 
-                valuePromise.then((value) => {
+                promise = valuePromise.then((value) => {
                     const done = editor.setValue(value, rowIndex, col);
                     const oldValue = this.getCell(colIndex, rowIndex).content;
 
@@ -548,11 +538,13 @@ export default class CellManager {
                             this.updateCell(colIndex, rowIndex, oldValue);
                         });
                     }
+                    return done;
                 });
             }
         }
 
         this.currentCellEditor = null;
+        return promise;
     }
 
     copyCellContents($cell1, $cell2) {
@@ -652,6 +644,27 @@ export default class CellManager {
     isStandardCell(colIndex) {
         // Standard cells are in Sr. No and Checkbox column
         return colIndex < this.columnmanager.getFirstColumnIndex();
+    }
+
+    focusCellInDirection(direction) {
+        if (!this.$focusedCell || this.$editingCell) {
+            return false;
+        }
+
+        let $cell = this.$focusedCell;
+
+        if (direction === 'left' || direction === 'shift+tab') {
+            $cell = this.getLeftCell$($cell);
+        } else if (direction === 'right' || direction === 'tab') {
+            $cell = this.getRightCell$($cell);
+        } else if (direction === 'up') {
+            $cell = this.getAboveCell$($cell);
+        } else if (direction === 'down') {
+            $cell = this.getBelowCell$($cell);
+        }
+
+        this.focusCell($cell);
+        return true;
     }
 
     getCell$(colIndex, rowIndex) {
