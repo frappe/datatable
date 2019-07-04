@@ -45,6 +45,13 @@ export default class CellManager {
             this.activateEditing(cell);
         });
 
+        // Changes behavior to allow editing on any key being pressed over a focused cell
+        $.on(this.bodyScrollable, 'keydown', '.dt-cell', (e, cell) => {
+            if (this.$focusedCell && !this.$editingCell) {
+                this.activateEditing(this.$focusedCell);
+            }
+        });
+
         this.keyboard.on('enter', () => {
             if (this.$focusedCell && !this.$editingCell) {
                 // enter keypress on focused cell
