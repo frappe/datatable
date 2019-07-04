@@ -45,6 +45,14 @@ export default class CellManager {
             this.activateEditing(cell);
         });
 
+        // Changes behavior to allow editing on any key being pressed over a focused cell
+        $.on(this.bodyScrollable, 'keydown', '.dt-cell', (e, cell) => {
+            if (this.$focusedCell && !this.$editingCell) {
+                // enter keypress on focused cell
+                this.activateEditing(this.$focusedCell);
+            }
+        });
+
         this.keyboard.on('enter', () => {
             if (this.$focusedCell && !this.$editingCell) {
                 // enter keypress on focused cell
@@ -54,6 +62,7 @@ export default class CellManager {
                 this.deactivateEditing();
             }
         });
+
         this.keyboard.on('tab, shift+tab', (e) => {
             if (this.$editingCell) {
                 // tab keypress on editing cell
