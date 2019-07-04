@@ -642,8 +642,9 @@ export default class CellManager {
     focusCellInDirection(direction) {
         if (!this.$focusedCell || this.$editingCell) {
 
-            if (this.$editingCell && ['tab', 'shift+tab'].includes(direction))
+            if (this.$editingCell && ['tab', 'shift+tab'].includes(direction)) {
                 this.deactivateEditing();
+            }
 
             return false;
         }
