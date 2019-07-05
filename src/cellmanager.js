@@ -54,13 +54,6 @@ export default class CellManager {
                 this.deactivateEditing();
             }
         });
-        this.keyboard.on('tab, shift+tab', (e) => {
-            if (this.$editingCell) {
-                // tab keypress on editing cell
-                this.deactivateEditing();
-                this.focusCellInDirection(e.shiftKey ? 'left' : 'right');
-            }
-        });
     }
 
     bindKeyboardNav() {
@@ -647,8 +640,10 @@ export default class CellManager {
     }
 
     focusCellInDirection(direction) {
-        if (!this.$focusedCell || this.$editingCell) {
+        if (!this.$focusedCell) {
             return false;
+        } else if (this.$editingCell && ['tab', 'shift+tab'].includes(direction)) {
+            this.deactivateEditing();
         }
 
         let $cell = this.$focusedCell;
