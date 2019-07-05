@@ -640,14 +640,10 @@ export default class CellManager {
     }
 
     focusCellInDirection(direction) {
-        if (!this.$focusedCell || this.$editingCell) {
-
-            if (this.$editingCell && ['tab', 'shift+tab'].includes(direction)) {
-                this.deactivateEditing();
-                this.focusCellInDirection(direction);
-            }
-
+        if (!this.$focusedCell) {
             return false;
+        } else if (this.$editingCell && ['tab', 'shift+tab'].includes(direction)) {
+            this.deactivateEditing();
         }
 
         let $cell = this.$focusedCell;
