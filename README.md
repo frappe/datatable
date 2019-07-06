@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://github.com/frappe/design/blob/master/logos/data-table-logo.svg" height="128">
+    <img src="https://github.com/frappe/design/raw/master/logos/logo-2019/frappe-datatable-logo.png" height="128">
     <h2>Frappe DataTable</h2>
     <p align="center">
     <p>
