@@ -280,8 +280,11 @@ export default class DataManager {
         this.rowViewOrder.sort((a, b) => {
             const aIndex = a;
             const bIndex = b;
-            const aContent = this.getCell(colIndex, a).content;
-            const bContent = this.getCell(colIndex, b).content;
+
+            const tmpA = this.getCell(colIndex, a).content;
+            const tmpB = this.getCell(colIndex, b).content;
+            const aContent = typeof tmpA === 'undefined' ? '' : tmpA;
+            const bContent = typeof tmpB === 'undefined' ? '' : tmpB;
 
             if (sortOrder === 'none') {
                 return aIndex - bIndex;
