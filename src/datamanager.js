@@ -281,10 +281,10 @@ export default class DataManager {
             const aIndex = a;
             const bIndex = b;
 
-            const tmpA = this.getCell(colIndex, a).content;
-            const tmpB = this.getCell(colIndex, b).content;
-            const aContent = typeof tmpA === 'undefined' ? '' : tmpA;
-            const bContent = typeof tmpB === 'undefined' ? '' : tmpB;
+            let aContent = this.getCell(colIndex, a).content;
+            let bContent = this.getCell(colIndex, b).content;
+            aContent = aContent == null ? '' : aContent;
+            bContent = bContent == null ? '' : bContent;
 
             if (sortOrder === 'none') {
                 return aIndex - bIndex;
