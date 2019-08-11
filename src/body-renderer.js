@@ -16,6 +16,11 @@ export default class BodyRenderer {
         this.visibleRows = rows;
         this.visibleRowIndices = rows.map(row => row.meta.rowIndex);
 
+        if (rows.length === 0) {
+            this.bodyScrollable.innerHTML = this.getNoDataHTML();
+            return;
+        }
+
         const rowViewOrder = this.datamanager.rowViewOrder.map(index => {
             if (this.visibleRowIndices.includes(index)) {
                 return index;
