@@ -251,7 +251,8 @@ export default class Style {
         if (this.options.layout !== 'fluid') return;
 
         const wrapperWidth = $.style(this.instance.datatableWrapper, 'width');
-        const firstRowWidth = $.style($('.dt-row', this.bodyScrollable), 'width');
+        const firstRow = $('.dt-row', this.bodyScrollable);
+        const firstRowWidth = firstRow ? $.style(firstRow, 'width') : wrapperWidth;
         const resizableColumns = this.datamanager.getColumns().filter(col => col.resizable);
         const deltaWidth = (wrapperWidth - firstRowWidth) / resizableColumns.length;
 
@@ -297,7 +298,7 @@ export default class Style {
     setBodyStyle() {
         const bodyWidth = $.style(this.datatableWrapper, 'width');
         const firstRow = $('.dt-row', this.bodyScrollable);
-        const rowWidth = $.style(firstRow, 'width');
+        const rowWidth = firstRow ? $.style(firstRow, 'width') : bodyWidth;
 
         let width = bodyWidth > rowWidth ? rowWidth : bodyWidth;
         $.style(this.bodyScrollable, {
