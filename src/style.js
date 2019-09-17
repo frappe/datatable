@@ -297,6 +297,7 @@ export default class Style {
     setBodyStyle() {
         const bodyWidth = $.style(this.datatableWrapper, 'width');
         const firstRow = $('.dt-row', this.bodyScrollable);
+        if (!firstRow) return;
         const rowWidth = $.style(firstRow, 'width');
 
         let width = bodyWidth > rowWidth ? rowWidth : bodyWidth;
