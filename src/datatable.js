@@ -8,6 +8,16 @@ import Style from './style';
 import Keyboard from './keyboard';
 import DEFAULT_OPTIONS from './defaults';
 
+let defaultComponents = {
+    DataManager,
+    CellManager,
+    ColumnManager,
+    RowManager,
+    BodyRenderer,
+    Style,
+    Keyboard
+};
+
 class DataTable {
     constructor(wrapper, options) {
         DataTable.instances++;
@@ -23,14 +33,7 @@ class DataTable {
 
         this.buildOptions(options);
         this.prepare();
-
-        this.style = new Style(this);
-        this.keyboard = new Keyboard(this.wrapper);
-        this.datamanager = new DataManager(this.options);
-        this.rowmanager = new RowManager(this);
-        this.columnmanager = new ColumnManager(this);
-        this.cellmanager = new CellManager(this);
-        this.bodyRenderer = new BodyRenderer(this);
+        this.initializeComponents();
 
         if (this.options.data) {
             this.refresh();
@@ -64,6 +67,27 @@ class DataTable {
     prepare() {
         this.prepareDom();
         this.unfreeze();
+    }
+
+    initializeComponents() {
+        let components = Object.assign({}, defaultComponents, this.options.overrideComponents);
+        let {
+            Style,
+            Keyboard,
+            DataManager,
+            RowManager,
+            ColumnManager,
+            CellManager,
+            BodyRenderer
+        } = components;
+
+        this.style = new Style(this);
+        this.keyboard = new Keyboard(this.wrapper);
+        this.datamanager = new DataManager(this.options);
+        this.rowmanager = new RowManager(this);
+        this.columnmanager = new ColumnManager(this);
+        this.cellmanager = new CellManager(this);
+        this.bodyRenderer = new BodyRenderer(this);
     }
 
     prepareDom() {

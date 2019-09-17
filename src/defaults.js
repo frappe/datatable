@@ -46,6 +46,9 @@ export default {
         desc: '↓',
         none: ''
     },
+    overrideComponents: {
+        // ColumnManager: CustomColumnManager
+    },
     filterRows: filterRows,
     freezeMessage: '',
     getEditor: null,
