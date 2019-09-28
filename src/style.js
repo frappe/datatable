@@ -251,7 +251,16 @@ export default class Style {
         if (this.options.layout !== 'fluid') return;
 
         const wrapperWidth = $.style(this.instance.datatableWrapper, 'width');
-        const firstRowWidth = $.style($('.dt-row', this.bodyScrollable), 'width');
+        let firstRow = $('.dt-row', this.bodyScrollable);
+        let firstRowWidth = wrapperWidth;
+        if (!firstRow) {
+            let headerRow = $('.dt-row', this.instance.header);
+            let cellWidths = Array.from(headerRow.children)
+                .map(cell => cell.offsetWidth);
+            firstRowWidth = cellWidths.reduce((sum, a) => sum + a, 0);
+        } else {
+            firstRowWidth = $.style(firstRow, 'width');
+        }
         const resizableColumns = this.datamanager.getColumns().filter(col => col.resizable);
         const deltaWidth = (wrapperWidth - firstRowWidth) / resizableColumns.length;
 
