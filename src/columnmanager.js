@@ -228,6 +228,8 @@ export default class ColumnManager {
     }
 
     bindMoveColumn() {
+        if (this.options.disableReorderColumn) return;
+
         const $parent = $('.dt-row', this.header);
 
         this.sortable = Sortable.create($parent, {

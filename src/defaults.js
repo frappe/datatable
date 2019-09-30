@@ -66,5 +66,6 @@ export default {
     dynamicRowHeight: false,
     pasteFromClipboard: false,
     showTotalRow: false,
-    direction: 'ltr'
+    direction: 'ltr',
+    disableReorderColumn: false
 };
