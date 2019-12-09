@@ -143,12 +143,19 @@ export default class Style {
     }
 
     setDimensions() {
+        this.setCellHeight();
         this.setupMinWidth();
         this.setupNaturalColumnWidth();
         this.setupColumnWidth();
         this.distributeRemainingWidth();
         this.setColumnStyle();
         this.setBodyStyle();
+    }
+
+    setCellHeight() {
+        this.setStyle('.dt-cell', {
+            height: this.options.cellHeight + 'px'
+        });
     }
 
     setupMinWidth() {
