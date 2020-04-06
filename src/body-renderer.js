@@ -77,12 +77,13 @@ export default class BodyRenderer {
         const columns = this.datamanager.getColumns();
         const totalRowTemplate = columns.map(col => {
             let content = null;
+            let isTotalRow_status = col.disable_total ? 0 : 1;
             if (['_rowIndex', '_checkbox'].includes(col.id)) {
                 content = '';
             }
             return {
                 content,
-                isTotalRow: 1,
+                isTotalRow: isTotalRow_status,
                 colIndex: col.colIndex,
                 column: col
             };
