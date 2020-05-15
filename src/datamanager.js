@@ -141,10 +141,13 @@ export default class DataManager {
         });
     }
 
-    prepareRows() {
-        this.validateData(this.data);
-
-        this.rows = this.data.map((d, i) => {
+    prepareRows(r) {
+        const data = r || this.data
+        this.validateData(data);
+        if(Array.isArray(r)){
+            this.data.push(...r);
+        }
+        this.rows.push(...(data.map((d, i) => {
             const index = this._getNextRowCount();
 
             let row = [];
@@ -182,7 +185,7 @@ export default class DataManager {
             }
 
             return this.prepareRow(row, meta);
-        });
+        })));
     }
 
     prepareTreeRows() {
@@ -242,9 +245,7 @@ export default class DataManager {
     }
 
     appendRows(rows) {
-        this.validateData(rows);
-
-        this.rows.push(...this.prepareRows(rows));
+        this.prepareRows(rows)
     }
 
     sortRows(colIndex, sortOrder = 'none') {
