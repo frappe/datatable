@@ -142,7 +142,7 @@ export default class DataManager {
     }
 
     prepareRows(r) {
-        const data = r||this.data;
+        const data = r || this.data;
         this.validateData(data);
         if (Array.isArray(r)) {
             this.data.push(...r);
