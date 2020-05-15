@@ -131,7 +131,7 @@ class DataTable {
 
     appendRows(rows) {
         this.datamanager.appendRows(rows);
-        this.rowmanager.refreshRows();
+        this.refresh();
     }
 
     refreshRow(row, rowIndex) {
