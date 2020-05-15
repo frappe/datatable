@@ -142,9 +142,9 @@ export default class DataManager {
     }
 
     prepareRows(r) {
-        const data = r || this.data
+        const data = r || this.data;
         this.validateData(data);
-        if(Array.isArray(r)){
+        if (Array.isArray(r)) {
             this.data.push(...r);
         }
         this.rows.push(...(data.map((d, i) => {
@@ -245,7 +245,7 @@ export default class DataManager {
     }
 
     appendRows(rows) {
-        this.prepareRows(rows)
+        this.prepareRows(rows);
     }
 
     sortRows(colIndex, sortOrder = 'none') {
