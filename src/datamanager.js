@@ -246,6 +246,7 @@ export default class DataManager {
 
     appendRows(rows) {
         this.prepareRows(rows);
+        this.prepareRowView();
     }
 
     sortRows(colIndex, sortOrder = 'none') {
