@@ -48,9 +48,7 @@ export default class Style {
             this._settingHeaderPosition = true;
 
             requestAnimationFrame(() => {
-                const { scrollLeft, scrollWidth, clientWidth } = e.target;
-
-                let left = this.options.direction === 'rtl' ? scrollWidth - clientWidth - scrollLeft : -scrollLeft;
+                const left = -e.target.scrollLeft;
 
                 $.style(this.header, {
                     transform: `translateX(${left}px)`
