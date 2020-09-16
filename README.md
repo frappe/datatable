@@ -6,7 +6,7 @@
     A modern datatable library for the web
     </p>
 
-[![travis build](https://api.travis-ci.com/frappe/datatable.svg?branch=master)](https://travis-ci.org/frappe/datatable)
+[![Test and Release](https://github.com/frappe/datatable/workflows/Test%20and%20Release/badge.svg)](https://github.com/frappe/datatable/actions?query=workflow%3A%22Test+and+Release%22)
 [![npm version](https://badge.fury.io/js/frappe-datatable.svg)](https://badge.fury.io/js/frappe-datatable)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
 ![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/frappe-datatable.svg)
