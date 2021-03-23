@@ -72,7 +72,7 @@ export default class DataManager {
                 content: '',
                 align: 'center',
                 editable: false,
-                resizable: false,
+                resizable: this.options.resizableSerialNoCoumn || false,
                 focusable: false,
                 dropdown: false
             };
