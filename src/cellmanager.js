@@ -768,17 +768,20 @@ export default class CellManager {
             isFilter,
             isTotalRow
         } = cell;
+
         const dataAttr = makeDataAttributeString({
             rowIndex,
             colIndex,
             isHeader,
             isFilter,
-            isTotalRow
+            isTotalRow,
         });
 
         const row = this.datamanager.getRow(rowIndex);
 
         const isBodyCell = !(isHeader || isFilter || isTotalRow);
+
+        const isCheckboxCell = Boolean(cell.column && cell.column.id == '_checkbox');
 
         const className = [
             'dt-cell',
@@ -788,7 +791,8 @@ export default class CellManager {
             isHeader ? 'dt-cell--header' : '',
             isHeader ? `dt-cell--header-${colIndex}` : '',
             isFilter ? 'dt-cell--filter' : '',
-            isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : ''
+            isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : '',
+            isCheckboxCell ? 'dt-cell--checkbox': '',
         ].join(' ');
 
         return `

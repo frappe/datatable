@@ -162,6 +162,10 @@
     &:last-child {
         border-right: 1px solid var(--dt-border-color);
     }
+
+    &--checkbox &__content {
+        text-overflow: clip;
+    }
 }
 
 .icon-open, .icon-close {
