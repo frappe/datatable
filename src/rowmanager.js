@@ -107,16 +107,21 @@ export default class RowManager {
         this.showCheckStatus();
         this.fireEvent('onCheckRow', this.datamanager.getRow(rowIndex));
     }
-
     checkAll(toggle) {
-        const value = toggle ? 1 : 0;
-
-        // update internal map
-        if (toggle) {
-            this.checkMap = Array.from(Array(this.getTotalRows())).map(c => value);
+                       
+        if(window.datatable.datamanager._filteredRows) {
+            window.datatable.datamanager._filteredRows.forEach(f => {
+                this.checkRow(f,  toggle)
+            })
         } else {
-            this.checkMap = [];
+            // update internal map
+            if (toggle) {
+                this.checkMap = Array.from(Array(this.getTotalRows())).map(c => toggle);
+            } else {
+                this.checkMap = [];
+            }
         }
+
         // set checkbox value
         $.each('.dt-cell--col-0 [type="checkbox"]', this.bodyScrollable)
             .map(input => {
