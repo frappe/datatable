@@ -192,11 +192,6 @@ export default class Style {
 
             let naturalWidth = $.style($('.dt-cell__content', $cell), 'width');
 
-            if (column.id === '_rowIndex') {
-                naturalWidth = this.getRowIndexColumnWidth();
-                column.width = naturalWidth;
-            }
-
             if (typeof naturalWidth === 'number' && naturalWidth >= column.naturalWidth) {
                 column.naturalWidth = naturalWidth;
             } else {
