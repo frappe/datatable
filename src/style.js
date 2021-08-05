@@ -245,6 +245,9 @@ export default class Style {
                     if (!column.width) {
                         column.width = column.naturalWidth;
                     }
+                    if (column.id === '_rowIndex') {
+                        column.width = this.getRowIndexColumnWidth();
+                    }
                     if (column.width < this.options.minimumColumnWidth) {
                         column.width = this.options.minimumColumnWidth;
                     }
