@@ -325,7 +325,8 @@ export default class RowManager {
         if (props.isFilter) {
             row = row.map(cell => (Object.assign({}, cell, {
                 content: this.getFilterInput({
-                    colIndex: cell.colIndex
+                    colIndex: cell.colIndex,
+                    name: cell.name
                 }),
                 isFilter: 1,
                 isHeader: undefined,
@@ -347,8 +348,10 @@ export default class RowManager {
     }
 
     getFilterInput(props) {
+        let title = `title="Filter based on ${props.name || 'Index'}"`;
         const dataAttr = makeDataAttributeString(props);
-        return `<input class="dt-filter dt-input" type="text" ${dataAttr} tabindex="1" />`;
+        return `<input class="dt-filter dt-input" type="text" ${dataAttr} tabindex="1" 
+            ${props.colIndex === 0 ? 'disabled' : title} />`;
     }
 
     selector(rowIndex) {
