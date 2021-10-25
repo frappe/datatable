@@ -1,12 +1,12 @@
 <div align="center">
-    <img src="https://github.com/frappe/design/blob/master/logos/data-table-logo.svg" height="128">
+    <img src="https://github.com/frappe/design/raw/master/logos/logo-2019/frappe-datatable-logo.png" height="128">
     <h2>Frappe DataTable</h2>
     <p align="center">
     <p>
     A modern datatable library for the web
     </p>
 
-[![travis build](https://api.travis-ci.com/frappe/datatable.svg?branch=master)](https://travis-ci.org/frappe/datatable)
+[![Test and Release](https://github.com/frappe/datatable/workflows/Test%20and%20Release/badge.svg)](https://github.com/frappe/datatable/actions?query=workflow%3A%22Test+and+Release%22)
 [![npm version](https://badge.fury.io/js/frappe-datatable.svg)](https://badge.fury.io/js/frappe-datatable)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
 ![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/frappe-datatable.svg)
@@ -17,7 +17,7 @@
 
 ## Introduction
 
-Frappe DataTable is a simple, modern and interactive datatable library for displaying tabular data. Originally built for [ERPNext](https://github.com/frappe/erpnext), it can be used to render large amount of rows without sacrificing performance and has the basic data grid features like inline editing and keyboard navigation. It does not require jQuery, like most data grids out there.
+Frappe DataTable is a simple, modern and interactive datatable library for displaying tabular data. Originally built for [ERPNext](https://github.com/frappe/erpnext), it can be used to render large amount of rows without sacrificing performance and has the basic data grid features like inline editing and keyboard navigation. It does not require jQuery, unlike most data grids out there.
 
 ## Demo
 
@@ -77,7 +77,7 @@ const datatable = new DataTable('#datatable', {
 
 * `yarn start` - Start dev server
 * Open `index.html` located in the root folder, and start development.
-* Run `yarn lint` before commiting changes
+* Run `yarn lint` before committing changes
 * This project uses [commitizen](https://github.com/commitizen/cz-cli) for conventional commit messages, use `yarn commit` command instead of `git commit`
 
 ## Read the blog

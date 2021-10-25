@@ -14,6 +14,7 @@ export default class ColumnManager {
             'fireEvent',
             'header',
             'datamanager',
+            'cellmanager',
             'style',
             'wrapper',
             'rowmanager',
@@ -59,6 +60,7 @@ export default class ColumnManager {
     bindEvents() {
         this.bindDropdown();
         this.bindResizeColumn();
+        this.bindPerfectColumnWidth();
         this.bindFilter();
     }
 
@@ -177,8 +179,9 @@ export default class ColumnManager {
                 colIndex
             } = $.data($resizingCell);
 
-            if (this.getColumnMinWidth(colIndex) > finalWidth) {
-                // don't resize past minWidth
+            let columnMinWidth = this.options.minimumColumnWidth;
+            if (columnMinWidth > finalWidth) {
+                // don't resize past 30 pixels
                 return;
             }
             this.datamanager.updateColumn(colIndex, {
@@ -192,7 +195,41 @@ export default class ColumnManager {
         });
     }
 
+    bindPerfectColumnWidth() {
+        $.on(this.header, 'dblclick', '.dt-cell .dt-cell__resize-handle', (e, $handle) => {
+            const $cell = $handle.parentNode.parentNode;
+            const { colIndex } = $.data($cell);
+
+            let longestCell = this.bodyRenderer.visibleRows
+                .map(d => d[colIndex])
+                .reduce((acc, curr) => acc.content.length > curr.content.length ? acc : curr);
+
+            let $longestCellHTML = this.cellmanager.getCellHTML(longestCell);
+            let $div = document.createElement('div');
+            $div.innerHTML = $longestCellHTML;
+            let cellText = $div.querySelector('.dt-cell__content').textContent;
+
+            let {
+                borderLeftWidth,
+                borderRightWidth,
+                paddingLeft,
+                paddingRight
+            } = $.getStyle(this.bodyScrollable.querySelector('.dt-cell__content'));
+
+            let padding = [borderLeftWidth, borderRightWidth, paddingLeft, paddingRight]
+                .map(parseFloat)
+                .reduce((sum, val) => sum + val);
+
+            let width = $.measureTextWidth(cellText) + padding;
+            this.datamanager.updateColumn(colIndex, { width });
+            this.setColumnHeaderWidth(colIndex);
+            this.setColumnWidth(colIndex);
+        });
+    }
+
     bindMoveColumn() {
+        if (this.options.disableReorderColumn) return;
+
         const $parent = $('.dt-row', this.header);
 
         this.sortable = Sortable.create($parent, {

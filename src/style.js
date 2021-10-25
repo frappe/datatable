@@ -49,6 +49,7 @@ export default class Style {
             this._settingHeaderPosition = true;
 
             requestAnimationFrame(() => {
+
                 const scrollLeft = e.target.scrollLeft;
                 const direction = getComputedStyle(document.getElementsByTagName('body')[0]).direction;
                 if (direction === 'rtl' && detectScrollType() === 'default') {
@@ -69,6 +70,7 @@ export default class Style {
                         transform: `translateX(${-scrollLeft}px)`
                     });
                 }
+
                 this._settingHeaderPosition = false;
             });
         });
@@ -154,12 +156,19 @@ export default class Style {
     }
 
     setDimensions() {
+        this.setCellHeight();
         this.setupMinWidth();
         this.setupNaturalColumnWidth();
         this.setupColumnWidth();
         this.distributeRemainingWidth();
         this.setColumnStyle();
         this.setBodyStyle();
+    }
+
+    setCellHeight() {
+        this.setStyle('.dt-cell', {
+            height: this.options.cellHeight + 'px'
+        });
     }
 
     setupMinWidth() {
@@ -198,15 +207,10 @@ export default class Style {
 
             let naturalWidth = $.style($('.dt-cell__content', $cell), 'width');
 
-            if (column.id === '_rowIndex') {
-                naturalWidth = this.getRowIndexColumnWidth();
-                column.width = naturalWidth;
-            }
-
-            if (typeof naturalWidth === 'number' && naturalWidth >= this.options.minimumColumnWidth) {
+            if (typeof naturalWidth === 'number' && naturalWidth >= column.naturalWidth) {
                 column.naturalWidth = naturalWidth;
             } else {
-                column.naturalWidth = this.options.minimumColumnWidth;
+                column.naturalWidth = column.naturalWidth;
             }
         });
     }
@@ -251,8 +255,11 @@ export default class Style {
                     if (!column.width) {
                         column.width = column.naturalWidth;
                     }
-                    if (column.width < column.minWidth) {
-                        column.width = column.minWidth;
+                    if (column.id === '_rowIndex') {
+                        column.width = this.getRowIndexColumnWidth();
+                    }
+                    if (column.width < this.options.minimumColumnWidth) {
+                        column.width = this.options.minimumColumnWidth;
                     }
                 });
         }
@@ -262,7 +269,16 @@ export default class Style {
         if (this.options.layout !== 'fluid') return;
 
         const wrapperWidth = $.style(this.instance.datatableWrapper, 'width');
-        const firstRowWidth = $.style($('.dt-row', this.bodyScrollable), 'width');
+        let firstRow = $('.dt-row', this.bodyScrollable);
+        let firstRowWidth = wrapperWidth;
+        if (!firstRow) {
+            let headerRow = $('.dt-row', this.instance.header);
+            let cellWidths = Array.from(headerRow.children)
+                .map(cell => cell.offsetWidth);
+            firstRowWidth = cellWidths.reduce((sum, a) => sum + a, 0);
+        } else {
+            firstRowWidth = $.style(firstRow, 'width');
+        }
         const resizableColumns = this.datamanager.getColumns().filter(col => col.resizable);
         const deltaWidth = (wrapperWidth - firstRowWidth) / resizableColumns.length;
 
@@ -308,6 +324,7 @@ export default class Style {
     setBodyStyle() {
         const bodyWidth = $.style(this.datatableWrapper, 'width');
         const firstRow = $('.dt-row', this.bodyScrollable);
+        if (!firstRow) return;
         const rowWidth = $.style(firstRow, 'width');
 
         let width = bodyWidth > rowWidth ? rowWidth : bodyWidth;

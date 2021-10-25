@@ -51,34 +51,12 @@ export default class CellManager {
                 this.activateEditing(this.$focusedCell);
             } else if (this.$editingCell) {
                 // enter keypress on editing cell
-                this.submitEditing();
                 this.deactivateEditing();
             }
         });
     }
 
     bindKeyboardNav() {
-        const focusCell = (direction) => {
-            if (!this.$focusedCell || this.$editingCell) {
-                return false;
-            }
-
-            let $cell = this.$focusedCell;
-
-            if (direction === 'left' || direction === 'shift+tab') {
-                $cell = this.getLeftCell$($cell);
-            } else if (direction === 'right' || direction === 'tab') {
-                $cell = this.getRightCell$($cell);
-            } else if (direction === 'up') {
-                $cell = this.getAboveCell$($cell);
-            } else if (direction === 'down') {
-                $cell = this.getBelowCell$($cell);
-            }
-
-            this.focusCell($cell);
-            return true;
-        };
-
         const focusLastCell = (direction) => {
             if (!this.$focusedCell || this.$editingCell) {
                 return false;
@@ -105,13 +83,13 @@ export default class CellManager {
         };
 
         ['left', 'right', 'up', 'down', 'tab', 'shift+tab']
-            .map(direction => this.keyboard.on(direction, () => focusCell(direction)));
+            .map(direction => this.keyboard.on(direction, () => this.focusCellInDirection(direction)));
 
         ['left', 'right', 'up', 'down']
             .map(direction => this.keyboard.on(`ctrl+${direction}`, () => focusLastCell(direction)));
 
         this.keyboard.on('esc', () => {
-            this.deactivateEditing();
+            this.deactivateEditing(false);
             this.columnmanager.toggleFilter(false);
         });
 
@@ -212,7 +190,9 @@ export default class CellManager {
     }
 
     focusCell($cell, {
-        skipClearSelection = 0
+        skipClearSelection = 0,
+        skipDOMFocus = 0,
+        skipScrollToCell = 0
     } = {}) {
         if (!$cell) return;
 
@@ -232,7 +212,9 @@ export default class CellManager {
             return;
         }
 
-        this.scrollToCell($cell);
+        if (!skipScrollToCell) {
+            this.scrollToCell($cell);
+        }
 
         this.deactivateEditing();
         if (!skipClearSelection) {
@@ -246,8 +228,10 @@ export default class CellManager {
         this.$focusedCell = $cell;
         $cell.classList.add('dt-cell--focus');
 
-        // so that keyboard nav works
-        $cell.focus();
+        if (!skipDOMFocus) {
+            // so that keyboard nav works
+            $cell.focus();
+        }
 
         this.highlightRowColumnHeader($cell);
     }
@@ -261,7 +245,7 @@ export default class CellManager {
 
         // reset header background
         if (this.lastHeaders) {
-            this.lastHeaders.forEach(header => header.classList.remove('dt-cell--highlight'));
+            this.lastHeaders.forEach(header => header && header.classList.remove('dt-cell--highlight'));
         }
     }
 
@@ -276,14 +260,14 @@ export default class CellManager {
         const rowHeaderSelector = `.dt-cell--${srNoColIndex}-${rowIndex}`;
 
         if (this.lastHeaders) {
-            this.lastHeaders.forEach(header => header.classList.remove('dt-cell--highlight'));
+            this.lastHeaders.forEach(header => header && header.classList.remove('dt-cell--highlight'));
         }
 
         const colHeader = $(colHeaderSelector, this.wrapper);
         const rowHeader = $(rowHeaderSelector, this.wrapper);
 
         this.lastHeaders = [colHeader, rowHeader];
-        this.lastHeaders.forEach(header => header.classList.add('dt-cell--highlight'));
+        this.lastHeaders.forEach(header => header && header.classList.add('dt-cell--highlight'));
     }
 
     selectAreaOnClusterChanged() {
@@ -313,11 +297,15 @@ export default class CellManager {
         const $cell = this.getCell$(colIndex, rowIndex);
 
         if (!$cell) return;
-        // this function is called after selectAreaOnClusterChanged,
+        // this function is called after hyperlist renders the rows after scroll,
         // focusCell calls clearSelection which resets the area selection
         // so a flag to skip it
+        // we also skip DOM focus and scroll to cell
+        // because it fights with the user scroll
         this.focusCell($cell, {
-            skipClearSelection: 1
+            skipClearSelection: 1,
+            skipDOMFocus: 1,
+            skipScrollToCell: 1
         });
     }
 
@@ -453,7 +441,10 @@ export default class CellManager {
         }
     }
 
-    deactivateEditing() {
+    deactivateEditing(submitValue = true) {
+        if (submitValue) {
+            this.submitEditing();
+        }
         // keep focus on the cell so that keyboard navigation works
         if (this.$focusedCell) this.$focusedCell.focus();
 
@@ -504,7 +495,9 @@ export default class CellManager {
     }
 
     submitEditing() {
-        if (!this.$editingCell) return;
+        let promise = Promise.resolve();
+        if (!this.$editingCell) return promise;
+
         const $cell = this.$editingCell;
         const {
             rowIndex,
@@ -523,7 +516,7 @@ export default class CellManager {
                     valuePromise = Promise.resolve(valuePromise);
                 }
 
-                valuePromise.then((value) => {
+                promise = valuePromise.then((value) => {
                     const done = editor.setValue(value, rowIndex, col);
                     const oldValue = this.getCell(colIndex, rowIndex).content;
 
@@ -538,11 +531,13 @@ export default class CellManager {
                             this.updateCell(colIndex, rowIndex, oldValue);
                         });
                     }
+                    return done;
                 });
             }
         }
 
         this.currentCellEditor = null;
+        return promise;
     }
 
     copyCellContents($cell1, $cell2) {
@@ -642,6 +637,49 @@ export default class CellManager {
     isStandardCell(colIndex) {
         // Standard cells are in Sr. No and Checkbox column
         return colIndex < this.columnmanager.getFirstColumnIndex();
+    }
+
+    focusCellInDirection(direction) {
+        if (!this.$focusedCell) {
+            return false;
+        } else if (this.$editingCell && ['tab', 'shift+tab'].includes(direction)) {
+            this.deactivateEditing();
+        }
+
+        let $cell = this.$focusedCell;
+
+        if (direction === 'left' || direction === 'shift+tab') {
+            $cell = this.getLeftCell$($cell);
+        } else if (direction === 'right' || direction === 'tab') {
+            $cell = this.getRightCell$($cell);
+        } else if (direction === 'up') {
+            $cell = this.getAboveCell$($cell);
+        } else if (direction === 'down') {
+            $cell = this.getBelowCell$($cell);
+        }
+
+        if (!$cell) {
+            return false;
+        }
+
+        const {
+            colIndex
+        } = $.data($cell);
+        const column = this.columnmanager.getColumn(colIndex);
+
+        if (!column.focusable) {
+            let $prevFocusedCell = this.$focusedCell;
+            this.unfocusCell($prevFocusedCell);
+            this.$focusedCell = $cell;
+            let ret = this.focusCellInDirection(direction);
+            if (!ret) {
+                this.focusCell($prevFocusedCell);
+            }
+            return ret;
+        }
+
+        this.focusCell($cell);
+        return true;
     }
 
     getCell$(colIndex, rowIndex) {
@@ -750,7 +788,7 @@ export default class CellManager {
             isHeader ? 'dt-cell--header' : '',
             isHeader ? `dt-cell--header-${colIndex}` : '',
             isFilter ? 'dt-cell--filter' : '',
-            isBodyCell && row.meta.isTreeNodeClose ? 'dt-cell--tree-close' : ''
+            isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : ''
         ].join(' ');
 
         return `

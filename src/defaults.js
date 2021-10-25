@@ -38,10 +38,16 @@ export default {
         onCheckRow(row) {},
         onDestroy() {}
     },
+    hooks: {
+        columnTotal: null
+    },
     sortIndicator: {
         asc: '↑',
         desc: '↓',
         none: ''
+    },
+    overrideComponents: {
+        // ColumnManager: CustomColumnManager
     },
     filterRows: filterRows,
     freezeMessage: '',
@@ -53,11 +59,13 @@ export default {
     layout: 'fixed', // fixed, fluid, ratio
     noDataMessage: 'No Data',
     cellHeight: 40,
-    minimumColumnWidth: 70,
+    minimumColumnWidth: 30,
     inlineFilters: false,
     treeView: false,
     checkedRowStatus: true,
     dynamicRowHeight: false,
     pasteFromClipboard: false,
-    showTotalRow: false
+    showTotalRow: false,
+    direction: 'ltr',
+    disableReorderColumn: false
 };
