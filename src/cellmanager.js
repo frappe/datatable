@@ -133,7 +133,11 @@ export default class CellManager {
     bindCopyCellContents() {
         this.keyboard.on('ctrl+c', () => {
             const noOfCellsCopied = this.copyCellContents(this.$focusedCell, this.$selectionCursor);
-            const message = `${noOfCellsCopied} cell${noOfCellsCopied > 1 ? 's' : ''} copied`;
+            const message = this.instance.translate('{0} cells copied', {
+                count: noOfCellsCopied,
+                args: [noOfCellsCopied]
+            });
+
             if (noOfCellsCopied) {
                 this.instance.showToastMessage(message, 2);
             }

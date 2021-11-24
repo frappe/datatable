@@ -133,7 +133,11 @@ export default class RowManager {
         const checkedRows = this.getCheckedRows();
         const count = checkedRows.length;
         if (count > 0) {
-            this.bodyRenderer.showToastMessage(`${count} row${count > 1 ? 's' : ''} selected`);
+            let message = this.instance.translate('{0} rows selected', {
+                count: count,
+                args: [count]
+            });
+            this.bodyRenderer.showToastMessage(message);
         } else {
             this.bodyRenderer.clearToastMessage();
         }

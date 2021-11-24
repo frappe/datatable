@@ -138,3 +138,11 @@ export function numberSortAsc(a, b) {
 export function stripHTML(html) {
     return html.replace(/<[^>]*>/g, '');
 };
+
+export function format(str, args) {
+    if (!str) return str;
+
+    return str.replace(/{(\d+)}/g, function (match, number) {
+        return typeof args[number] !== 'undefined' ? args[number] : match;
+    });
+};
