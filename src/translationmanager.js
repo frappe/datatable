@@ -22,6 +22,23 @@ export default class TranslationManager {
                     1: '{0} row selected',
                     default: '{0} rows selected'
                 }
+            },
+            de: {
+                'Sort Ascending': 'Aufsteigend sortieren',
+                'Sort Descending': 'Absteigend sortieren',
+                'Reset sorting': 'Sortierung zurücksetzen',
+                'Remove column': 'Spalte entfernen',
+                'No Data': 'Keine Daten',
+                '{0} cells copied': {
+                    0: '{0} zellen kopiert',
+                    1: '{0} zelle kopiert',
+                    default: '{0} zellen kopiert'
+                },
+                '{0} rows selected': {
+                    0: '{0} zeilen ausgewählt',
+                    1: '{0} zeile ausgewählt',
+                    default: '{0} zeilen ausgewählt'
+                }
             }
         };
     }
