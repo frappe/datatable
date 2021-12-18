@@ -142,7 +142,10 @@ export function stripHTML(html) {
 export function format(str, args) {
     if (!str) return str;
 
-    return str.replace(/{(\d+)}/g, function (match, number) {
-        return typeof args[number] !== 'undefined' ? args[number] : match;
+    Object.keys(args).forEach(arg => {
+        let regex = new RegExp(`{(${arg})}`, 'g');
+        str = str.replace(regex, args[arg]);
     });
+
+    return str;
 };
