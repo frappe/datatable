@@ -13,13 +13,13 @@ export default class TranslationManager {
         this.translations = Object.assign(this.translations, translations);
     }
 
-    translate(str, args) {
-        let translation = (this.translations[this.language] && this.translations[this.language][str]) || str;
+    translate(sourceText, args) {
+        let translation = (this.translations[this.language] && this.translations[this.language][sourceText]) || sourceText;
 
         if (typeof translation === 'object') {
             translation = args && args.count ?
                 this.getPluralizedTranslation(translation, args.count) :
-                str;
+                sourceText;
         }
 
         return format(translation, args || {});
