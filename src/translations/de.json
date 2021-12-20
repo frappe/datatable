@@ -5,12 +5,10 @@
 	"Remove column": "Spalte entfernen",
 	"No Data": "Keine Daten",
 	"{count} cells copied": {
-		"0": "{count} Zellen kopiert",
 		"1": "{count} Zelle kopiert",
 		"default": "{count} Zellen kopiert"
 	},
 	"{count} rows selected": {
-		"0": "{count} Zeilen ausgewählt",
 		"1": "{count} Zeile ausgewählt",
 		"default": "{count} Zeilen ausgewählt"
 	}
