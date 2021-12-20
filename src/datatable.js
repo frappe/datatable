@@ -46,7 +46,7 @@ class DataTable {
 
     initializeTranslations(options) {
         this.language = options.language || 'en';
-        this.translationManager = new TranslationManager(this);
+        this.translationManager = new TranslationManager(this.language);
 
         if (options.customTranslations) this.addCustomTranslations(options.customTranslations);
     }

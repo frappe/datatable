@@ -2,11 +2,11 @@ import { format } from './utils';
 import getTranslationsJSON from './translations';
 
 export default class TranslationManager {
-    constructor(instance) {
-        this.instance = instance;
-        this.language = this.instance.language;
+    constructor(language) {
+        this.language = language;
 
         this.translations = getTranslationsJSON();
+        window.t = this.translations;
     }
 
     addCustomTranslations(translations) {
@@ -14,7 +14,8 @@ export default class TranslationManager {
     }
 
     translate(sourceText, args) {
-        let translation = (this.translations[this.language] && this.translations[this.language][sourceText]) || sourceText;
+        let translation = (this.translations[this.language] &&
+            this.translations[this.language][sourceText]) || sourceText;
 
         if (typeof translation === 'object') {
             translation = args && args.count ?
