@@ -5,12 +5,10 @@
 	"Remove column": "Remove column",
 	"No Data": "No Data",
 	"{count} cells copied": {
-		"0": "{count} cells copied",
 		"1": "{count} cell copied",
 		"default": "{count} cells copied"
 	},
 	"{count} rows selected": {
-		"0": "{count} rows selected",
 		"1": "{count} row selected",
 		"default": "{count} rows selected"
 	}
