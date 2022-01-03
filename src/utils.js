@@ -138,3 +138,14 @@ export function numberSortAsc(a, b) {
 export function stripHTML(html) {
     return html.replace(/<[^>]*>/g, '');
 };
+
+export function format(str, args) {
+    if (!str) return str;
+
+    Object.keys(args).forEach(arg => {
+        let regex = new RegExp(`{(${arg})}`, 'g');
+        str = str.replace(regex, args[arg]);
+    });
+
+    return str;
+};

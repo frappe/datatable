@@ -6,7 +6,8 @@ import RowManager from './rowmanager';
 import BodyRenderer from './body-renderer';
 import Style from './style';
 import Keyboard from './keyboard';
-import DEFAULT_OPTIONS from './defaults';
+import TranslationManager from './translationmanager';
+import getDefaultOptions from './defaults';
 
 let defaultComponents = {
     DataManager,
@@ -31,6 +32,8 @@ class DataTable {
             throw new Error('Invalid argument given for `wrapper`');
         }
 
+        this.initializeTranslations(options);
+        this.setDefaultOptions();
         this.buildOptions(options);
         this.prepare();
         this.initializeComponents();
@@ -41,23 +44,36 @@ class DataTable {
         }
     }
 
+    initializeTranslations(options) {
+        this.language = options.language || 'en';
+        this.translationManager = new TranslationManager(this.language);
+
+        if (options.translations) {
+            this.translationManager.addTranslations(options.translations);
+        }
+    }
+
+    setDefaultOptions() {
+        this.DEFAULT_OPTIONS = getDefaultOptions(this);
+    }
+
     buildOptions(options) {
         this.options = this.options || {};
 
         this.options = Object.assign(
-            {}, DEFAULT_OPTIONS,
+            {}, this.DEFAULT_OPTIONS,
             this.options || {}, options
         );
 
         options.headerDropdown = options.headerDropdown || [];
         this.options.headerDropdown = [
-            ...DEFAULT_OPTIONS.headerDropdown,
+            ...this.DEFAULT_OPTIONS.headerDropdown,
             ...options.headerDropdown
         ];
 
         // custom user events
         this.events = Object.assign(
-            {}, DEFAULT_OPTIONS.events,
+            {}, this.DEFAULT_OPTIONS.events,
             this.options.events || {},
             options.events || {}
         );
@@ -242,6 +258,10 @@ class DataTable {
         if (this.options.logs) {
             console.log.apply(console, arguments);
         }
+    }
+
+    translate(str, args) {
+        return this.translationManager.translate(str, args);
     }
 }
 
