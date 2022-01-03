@@ -48,7 +48,9 @@ class DataTable {
         this.language = options.language || 'en';
         this.translationManager = new TranslationManager(this.language);
 
-        if (options.customTranslations) this.addCustomTranslations(options.customTranslations);
+        if (options.translations) {
+            this.translationManager.addTranslations(options.translations);
+        }
     }
 
     setDefaultOptions() {
@@ -260,10 +262,6 @@ class DataTable {
 
     translate(str, args) {
         return this.translationManager.translate(str, args);
-    }
-
-    addCustomTranslations(translations) {
-        this.translationManager.addCustomTranslations(translations);
     }
 }
 

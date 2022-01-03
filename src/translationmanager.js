@@ -1,15 +1,13 @@
 import { format } from './utils';
-import getTranslationsJSON from './translations';
+import getTranslations from './translations';
 
 export default class TranslationManager {
     constructor(language) {
         this.language = language;
-
-        this.translations = getTranslationsJSON();
-        window.t = this.translations;
+        this.translations = getTranslations();
     }
 
-    addCustomTranslations(translations) {
+    addTranslations(translations) {
         this.translations = Object.assign(this.translations, translations);
     }
 
