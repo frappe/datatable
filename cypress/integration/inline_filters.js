@@ -14,36 +14,36 @@ describe('Inline Filters', function () {
         cy.getCell(4, 0).click().type('{ctrl}f');
 
         cy.get('@filterInput4').type('edin');
-        cy.get('.dt-row[data-row-index=0]').should('be.visible');
-        cy.get('.dt-row[data-row-index=1]').should('not.be.visible');
+        cy.get('.dt-row-0').should('be.visible');
+        cy.get('.dt-row-1').should('not.exist');
         cy.get('@filterInput4').clear();
     });
 
     it('simple number filter', function () {
         cy.get('@filterInput5').type('2360');
         cy.get('.dt-row[data-row-index=8]').should('be.visible');
-        cy.get('.dt-row[data-row-index=15]').should('not.be.visible');
-        cy.get('.dt-row[data-row-index=22]').should('not.be.visible');
+        cy.get('.dt-row[data-row-index=15]').should('not.exist');
+        cy.get('.dt-row[data-row-index=22]').should('not.exist');
         cy.get('@filterInput5').clear();
     });
 
     it('greater than', function () {
         cy.get('@filterInput5').type('> 6000');
-        cy.get('.dt-row[data-row-index=0]').should('not.be.visible');
+        cy.get('.dt-row[data-row-index=0]').should('not.exist');
         cy.get('.dt-row[data-row-index=3]').should('be.visible');
         cy.get('@filterInput5').clear();
     });
 
     it('less than', function () {
         cy.get('@filterInput5').type('< 2000');
-        cy.get('.dt-row[data-row-index=0]').should('not.be.visible');
+        cy.get('.dt-row[data-row-index=0]').should('not.exist');
         cy.get('.dt-row[data-row-index=51]').should('be.visible');
         cy.get('@filterInput5').clear();
     });
 
     it('range', function () {
         cy.get('@filterInput5').type(' 2000: 5000');
-        cy.get('.dt-row[data-row-index=4]').should('not.be.visible');
+        cy.get('.dt-row[data-row-index=4]').should('not.exist');
         cy.get('.dt-row[data-row-index=5]').should('be.visible');
         cy.get('@filterInput5').clear();
     });
@@ -58,16 +58,15 @@ describe('Inline Filters', function () {
         cy.get('@filterInput4').type('to');
         cy.get('@filterInput5').type('54');
 
-        cy.get('.dt-row[data-row-index=0]').should('be.visible');
         cy.get('.dt-row[data-row-index=4]').should('be.visible');
-        cy.get('.dt-row[data-row-index=1]').should('not.be.visible');
+        cy.get('.dt-row[data-row-index=1]').should('not.exist');
         cy.get('@filterInput4').clear();
         cy.get('@filterInput5').clear();
     });
 
     it('greater than for string type filters', function () {
         cy.get('@filterInput6').type('> 01/07/2011');
-        cy.get('.dt-row[data-row-index=0]').should('not.be.visible');
+        cy.get('.dt-row[data-row-index=0]').should('not.exist');
         cy.get('.dt-row[data-row-index=1]').should('be.visible');
         cy.get('.dt-row[data-row-index=3]').should('be.visible');
         cy.get('.dt-row[data-row-index=5]').should('be.visible');
