@@ -174,7 +174,16 @@ export default class ColumnManager {
 
         const onMouseMove = (e) => {
             if (!isDragging) return;
-            const finalWidth = startWidth + (e.pageX - startX);
+            
+            let addedWidth;
+            
+            if (this.options.direction === 'rtl'){
+                addedWidth = startX - e.pageX;
+            } else {
+                addedWidth = e.pageX - startX;
+            }
+
+            const finalWidth = startWidth + addedWidth;
             const {
                 colIndex
             } = $.data($resizingCell);
