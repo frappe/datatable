@@ -17,6 +17,7 @@
     "travis-deploy-once": "travis-deploy-once",
     "semantic-release": "semantic-release",
     "lint": "eslint src",
+    "lint-and-build": "yarn lint && yarn build",
     "commit": "npx git-cz"
   },
   "files": [
@@ -26,7 +27,7 @@
   "devDependencies": {
     "autoprefixer": "^9.0.0",
     "chai": "3.5.0",
-    "cypress": "3.0.1",
+    "cypress": "^9.2.0",
     "cz-conventional-changelog": "^2.1.0",
     "deepmerge": "^2.0.1",
     "eslint": "^5.0.1",

@@ -32,7 +32,7 @@ describe('Cell', function () {
     });
 
     it('edit cell', function () {
-        cy.getCell(4, 1).dblclick();
+        cy.getCell(4, 1).dblclick({ force: true });
         cy.getCell(4, 1).find('input').click();
         cy.focused().type('{selectall}{del}Test{enter}');
         cy.getCell(4, 1).contains('Test');
