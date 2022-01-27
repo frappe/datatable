@@ -1,14 +1,16 @@
 name: Test Pull Request
 on: pull_request
 jobs:
-  test:
-    runs-on: ubuntu-16.04
+  test-pull-request:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - name: Lint, build and test
+        uses: cypress-io/github-action@v2
         with:
-          node-version: '12'
-      - run: yarn install --frozen-lockfile
-      - run: yarn lint
-      - run: yarn build
-      - run: yarn test
+          build: yarn lint-and-build
+          start: yarn cy:server
+          record: true
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

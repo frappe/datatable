@@ -1,0 +1,15 @@
+{
+	"Sort Ascending": "Ordinamento ascendente",
+	"Sort Descending": "Ordinamento decrescente",
+	"Reset sorting": "Azzeramento ordinamento",
+	"Remove column": "Rimuovi colonna",
+	"No Data": "Nessun dato",
+	"{count} cells copied": {
+		"1": "Copiato {count} cella",
+		"default": "{count} celle copiate"
+	},
+	"{count} rows selected": {
+		"1": "{count} linea selezionata",
+		"default": "{count} linee selezionate"
+	}
+}

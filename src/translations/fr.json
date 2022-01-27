@@ -1,0 +1,15 @@
+{
+	"Sort Ascending": "Trier par ordre croissant",
+	"Sort Descending": "Trier par ordre décroissant",
+	"Reset sorting": "Réinitialiser le tri",
+	"Remove column": "Supprimer colonne",
+	"No Data": "Pas de données",
+	"{count} cells copied": {
+		"1": "{count} cellule copiée",
+		"default": "{count} cellules copiées"
+	},
+	"{count} rows selected": {
+		"1": "{count} ligne sélectionnée",
+		"default": "{count} lignes sélectionnées"
+	}
+}

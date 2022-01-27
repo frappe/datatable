@@ -18,7 +18,8 @@
 
 <body>
 	<h1>Frappé DataTable</h1>
-	<button onclick="datatable.render()">Refresh</button>
+	<button onclick="datatable.render()">Render Table</button>
+	<button onclick="datatable.refresh()">Refresh Data</button>
 	<button onclick="switchToTreeView()" data-action="treeview">TreeView</button>
 	<label>
 		<input type="checkbox" id="input-large-data" />
@@ -188,6 +189,18 @@
 					dynamicRowHeight: true,
 					treeView: treeView,
 					showTotalRow: true,
+					// direction: 'rtl',
+					// language: 'myLang',
+					// translations: {
+					// 	myLang: {
+					// 		"Sort Ascending": "Sort low to high",
+					// 		"{count} cells copied": {
+					// 			"1": "1 cell was copied",
+					// 			"2": "2 cells were copied",
+					// 			"default": "Many cells were copied"
+					// 		}
+					// 	}
+					// },
 					// filterRows(keyword, cells, colIndex) {
 					// 	return cells
 					// 		.filter(cell => cell.content.includes(keyword))

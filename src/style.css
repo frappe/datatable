@@ -164,6 +164,11 @@
     }
 }
 
+.datatable[dir=rtl] .dt-cell__resize-handle {
+    right: unset;
+    left: -3px;
+}
+
 .icon-open, .icon-close {
     width: 16px;
     height: 16px;
