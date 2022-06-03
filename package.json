@@ -64,7 +64,7 @@
   "bugs": {
     "url": "https://github.com/frappe/datatable/issues"
   },
-  "homepage": "https://frappe.github.io/datatable",
+  "homepage": "https://frappe.io/datatable",
   "dependencies": {
     "hyperlist": "^1.0.0-beta",
     "lodash": "^4.17.5",
