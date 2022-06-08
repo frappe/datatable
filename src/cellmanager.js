@@ -519,7 +519,7 @@ export default class CellManager {
                 promise = valuePromise.then((value) => {
                     const oldValue = this.getCell(colIndex, rowIndex).content;
 
-                    if (oldValue === value) return;
+                    if (oldValue === value) return false;
 
                     const done = editor.setValue(value, rowIndex, col);
 
