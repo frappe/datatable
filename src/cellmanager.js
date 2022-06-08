@@ -520,8 +520,11 @@ export default class CellManager {
                 }
 
                 promise = valuePromise.then((value) => {
-                    const done = editor.setValue(value, rowIndex, col);
                     const oldValue = this.getCell(colIndex, rowIndex).content;
+
+                    if (oldValue === value) return false;
+
+                    const done = editor.setValue(value, rowIndex, col);
 
                     // update cell immediately
                     this.updateCell(colIndex, rowIndex, value);
@@ -643,7 +646,7 @@ export default class CellManager {
     }
 
     focusCellInDirection(direction) {
-        if (!this.$focusedCell) {
+        if (!this.$focusedCell || (this.$editingCell && ['left', 'right', 'up', 'down'].includes(direction))) {
             return false;
         } else if (this.$editingCell && ['tab', 'shift+tab'].includes(direction)) {
             this.deactivateEditing();
