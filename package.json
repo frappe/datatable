@@ -45,7 +45,7 @@
     "rollup-plugin-node-resolve": "^3.0.3",
     "rollup-plugin-postcss": "^1.2.8",
     "rollup-plugin-uglify-es": "^0.0.1",
-    "semantic-release": "^17.1.1",
+    "semantic-release": "^19.0.3",
     "start-server-and-test": "^1.4.1",
     "travis-deploy-once": "^5.0.1"
   },
