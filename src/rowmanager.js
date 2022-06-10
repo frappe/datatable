@@ -67,7 +67,7 @@ export default class RowManager {
         const _row = this.datamanager.updateRow(row, rowIndex);
 
         _row.forEach(cell => {
-            this.cellmanager.refreshCell(cell);
+            this.cellmanager.refreshCell(cell, true);
         });
     }
 
@@ -353,7 +353,7 @@ export default class RowManager {
     getFilterInput(props) {
         let title = `title="Filter based on ${props.name || 'Index'}"`;
         const dataAttr = makeDataAttributeString(props);
-        return `<input class="dt-filter dt-input" type="text" ${dataAttr} tabindex="1" 
+        return `<input class="dt-filter dt-input" type="text" ${dataAttr} tabindex="1"
             ${props.colIndex === 0 ? 'disabled' : title} />`;
     }
 

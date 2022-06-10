@@ -1,4 +1,5 @@
 import { isNumber, stripHTML } from './utils';
+import CellManager from './cellmanager';
 
 export default function filterRows(rows, filters) {
     let filteredRowIndices = [];
@@ -17,7 +18,7 @@ export default function filterRows(rows, filters) {
         const cells = filteredRows.map(row => row[colIndex]);
 
         let filter = guessFilter(keyword);
-        let filterMethod = getFilterMethod(filter);
+        let filterMethod = getFilterMethod(rows, filter);
 
         if (filterMethod) {
             filteredRowIndices = filterMethod(filter.text, cells);
@@ -29,9 +30,18 @@ export default function filterRows(rows, filters) {
     return filteredRowIndices;
 };
 
-function getFilterMethod(filter) {
+function getFilterMethod(rows, filter) {
+    const getFormattedValue = cell => {
+        let formatter = CellManager.getCustomCellFormatter(cell);
+        if (formatter && cell.content) {
+            cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, rows[cell.rowIndex]);
+            return stripHTML(cell.html);
+        }
+        return cell.content || '';
+    };
+
     const stringCompareValue = cell =>
-        String(stripHTML(cell.html || '') || cell.content || '').toLowerCase();
+        String(stripHTML(cell.html || '') || getFormattedValue(cell)).toLowerCase();
 
     const numberCompareValue = cell => parseFloat(cell.content);
 
