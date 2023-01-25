@@ -164,4 +164,4 @@ export function escapeHTML(txt) {
     };
 
     return String(txt).replace(/[&<>"'`=/]/g, (char) => escapeHtmlMapping[char] || char);
-}
+};
