@@ -149,3 +149,19 @@ export function format(str, args) {
 
     return str;
 };
+
+export function escapeHTML(txt) {
+    if (!txt) return "";
+    let escapeHtmlMapping = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+        "/": "&#x2F;",
+        "`": "&#x60;",
+        "=": "&#x3D;",
+    };
+
+    return String(txt).replace(/[&<>"'`=/]/g, (char) => escapeHtmlMapping[char] || char);
+}
