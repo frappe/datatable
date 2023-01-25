@@ -2,7 +2,8 @@ import {
     copyTextToClipboard,
     makeDataAttributeString,
     throttle,
-    linkProperties
+    linkProperties,
+    escapeHTML,
 } from './utils';
 import $ from './dom';
 import icons from './icons';
@@ -886,7 +887,7 @@ export default class CellManager {
         let textContent = div.textContent;
         textContent = textContent.replace(/\s+/g, ' ').trim();
 
-        cellContentHTML = cellContentHTML.replace('>', ` title="${textContent}">`);
+        cellContentHTML = cellContentHTML.replace('>', ` title="${escapeHTML(textContent)}">`);
 
         return cellContentHTML;
     }
