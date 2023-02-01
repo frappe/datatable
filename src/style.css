@@ -11,11 +11,11 @@
     --dt-spacer-2: 0.5rem;
     --dt-spacer-3: 1rem;
     --dt-border-radius: 3px;
-    --dt-cell-bg: #fff;
+    --dt-cell-bg: #F5FAFF !important;
     --dt-focus-border-width: 2px;
     --dt-selection-highlight-color: var(--dt-light-yellow);
     --dt-toast-message-border: none;
-    --dt-header-cell-bg: var(--dt-cell-bg);
+    --dt-header-cell-bg: #F5FAFF !important;
 }
 
 .datatable {
@@ -133,7 +133,8 @@
     }
 
     &--header {
-        background-color: var(--dt-header-cell-bg);
+        background-color: #F5FAFF;
+        font-weight: bold !important;
     }
 
     &--header:last-child {
