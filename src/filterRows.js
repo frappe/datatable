@@ -34,7 +34,7 @@ function getFilterMethod(rows, filter) {
     const getFormattedValue = cell => {
         let formatter = CellManager.getCustomCellFormatter(cell);
         if (formatter && cell.content) {
-            cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, rows[cell.rowIndex]);
+            cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, rows[cell.rowIndex], true);
             return stripHTML(cell.html);
         }
         return cell.content || '';
