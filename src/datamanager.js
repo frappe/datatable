@@ -15,6 +15,7 @@ export default class DataManager {
     }
 
     init(data, columns) {
+
         if (!data) {
             data = this.options.data;
         }
@@ -130,15 +131,34 @@ export default class DataManager {
     prepareNumericColumns() {
         const row0 = this.getRow(0);
         if (!row0) return;
+
+        let cache = localStorage.getItem(this.options.columnCacheKey);
+        if (cache === null) {
+            cache = this.columns.map((column) => {
+                return column.width;
+            });
+            localStorage.setItem(this.options.columnCacheKey, JSON.stringify(cache));
+        } else {
+            cache = JSON.parse(cache);
+        }
+        if (this.columns.length !== cache.length) {
+            cache = this.columns.map((column) => {
+                return column.width;
+            });
+        }
+        localStorage.setItem(this.options.columnCacheKey, JSON.stringify(cache));
+
         this.columns = this.columns.map((column, i) => {
 
             const cellValue = row0[i].content;
             if (!column.align && isNumeric(cellValue)) {
                 column.align = 'right';
             }
+            column.width = cache[i];
 
             return column;
         });
+
     }
 
     prepareRows() {
@@ -417,12 +437,17 @@ export default class DataManager {
 
     updateColumn(colIndex, keyValPairs) {
         const column = this.getColumn(colIndex);
+        let cache = JSON.parse(localStorage.getItem(this.options.columnCacheKey));
         for (let key in keyValPairs) {
             const newVal = keyValPairs[key];
             if (newVal !== undefined) {
                 column[key] = newVal;
             }
+            if (key === 'width') {
+                cache[colIndex] = newVal;
+            }
         }
+        localStorage.setItem(this.options.columnCacheKey, JSON.stringify(cache));
         return column;
     }
 
