@@ -27,6 +27,7 @@ export default class DataManager {
         this.rowCount = 0;
         this.columns = [];
         this.rows = [];
+        this.flatData = [];
 
         this.prepareColumns();
         this.prepareRows();
@@ -144,51 +145,109 @@ export default class DataManager {
     prepareRows() {
         this.validateData(this.data);
 
-        this.rows = this.data.map((d, i) => {
-            const index = this._getNextRowCount();
+        this.rows = [];
+        for (let d of this.data) {
+            this.addRow(d);
+        }
+    }
 
-            let row = [];
-            let meta = {
-                rowIndex: index
-            };
+    addRow(d) {
+        if (Array.isArray(d)) {
+            this.addArrayRow(d);
+        } else if (d._isGroup) {
+            this.addGroupObject(d);
+        } else {
+            this.addObjectRow(d);
+        }
+    }
 
-            if (Array.isArray(d)) {
-                // row is an array
-                if (this.options.checkboxColumn) {
-                    row.push(this.getCheckboxHTML());
-                }
-                if (this.options.serialNoColumn) {
-                    row.push((index + 1) + '');
-                }
-                row = row.concat(d);
+    addArrayRow(d) {
+        const index = this._getNextRowCount();
+        let row = [];
+        let meta = {
+            rowIndex: index
+        };
 
-                while (row.length < this.columns.length) {
-                    row.push('');
-                }
+        if (this.options.checkboxColumn) {
+            row.push(this.getCheckboxHTML());
+        }
+        if (this.options.serialNoColumn) {
+            row.push((index + 1) + '');
+        }
+        row = row.concat(d);
 
+        while (row.length < this.columns.length) {
+            row.push('');
+        }
+
+        this.rows.push(this.prepareRow(row, meta));
+        this.flatData.push(d);
+    }
+
+    addObjectRow(d) {
+        const index = this._getNextRowCount();
+        let row = [];
+        let meta = {
+            rowIndex: index
+        };
+
+        for (let col of this.columns) {
+            if (col.id === '_checkbox') {
+                row.push(this.getCheckboxHTML());
+            } else if (col.id === '_rowIndex') {
+                row.push((index + 1) + '');
             } else {
-                // row is an object
-                for (let col of this.columns) {
-                    if (col.id === '_checkbox') {
-                        row.push(this.getCheckboxHTML());
-                    } else if (col.id === '_rowIndex') {
-                        row.push((index + 1) + '');
-                    } else {
-                        row.push(d[col.id]);
-                    }
-                }
+                row.push(d[col.id]);
+            }
+        }
 
-                meta.indent = d.indent || 0;
+        meta.indent = d.indent || 0;
+        meta.excludeFromTotal = d._excludeFromTotal;
+
+        this.rows.push(this.prepareRow(row, meta));
+        this.flatData.push(d);
+    }
+
+    addGroupObject(group) {
+        let view = group.totals ? 'tree' : 'list';
+        let parentIndent;
+
+        // totals row for tree view
+        if (view === 'tree' && group.totals) {
+            group.totals._excludeFromTotal = true;
+            group.totals._isGroupTotal = true;
+            group.totals.indent = group.indent || 0;
+            parentIndent = group.totals.indent;
+            this.addRow(group.totals);
+        }
+
+        // padding row for list view
+        if (view === 'list' && this.rows.length) {
+            this.addRow({});
+        }
+
+        for (let i = 0; i < group.rows.length; ++i) {
+            let row = group.rows[i];
+
+            // if group has a total row, make sure its child rows are indented properly
+            if (parentIndent != null) {
+                row.indent = parentIndent + 1;
             }
 
-            return this.prepareRow(row, meta);
-        });
+            this.addRow(row);
+
+            // padding row for list view
+            if (view === 'list' && row._isGroup) {
+                if (i + 1 < group.rows.length && !group.rows[i + 1]._isGroup) {
+                    this.addRow({});
+                }
+            }
+        }
     }
 
     prepareTreeRows() {
         this.rows.forEach((row, i) => {
             if (isNumber(row.meta.indent)) {
-                // if (i === 36) debugger;
                 const nextRow = this.getRow(i + 1);
                 row.meta.isLeaf = !nextRow ||
                     notSet(nextRow.meta.indent) ||
@@ -245,6 +304,7 @@ export default class DataManager {
         this.validateData(rows);
 
         this.rows.push(...this.prepareRows(rows));
+        this.flatData.push(...rows);
     }
 
     sortRows(colIndex, sortOrder = 'none') {
@@ -595,7 +655,7 @@ export default class DataManager {
      * @memberof DataManager
      */
     getData(rowIndex) {
-        return this.data[rowIndex];
+        return this.flatData[rowIndex];
     }
 
     hasColumn(name) {
