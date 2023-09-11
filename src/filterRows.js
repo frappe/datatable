@@ -189,7 +189,7 @@ function guessFilter(keyword = '') {
         }
     }
 
-    if (keyword.split(':').length === 2) {
+    if (keyword.split(':').length === 2 && keyword.split(':').every(v => isNumber(v.trim()))) {
         compareString = keyword.split(':');
         return {
             type: 'range',
