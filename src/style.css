@@ -30,7 +30,7 @@
 }
 
 .dt-scrollable {
-    height: 40vw;
+    height: calc(100vh - 450px);
     overflow: auto;
     border-top: 2px solid var(--dt-border-color);
 
