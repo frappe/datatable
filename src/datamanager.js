@@ -29,7 +29,8 @@ export default class DataManager {
         this.rows = [];
 
         this.prepareColumns();
-        this.prepareRows();
+        this.validateData(this.data);
+        this.rows = this.prepareRows(this.data);
         this.prepareTreeRows();
         this.prepareRowView();
         this.prepareNumericColumns();
@@ -141,13 +142,8 @@ export default class DataManager {
         });
     }
 
-    prepareRows(r) {
-        const data = r || this.data;
-        this.validateData(data);
-        if (Array.isArray(r)) {
-            this.data.push(...r);
-        }
-        this.rows.push(...(data.map((d, i) => {
+    prepareRows(data) {
+        return data.map((d, i) => {
             const index = this._getNextRowCount();
 
             let row = [];
@@ -185,7 +181,7 @@ export default class DataManager {
             }
 
             return this.prepareRow(row, meta);
-        })));
+        });
     }
 
     prepareTreeRows() {
@@ -245,7 +241,9 @@ export default class DataManager {
     }
 
     appendRows(rows) {
-        this.prepareRows(rows);
+        this.validateData(rows);
+        this.rows = this.rows.concat(this.prepareRows(rows));
+        this.prepareTreeRows();
         this.prepareRowView();
     }
 

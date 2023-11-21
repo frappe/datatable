@@ -20,6 +20,7 @@
 	<h1>Frappé DataTable</h1>
 	<button onclick="datatable.render()">Refresh</button>
 	<button onclick="switchToTreeView()" data-action="treeview">TreeView</button>
+    <button onclick="appendRows()">Append Rows</button>
 	<label>
 		<input type="checkbox" id="input-large-data" />
 		<span>Large Data</span>
@@ -265,6 +266,15 @@
 				console.log(e)
 			}
 		};
+
+        function appendRows() {
+            datatable.appendRows(
+                [
+                    ["Garrett", "Accountant", "Tokyo", 8422, "2011/07/25", 170],
+                    ["Winters", "Accountant", "Tokyo", 8422, "2011/07/25", 123]
+                ]
+            )
+        }
 	</script>
 </body>
 
