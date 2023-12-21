@@ -427,7 +427,7 @@ export default class DataManager {
     }
 
     filterRows(filters) {
-        return this.options.filterRows(this.rows, filters)
+        return this.options.filterRows(this.rows, filters, this)
             .then(result => {
                 if (!result) {
                     result = this.getAllRowIndices();
