@@ -18,7 +18,7 @@ export default function filterRows(rows, filters, data) {
         const cells = filteredRows.map(row => row[colIndex]);
 
         let filter = guessFilter(keyword);
-        let filterMethod = getFilterMethod(rows, filter, data);
+        let filterMethod = getFilterMethod(rows, data, filter);
 
         if (filterMethod) {
             filteredRowIndices = filterMethod(filter.text, cells);
@@ -30,10 +30,9 @@ export default function filterRows(rows, filters, data) {
     return filteredRowIndices;
 };
 
-function getFilterMethod(rows, filter, data) {
+function getFilterMethod(rows, data, filter) {
     const getFormattedValue = cell => {
         let formatter = CellManager.getCustomCellFormatter(cell);
-        data
         if (formatter && cell.content) {
             cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, rows[cell.rowIndex], filter);
             return stripHTML(cell.html);
