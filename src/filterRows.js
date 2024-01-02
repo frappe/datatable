@@ -35,9 +35,11 @@ function getFilterMethod(rows, data, filter) {
         let formatter = CellManager.getCustomCellFormatter(cell);
         if (data && data.constructor.name === 'DataManager') {
             data = data.getData(cell.rowIndex);
+        } else {
+            data = rows[cell.rowIndex]
         }
         if (formatter && cell.content) {
-            cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, rows[cell.rowIndex], filter, data);
+            cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, data, filter);
             return stripHTML(cell.html);
         }
         return cell.content || '';
