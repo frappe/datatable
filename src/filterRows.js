@@ -36,7 +36,7 @@ function getFilterMethod(rows, data, filter) {
         if (data && data.constructor.name === 'DataManager') {
             data = data.getData(cell.rowIndex);
         } else {
-            data = rows[cell.rowIndex]
+            data = rows[cell.rowIndex];
         }
         if (formatter && cell.content) {
             cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, data, filter);
