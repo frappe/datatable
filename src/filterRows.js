@@ -33,7 +33,7 @@ export default function filterRows(rows, filters, data) {
 function getFilterMethod(rows, data, filter) {
     const getFormattedValue = cell => {
         let formatter = CellManager.getCustomCellFormatter(cell);
-        if (data && data.data & data.data.length) {
+        if (data && data.data && data.data.length) {
             data = data.data[cell.rowIndex];
         } else {
             data = rows[cell.rowIndex];
