@@ -30,16 +30,15 @@ export default function filterRows(rows, filters, data) {
     return filteredRowIndices;
 };
 
-function getFilterMethod(rows, data, filter) {
+function getFilterMethod(rows, allData, filter) {
     const getFormattedValue = cell => {
         let formatter = CellManager.getCustomCellFormatter(cell);
-        if (data && data.data && data.data.length) {
-            data = data.data[cell.rowIndex];
-        } else {
-            data = rows[cell.rowIndex];
+        let rowData = rows[cell.rowIndex];
+        if (allData && allData.data && allData.data.length) {
+            rowData = allData.data[cell.rowIndex];
         }
         if (formatter && cell.content) {
-            cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, data, filter);
+            cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, rowData, filter);
             return stripHTML(cell.html);
         }
         return cell.content || '';
