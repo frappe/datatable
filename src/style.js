@@ -312,7 +312,7 @@ export default class Style {
         if (!firstRow) return;
         const rowWidth = $.style(firstRow, 'width');
 
-        let width = bodyWidth > rowWidth ? rowWidth : bodyWidth;
+        let width = bodyWidth > rowWidth ? rowWidth + 10 : bodyWidth;
         $.style(this.bodyScrollable, {
             width: width + 'px'
         });
