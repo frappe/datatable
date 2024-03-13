@@ -391,8 +391,11 @@ export default class CellManager {
 
     clearSelection() {
         (this._selectedCells || [])
-            .forEach($cell => $cell.classList.remove('dt-cell--highlight'));
-
+            .forEach($cell => {
+                if ($cell && $cell.classList) {
+                    $cell.classList.remove('dt-cell--highlight');
+                }
+            });
         this._selectedCells = [];
         this.$selectionCursor = null;
     }
