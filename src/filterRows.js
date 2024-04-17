@@ -68,9 +68,10 @@ function getFilterMethod(rows, allData, filter) {
         contains(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const hay = stringCompareValue(cell);
                     const needle = (keyword || '').toLowerCase();
-                    return !needle || hay.includes(needle);
+                    return !needle ||
+                        (cell.content || '').toLowerCase().includes(needle) ||
+                        stringCompareValue(cell).includes(needle);
                 })
                 .map(cell => cell.rowIndex);
         },
