@@ -1,7 +1,7 @@
 import { isNumber, stripHTML } from './utils';
 import CellManager from './cellmanager';
 
-export default function filterRows(rows, filters) {
+export default function filterRows(rows, filters, data) {
     let filteredRowIndices = [];
 
     if (Object.keys(filters).length === 0) {
@@ -18,7 +18,7 @@ export default function filterRows(rows, filters) {
         const cells = filteredRows.map(row => row[colIndex]);
 
         let filter = guessFilter(keyword);
-        let filterMethod = getFilterMethod(rows, filter);
+        let filterMethod = getFilterMethod(rows, data, filter);
 
         if (filterMethod) {
             filteredRowIndices = filterMethod(filter.text, cells);
@@ -30,11 +30,15 @@ export default function filterRows(rows, filters) {
     return filteredRowIndices;
 };
 
-function getFilterMethod(rows, filter) {
+function getFilterMethod(rows, allData, filter) {
     const getFormattedValue = cell => {
         let formatter = CellManager.getCustomCellFormatter(cell);
+        let rowData = rows[cell.rowIndex];
+        if (allData && allData.data && allData.data.length) {
+            rowData = allData.data[cell.rowIndex];
+        }
         if (formatter && cell.content) {
-            cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, rows[cell.rowIndex], true);
+            cell.html = formatter(cell.content, rows[cell.rowIndex], cell.column, rowData, filter);
             return stripHTML(cell.html);
         }
         return cell.content || '';
@@ -64,9 +68,10 @@ function getFilterMethod(rows, filter) {
         contains(keyword, cells) {
             return cells
                 .filter(cell => {
-                    const hay = stringCompareValue(cell);
                     const needle = (keyword || '').toLowerCase();
-                    return !needle || hay.includes(needle);
+                    return !needle ||
+                        (cell.content || '').toLowerCase().includes(needle) ||
+                        stringCompareValue(cell).includes(needle);
                 })
                 .map(cell => cell.rowIndex);
         },

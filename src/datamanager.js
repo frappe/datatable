@@ -29,7 +29,8 @@ export default class DataManager {
         this.rows = [];
 
         this.prepareColumns();
-        this.prepareRows();
+        this.validateData(this.data);
+        this.rows = this.prepareRows(this.data);
         this.prepareTreeRows();
         this.prepareRowView();
         this.prepareNumericColumns();
@@ -141,10 +142,8 @@ export default class DataManager {
         });
     }
 
-    prepareRows() {
-        this.validateData(this.data);
-
-        this.rows = this.data.map((d, i) => {
+    prepareRows(data) {
+        return data.map((d, i) => {
             const index = this._getNextRowCount();
 
             let row = [];
@@ -243,8 +242,9 @@ export default class DataManager {
 
     appendRows(rows) {
         this.validateData(rows);
-
-        this.rows.push(...this.prepareRows(rows));
+        this.rows = this.rows.concat(this.prepareRows(rows));
+        this.prepareTreeRows();
+        this.prepareRowView();
     }
 
     sortRows(colIndex, sortOrder = 'none') {
@@ -427,7 +427,7 @@ export default class DataManager {
     }
 
     filterRows(filters) {
-        return this.options.filterRows(this.rows, filters)
+        return this.options.filterRows(this.rows, filters, this)
             .then(result => {
                 if (!result) {
                     result = this.getAllRowIndices();

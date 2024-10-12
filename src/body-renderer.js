@@ -21,8 +21,11 @@ export default class BodyRenderer {
             return;
         }
 
+        // Create a temporary set for faster lookups.
+        // We can't change this.visibleRowIndices as it would be breaking for users.
+        let visibleRowIndicesSet = new Set(this.visibleRowIndices);
         const rowViewOrder = this.datamanager.rowViewOrder.map(index => {
-            if (this.visibleRowIndices.includes(index)) {
+            if (visibleRowIndicesSet.has(index)) {
                 return index;
             }
             return null;
