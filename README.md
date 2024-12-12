@@ -30,7 +30,8 @@ I was trying to remove all legacy UI components from the [frappe](https://github
 - **Column**: Columns are highly flexible, allowing users to reorder, resize, and sort them with ease. Additional features include hiding/removing columns and adding custom actions.
 - **Row**: Rows support advanced interactions, including row selection, tree-structured organization, and inline filters for precise control. They handle large datasets efficiently with dynamic row heights.
 
-## Install
+
+## Usage
 
 ```bash
 yarn add frappe-datatable
@@ -40,7 +41,6 @@ npm install frappe-datatable
 
 > Note: [`sortablejs`](https://github.com/RubaXa/Sortable) is required to be installed as well.
 
-## Usage
 
 ```js
 const datatable = new DataTable('#datatable', {
