@@ -18,6 +18,7 @@ export default class BodyRenderer {
 
         if (rows.length === 0) {
             this.bodyScrollable.innerHTML = this.getNoDataHTML();
+            this.footer.innerHTML = '';
             return;
         }
 
