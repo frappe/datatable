@@ -20,7 +20,8 @@ export default class CellManager {
             'columnmanager',
             'rowmanager',
             'datamanager',
-            'keyboard'
+            'keyboard',
+            'footer'
         ]);
 
         this.bindEvents();
@@ -171,6 +172,14 @@ export default class CellManager {
         $.on(this.bodyScrollable, 'mouseup', () => {
             mouseDown = false;
         });
+
+        if (this.options.showTotalRow) {
+            $.on(this.footer, 'click', '.dt-cell', (e) => {
+
+                this.focusCell($(e.delegatedTarget));
+            });
+
+        }
 
         const selectArea = (e) => {
             if (!mouseDown) return;
@@ -552,10 +561,18 @@ export default class CellManager {
             // copy only focusedCell
             const {
                 colIndex,
-                rowIndex
+                rowIndex,
+                isTotalRow
             } = $.data($cell1);
-            const cell = this.getCell(colIndex, rowIndex);
-            copyTextToClipboard(cell.content);
+            let copiedContent = '';
+            if (isTotalRow) {
+                let choosenFooterCell = this.$focusedCell;
+                copiedContent = choosenFooterCell.children[0].title;
+            } else {
+                const cell = this.getCell(colIndex, rowIndex);
+                copiedContent = cell.content;
+            }
+            copyTextToClipboard(copiedContent);
             return 1;
         }
         const cells = this.getCellsInRange($cell1, $cell2);
@@ -754,7 +771,7 @@ export default class CellManager {
     }
 
     scrollToCell($cell) {
-        if ($.inViewport($cell, this.bodyScrollable)) return false;
+        if ($.inViewport($cell, this.bodyScrollable) || $.inViewport($cell, this.footer)) return false;
 
         const {
             rowIndex
