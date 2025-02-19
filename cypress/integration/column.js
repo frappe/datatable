@@ -49,15 +49,15 @@ describe('Column', function () {
         cy
             .get('@resize-handle')
             .trigger('mousedown')
-            .trigger('mousemove', { pageX: 710, pageY: 20, which: 1 })
+            .trigger('mousemove', { pageX: 700, pageY: 20, which: 1 })
             .trigger('mouseup');
 
         cy.getColumnCell(4)
             .should('have.css', 'width')
-            .and('match', /^82\d*(\.\d+)?px$/);
+            .and('match', /^72\d*(\.\d+)?px$/);
         cy.getCell(4, 1)
             .should('have.css', 'width')
-            .and('match', /^82\d*(\.\d+)?px$/);
+            .and('match', /^72\d*(\.\d+)?px$/);
     });
 
     it('resize column using double click', function () {
