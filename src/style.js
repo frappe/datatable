@@ -23,7 +23,6 @@ export default class Style {
         this.styleEl = styleEl;
 
         this.bindResizeWindow();
-        this.bindScrollHeader();
     }
 
     get stylesheet() {
@@ -37,28 +36,6 @@ export default class Style {
         if (this.options.layout === 'fluid') {
             $.on(window, 'resize', this.onWindowResize);
         }
-    }
-
-    bindScrollHeader() {
-        this._settingHeaderPosition = false;
-
-        $.on(this.bodyScrollable, 'scroll', (e) => {
-            if (this._settingHeaderPosition) return;
-
-            this._settingHeaderPosition = true;
-
-            requestAnimationFrame(() => {
-                const left = -e.target.scrollLeft;
-
-                $.style(this.header, {
-                    transform: `translateX(${left}px)`
-                });
-                $.style(this.footer, {
-                    transform: `translateX(${left}px)`
-                });
-                this._settingHeaderPosition = false;
-            });
-        });
     }
 
     onWindowResize() {

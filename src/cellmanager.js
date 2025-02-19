@@ -25,6 +25,8 @@ export default class CellManager {
         ]);
 
         this.bindEvents();
+        this.stickyRowWidth = 0;
+        this.stickyColWitdh = [];
     }
 
     bindEvents() {
@@ -800,9 +802,30 @@ export default class CellManager {
             isTotalRow
         });
 
+        let styles = '';
+
         const row = this.datamanager.getRow(rowIndex);
 
         const isBodyCell = !(isHeader || isFilter || isTotalRow);
+
+        let sticky = false;
+
+        if (colIndex === 0 && this.options.checkboxColumn) {
+            this.stickyRowWidth = 33;
+            sticky = true;
+        } else if (colIndex === 1 && this.options.serialNoColumn) {
+            styles = `left:${this.stickyRowWidth}px;`;
+            this.stickyRowWidth += 36;
+            sticky = true;
+        } else if (cell.sticky) {
+            styles = `left:${this.stickyRowWidth}px;`;
+            this.stickyColWitdh[cell.id] = this.stickyRowWidth;
+            this.stickyRowWidth += (cell.width || 100);
+            sticky = true;
+        } else if (isBodyCell && cell.column.sticky) {
+            styles = `left:${this.stickyColWitdh[cell.column.id]}px;`;
+            sticky = true;
+        }
 
         const className = [
             'dt-cell',
@@ -812,11 +835,12 @@ export default class CellManager {
             isHeader ? 'dt-cell--header' : '',
             isHeader ? `dt-cell--header-${colIndex}` : '',
             isFilter ? 'dt-cell--filter' : '',
-            isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : ''
+            isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : '',
+            sticky ? 'dt-sticky-col' : ''
         ].join(' ');
 
         return `
-            <div class="${className}" ${dataAttr} tabindex="0">
+            <div class="${className}" ${dataAttr} tabindex="0" style="${styles}">
                 ${this.getCellContent(cell)}
             </div>
         `;

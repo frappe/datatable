@@ -29,10 +29,16 @@
     overflow: hidden;
 }
 
+.dt-scrollable > .dt-row-0{
+    border-top: 2px solid var(--dt-border-color);
+}
+
+.datatable-content{
+    overflow-x: auto;
+}
+
 .dt-scrollable {
     height: 40vw;
-    overflow: auto;
-    border-top: 2px solid var(--dt-border-color);
 
     &--highlight-all {
         background-color: var(--dt-selection-highlight-color);
@@ -289,4 +295,9 @@
 
 body.dt-resize {
     cursor: col-resize;
+}
+.dt-sticky-col {
+    position: sticky;
+    z-index: 1;
+    left: 0;
 }
