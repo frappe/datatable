@@ -808,20 +808,29 @@ export default class CellManager {
 
         const isBodyCell = !(isHeader || isFilter || isTotalRow);
 
+        const serialNoColIndex = !this.options.checkboxColumn && this.options.serialNoColumn ? 0 : 1;
+
         let sticky = false;
 
         if (colIndex === 0 && this.options.checkboxColumn) {
-            this.stickyRowWidth = 33;
+            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) this.stickyRowWidth = 33;
             sticky = true;
-        } else if (colIndex === 1 && this.options.serialNoColumn) {
-            styles = `left:${this.stickyRowWidth}px;`;
-            this.stickyRowWidth += 36;
+        } else if (colIndex === serialNoColIndex && this.options.serialNoColumn) {
+            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) {
+                this.stickyColWitdh[cell.id] = this.stickyRowWidth;
+                this.stickyRowWidth += (cell.width || 32);
+            }
+            styles = `left:${this.stickyColWitdh[isBodyCell ? cell.column.id : cell.id]}px;`;
             sticky = true;
+
         } else if (cell.sticky) {
-            styles = `left:${this.stickyRowWidth}px;`;
-            this.stickyColWitdh[cell.id] = this.stickyRowWidth;
-            this.stickyRowWidth += (cell.width || 100);
+            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) {
+                this.stickyColWitdh[cell.id] = this.stickyRowWidth;
+                this.stickyRowWidth += (cell.width || 100);
+            }
+            styles = `left:${this.stickyColWitdh[cell.id]}px;`;
             sticky = true;
+
         } else if (isBodyCell && cell.column.sticky) {
             styles = `left:${this.stickyColWitdh[cell.column.id]}px;`;
             sticky = true;
