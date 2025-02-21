@@ -123,6 +123,7 @@ export default class BodyRenderer {
         this.rowmanager.highlightCheckedRows();
         this.cellmanager.selectAreaOnClusterChanged();
         this.cellmanager.focusCellOnClusterChanged();
+        this.bodyScrollable.style.removeProperty('overflow');
     }
 
     showToastMessage(message, hideAfter) {

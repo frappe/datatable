@@ -25,6 +25,8 @@ export default class CellManager {
         ]);
 
         this.bindEvents();
+        this.stickyRowWidth = 0;
+        this.stickyColWitdh = [];
     }
 
     bindEvents() {
@@ -800,9 +802,39 @@ export default class CellManager {
             isTotalRow
         });
 
+        let styles = '';
+
         const row = this.datamanager.getRow(rowIndex);
 
         const isBodyCell = !(isHeader || isFilter || isTotalRow);
+
+        const serialNoColIndex = !this.options.checkboxColumn && this.options.serialNoColumn ? 0 : 1;
+
+        let sticky = false;
+
+        if (colIndex === 0 && this.options.checkboxColumn) {
+            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) this.stickyRowWidth = 33;
+            sticky = true;
+        } else if (colIndex === serialNoColIndex && this.options.serialNoColumn) {
+            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) {
+                this.stickyColWitdh[cell.id] = this.stickyRowWidth;
+                this.stickyRowWidth += (cell.width || 32);
+            }
+            styles = `left:${this.stickyColWitdh[isBodyCell ? cell.column.id : cell.id]}px;`;
+            sticky = true;
+
+        } else if (cell.sticky) {
+            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) {
+                this.stickyColWitdh[cell.id] = this.stickyRowWidth;
+                this.stickyRowWidth += (cell.width || 100);
+            }
+            styles = `left:${this.stickyColWitdh[cell.id]}px;`;
+            sticky = true;
+
+        } else if (isBodyCell && cell.column.sticky) {
+            styles = `left:${this.stickyColWitdh[cell.column.id]}px;`;
+            sticky = true;
+        }
 
         const className = [
             'dt-cell',
@@ -812,11 +844,12 @@ export default class CellManager {
             isHeader ? 'dt-cell--header' : '',
             isHeader ? `dt-cell--header-${colIndex}` : '',
             isFilter ? 'dt-cell--filter' : '',
-            isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : ''
+            isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : '',
+            sticky ? 'dt-sticky-col' : ''
         ].join(' ');
 
         return `
-            <div class="${className}" ${dataAttr} tabindex="0">
+            <div class="${className}" ${dataAttr} tabindex="0" style="${styles}">
                 ${this.getCellContent(cell)}
             </div>
         `;

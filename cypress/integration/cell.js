@@ -61,7 +61,7 @@ describe('Cell', function () {
         cy.clickCell(2, 0)
             .type('{ctrl}{rightarrow}');
         cy.get('.dt-cell--focus')
-            .should('have.class', 'dt-cell--7-0');
+            .should('have.class', 'dt-cell--11-0');
     });
 
     it('cell selection using shift + arrow keys', function () {
