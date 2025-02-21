@@ -35,6 +35,9 @@
 
 .datatable-content{
     overflow-x: auto;
+    .dt-header{
+        display: flex;
+    }
 }
 
 .dt-scrollable {
