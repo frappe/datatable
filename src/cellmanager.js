@@ -812,13 +812,17 @@ export default class CellManager {
 
         let sticky = false;
 
+        let checkboxserialNoclass = '';
+
         if (colIndex === 0 && this.options.checkboxColumn) {
-            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) this.stickyRowWidth = 33;
+            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) this.stickyRowWidth = 34;
+            checkboxserialNoclass = 'dt-cell-checkbox';
             sticky = true;
         } else if (colIndex === serialNoColIndex && this.options.serialNoColumn) {
             if (cell.isHeader && !(cell.id in this.stickyColWitdh)) {
                 this.stickyColWitdh[cell.id] = this.stickyRowWidth;
-                this.stickyRowWidth += (cell.width || 32);
+                this.stickyRowWidth += (cell.width || 37);
+                checkboxserialNoclass = 'dt-cell-serial-no';
             }
             styles = `left:${this.stickyColWitdh[isBodyCell ? cell.column.id : cell.id]}px;`;
             sticky = true;
@@ -826,12 +830,12 @@ export default class CellManager {
         } else if (cell.sticky) {
             if (cell.isHeader && !(cell.id in this.stickyColWitdh)) {
                 this.stickyColWitdh[cell.id] = this.stickyRowWidth;
-                this.stickyRowWidth += (cell.width || 100);
+                this.stickyRowWidth += ((cell.width || 100) + 1);
             }
             styles = `left:${this.stickyColWitdh[cell.id]}px;`;
             sticky = true;
 
-        } else if (isBodyCell && cell.column.sticky) {
+        } else if ((isBodyCell || isTotalRow) && cell.column.sticky) {
             styles = `left:${this.stickyColWitdh[cell.column.id]}px;`;
             sticky = true;
         }
@@ -845,7 +849,8 @@ export default class CellManager {
             isHeader ? `dt-cell--header-${colIndex}` : '',
             isFilter ? 'dt-cell--filter' : '',
             isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : '',
-            sticky ? 'dt-sticky-col' : ''
+            sticky ? 'dt-sticky-col' : '',
+            checkboxserialNoclass,
         ].join(' ');
 
         return `
