@@ -123,6 +123,7 @@ export default class ColumnManager {
         });
         const $cell = $.closest('.dt-cell', e.target);
         const { colIndex } = $.data($cell);
+        debugger;
         this._dropdownActiveColIndex = colIndex;
     }
 
@@ -256,6 +257,7 @@ export default class ColumnManager {
             animation: 150
         });
     }
+    
 
     sortColumn(colIndex, nextSortOrder) {
         this.instance.freeze();
@@ -267,8 +269,21 @@ export default class ColumnManager {
             .then(() => this.instance.unfreeze())
             .then(() => {
                 this.fireEvent('onSortColumn', this.getColumn(colIndex));
+                this.saveSorting(colIndex, nextSortOrder)
             });
     }
+    
+    saveSorting(colIndex){
+        let currentColumn = this.getColumn(colIndex);
+        let saveSorting = {
+            [currentColumn.name]: {
+                colIndex: colIndex,
+                sortOrder: currentColumn.sortOrder
+            }
+        }
+        localStorage.setItem('savedSorting', JSON.stringify(saveSorting));
+    }
+    
 
     removeColumn(colIndex) {
         const removedCol = this.getColumn(colIndex);
@@ -364,6 +379,14 @@ export default class ColumnManager {
 
         if (columnsToSort.length === 1) {
             const column = columnsToSort[0];
+            this.sortColumn(column.colIndex, column.sortOrder);
+        }
+    }
+
+    applySavedSortOrder(){
+        let sortingConfig = JSON.parse(localStorage.getItem("savedSorting"))
+        const columnsToSort = Object.values(sortingConfig)
+        for(let column of columnsToSort){
             this.sortColumn(column.colIndex, column.sortOrder);
         }
     }
