@@ -40,6 +40,7 @@ class DataTable {
 
         if (this.options.data) {
             this.refresh();
+            this.columnmanager.applySavedSortOrder();
             this.columnmanager.applyDefaultSortOrder();
         }
     }
