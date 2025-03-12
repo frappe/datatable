@@ -313,6 +313,12 @@ export default class DataManager {
             this.rows.forEach((row, index) => {
                 const viewIndex = this.rowViewOrder.indexOf(index);
                 const cell = row[srNoColIndex];
+                row.meta.rowIndex = viewIndex
+                if(Array.isArray(row)){
+                    row.forEach(r => {
+                        r.rowIndex = viewIndex
+                    })
+                }
                 cell.content = (viewIndex + 1) + '';
             });
         }
