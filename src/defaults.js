@@ -23,7 +23,7 @@ export default function getDefaultOptions(instance) {
                 label: instance.translate('Reset sorting'),
                 action: function (column) {
                     this.sortColumn(column.colIndex, 'none');
-                    localStorage.set('savedSort', null);
+                    localStorage.setItem('savedSort', null);
                 }
             },
             {
