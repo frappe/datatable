@@ -382,7 +382,7 @@ export default class ColumnManager {
 
     applySavedSortOrder() {
         let sortingConfig = JSON.parse(localStorage.getItem('savedSorting'));
-        if(sortingConfig){
+        if (sortingConfig) {
             const columnsToSort = Object.values(sortingConfig);
             for (let column of columnsToSort) {
                 this.sortColumn(column.colIndex, column.sortOrder);
