@@ -345,7 +345,7 @@ export default class CellManager {
     }
 
     getCellsInRange($cell1, $cell2) {
-        let colIndex1, rowIndex1, colIndex2, rowIndex2, sortedColumn;
+        let colIndex1, rowIndex1, colIndex2, rowIndex2;
 
         if (typeof $cell1 === 'number') {
             [colIndex1, rowIndex1, colIndex2, rowIndex2] = arguments;
@@ -360,7 +360,7 @@ export default class CellManager {
 
             colIndex1 = +cell1.colIndex;
             colIndex2 = +cell2.colIndex;
-            
+
             if (this.columnmanager.sortState) {
                 this.sortedColumn = true;
                 rowIndex1 = this.datamanager.rowViewOrder.indexOf(parseInt(cell1.rowIndex, 10));
