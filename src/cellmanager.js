@@ -360,9 +360,9 @@ export default class CellManager {
 
             colIndex1 = +cell1.colIndex;
             colIndex2 = +cell2.colIndex;
-            if (this.datamanager.getColumn(colIndex1).sortOrder !== 'none' ||
-                this.datamanager.getColumn(colIndex2).sortOrder !== 'none') {
-                sortedColumn = true;
+            
+            if (this.columnmanager.sortState) {
+                this.sortedColumn = true;
                 rowIndex1 = this.datamanager.rowViewOrder.indexOf(parseInt(cell1.rowIndex, 10));
                 rowIndex2 = this.datamanager.rowViewOrder.indexOf(parseInt(cell2.rowIndex, 10));
             } else {
@@ -401,7 +401,7 @@ export default class CellManager {
             }
             colIndex = colIndex1;
         });
-        if (sortedColumn) {
+        if (this.columnmanager.sortState) {
             cells.forEach(selectedCells => {
                 selectedCells[1] = this.datamanager.rowViewOrder[selectedCells[1]];
             });
