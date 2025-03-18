@@ -345,7 +345,7 @@ export default class CellManager {
     }
 
     getCellsInRange($cell1, $cell2) {
-        let colIndex1, rowIndex1, colIndex2, rowIndex2, sortedColumns;
+        let colIndex1, rowIndex1, colIndex2, rowIndex2, sortedColumn;
 
         if (typeof $cell1 === 'number') {
             [colIndex1, rowIndex1, colIndex2, rowIndex2] = arguments;
@@ -360,16 +360,14 @@ export default class CellManager {
 
             colIndex1 = +cell1.colIndex;
             colIndex2 = +cell2.colIndex;
-            if(this.datamanager.getColumn(colIndex1).sortOrder != "none" || this.datamanager.getColumn(colIndex2).sortOrder != "none"){
-                sortedColumns = true;
-                rowIndex1 = this.datamanager.rowViewOrder.indexOf(parseInt(cell1.rowIndex))
-                rowIndex2 = this.datamanager.rowViewOrder.indexOf(parseInt(cell2.rowIndex))
-            }else{
+            if (this.datamanager.getColumn(colIndex1).sortOrder != 'none' || this.datamanager.getColumn(colIndex2).sortOrder != 'none') {
+                sortedColumn = true;
+                rowIndex1 = this.datamanager.rowViewOrder.indexOf(parseInt(cell1.rowIndex));
+                rowIndex2 = this.datamanager.rowViewOrder.indexOf(parseInt(cell2.rowIndex));
+            } else {
                 rowIndex1 = +cell1.rowIndex;
                 rowIndex2 = +cell2.rowIndex;
             }
-
-
 
         }
 
@@ -402,8 +400,8 @@ export default class CellManager {
             }
             colIndex = colIndex1;
         });
-        if(sortedColumns){
-           cells.map(selectedCells => selectedCells[1] = this.datamanager.rowViewOrder[selectedCells[1]])
+        if (sortedColumn) {
+            cells.map(selectedCells => selectedCells[1] = this.datamanager.rowViewOrder[selectedCells[1]]);
         }
         return cells;
     }
