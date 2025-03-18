@@ -279,7 +279,8 @@ export default class ColumnManager {
                 sortOrder: currentColumn.sortOrder
             }
         };
-        localStorage.setItem('savedSorting', JSON.stringify(saveSorting));
+        this.sortingKey = this.options.sortingKey ? 'sortedColumns' : `${this.options.sortingKey}::sortedColumns`;
+        localStorage.setItem(this.sortingKey, JSON.stringify(saveSorting));
     }
 
     removeColumn(colIndex) {
@@ -381,7 +382,8 @@ export default class ColumnManager {
     }
 
     applySavedSortOrder() {
-        let sortingConfig = JSON.parse(localStorage.getItem('savedSorting'));
+        let key = this.options.sortingKey ? 'sortedColumns' : `${this.options.sortingKey}::sortedColumns`;
+        let sortingConfig = JSON.parse(localStorage.getItem(key));
         if (sortingConfig) {
             const columnsToSort = Object.values(sortingConfig);
             for (let column of columnsToSort) {
