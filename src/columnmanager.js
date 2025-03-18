@@ -386,6 +386,7 @@ export default class ColumnManager {
             const columnsToSort = Object.values(sortingConfig);
             for (let column of columnsToSort) {
                 this.sortColumn(column.colIndex, column.sortOrder);
+                this.sortState = true
             }
         }
     }
