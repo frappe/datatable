@@ -333,7 +333,6 @@ export default class CellManager {
 
     _selectArea($cell1, $cell2) {
         if ($cell1 === $cell2) return false;
-
         const cells = this.getCellsInRange($cell1, $cell2);
         if (!cells) return false;
 
@@ -346,7 +345,7 @@ export default class CellManager {
     }
 
     getCellsInRange($cell1, $cell2) {
-        let colIndex1, rowIndex1, colIndex2, rowIndex2;
+        let colIndex1, rowIndex1, colIndex2, rowIndex2, sortedColumns;
 
         if (typeof $cell1 === 'number') {
             [colIndex1, rowIndex1, colIndex2, rowIndex2] = arguments;
@@ -360,9 +359,18 @@ export default class CellManager {
             const cell2 = $.data($cell2);
 
             colIndex1 = +cell1.colIndex;
-            rowIndex1 = +cell1.rowIndex;
             colIndex2 = +cell2.colIndex;
-            rowIndex2 = +cell2.rowIndex;
+            if(this.datamanager.getColumn(colIndex1).sortOrder != "none" || this.datamanager.getColumn(colIndex2).sortOrder != "none"){
+                sortedColumns = true;
+                rowIndex1 = this.datamanager.rowViewOrder.indexOf(parseInt(cell1.rowIndex))
+                rowIndex2 = this.datamanager.rowViewOrder.indexOf(parseInt(cell2.rowIndex))
+            }else{
+                rowIndex1 = +cell1.rowIndex;
+                rowIndex2 = +cell2.rowIndex;
+            }
+
+
+
         }
 
         if (rowIndex1 > rowIndex2) {
@@ -394,7 +402,9 @@ export default class CellManager {
             }
             colIndex = colIndex1;
         });
-
+        if(sortedColumns){
+           cells.map(selectedCells => selectedCells[1] = this.datamanager.rowViewOrder[selectedCells[1]])
+        }
         return cells;
     }
 
