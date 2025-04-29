@@ -36,14 +36,10 @@
     border-bottom: 2px solid var(--dt-border-color);
 }
 
-.datatable-content{
-    .dt-header{
-        display: flex;
-    }
-}
-
 .dt-scrollable {
     height: 40vw;
+    overflow: auto;
+    border-top: 2px solid var(--dt-border-color);
 
     &--highlight-all {
         background-color: var(--dt-selection-highlight-color);
@@ -300,9 +296,4 @@
 
 body.dt-resize {
     cursor: col-resize;
-}
-.dt-sticky-col {
-    position: sticky;
-    z-index: 1;
-    left: 0;
 }

@@ -802,43 +802,9 @@ export default class CellManager {
             isTotalRow
         });
 
-        let styles = '';
-
         const row = this.datamanager.getRow(rowIndex);
 
         const isBodyCell = !(isHeader || isFilter || isTotalRow);
-
-        const serialNoColIndex = !this.options.checkboxColumn && this.options.serialNoColumn ? 0 : 1;
-
-        let sticky = false;
-
-        let checkboxserialNoclass = '';
-
-        if (colIndex === 0 && this.options.checkboxColumn) {
-            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) this.stickyRowWidth = 34;
-            checkboxserialNoclass = 'dt-cell-checkbox';
-            sticky = true;
-        } else if (colIndex === serialNoColIndex && this.options.serialNoColumn) {
-            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) {
-                this.stickyColWitdh[cell.id] = this.stickyRowWidth;
-                this.stickyRowWidth += (cell.width || 37);
-                checkboxserialNoclass = 'dt-cell-serial-no';
-            }
-            styles = `left:${this.stickyColWitdh[isBodyCell ? cell.column.id : cell.id]}px;`;
-            sticky = true;
-
-        } else if (cell.sticky) {
-            if (cell.isHeader && !(cell.id in this.stickyColWitdh)) {
-                this.stickyColWitdh[cell.id] = this.stickyRowWidth;
-                this.stickyRowWidth += ((cell.width || 100) + 1);
-            }
-            styles = `left:${this.stickyColWitdh[cell.id]}px;`;
-            sticky = true;
-
-        } else if ((isBodyCell || isTotalRow) && cell.column.sticky) {
-            styles = `left:${this.stickyColWitdh[cell.column.id]}px;`;
-            sticky = true;
-        }
 
         const className = [
             'dt-cell',
@@ -849,12 +815,10 @@ export default class CellManager {
             isHeader ? `dt-cell--header-${colIndex}` : '',
             isFilter ? 'dt-cell--filter' : '',
             isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : '',
-            sticky ? 'dt-sticky-col' : '',
-            checkboxserialNoclass,
         ].join(' ');
 
         return `
-            <div class="${className}" ${dataAttr} tabindex="0" style="${styles}">
+            <div class="${className}" ${dataAttr} tabindex="0">
                 ${this.getCellContent(cell)}
             </div>
         `;
