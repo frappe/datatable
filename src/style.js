@@ -89,12 +89,12 @@ export default class Style {
                 });
 
                 this._settingHeaderPosition = false;
-            if(this.instance.noData){
-                $.style($(".no-data-message"),{
-                    left: `${this.instance.wrapper.clientWidth/2 -(-scrollLeft)}px`
-                })
-            }
-            this._settingHeaderPosition = false;
+                if (this.instance.noData) {
+                    $.style($('.no-data-message'), {
+                        left: `${this.instance.wrapper.clientWidth / 2 - (-scrollLeft)}px`
+                    });
+                }
+                this._settingHeaderPosition = false;
             });
         });
     }

@@ -1,5 +1,4 @@
 import HyperList from 'hyperlist';
-import $ from "./dom"
 export default class BodyRenderer {
     constructor(instance) {
         this.instance = instance;
@@ -15,10 +14,10 @@ export default class BodyRenderer {
     renderRows(rows) {
         this.visibleRows = rows;
         this.visibleRowIndices = rows.map(row => row.meta.rowIndex);
-        this.instance.noData = false
+        this.instance.noData = false;
         if (rows.length === 0) {
             this.bodyScrollable.innerHTML = this.getNoDataHTML();
-            this.instance.noData = true
+            this.instance.noData = true;
             this.footer.innerHTML = '';
             return;
         }
@@ -141,10 +140,13 @@ export default class BodyRenderer {
     }
 
     getNoDataHTML() {
-
         let width = this.instance.header.scrollWidth;
         let height = this.bodyScrollable.clientHeight;
-        return `<div class="dt-scrollable__no-data" style='width: ${width-2}px; height: ${height}px'><div class='dt-scrollable__no-data no-data-message'>${this.options.noDataMessage}</div></div>`;
+        return `<div class="dt-scrollable__no-data" style='width: ${width - 2}px; height: ${height}px'>
+        <div class='dt-scrollable__no-data no-data-message'>
+        ${this.options.noDataMessage}
+        </div>
+        </div>`;
     }
 
     getToastMessageHTML(message) {
