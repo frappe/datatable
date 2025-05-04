@@ -16,6 +16,7 @@
     --dt-selection-highlight-color: var(--dt-light-yellow);
     --dt-toast-message-border: none;
     --dt-header-cell-bg: var(--dt-cell-bg);
+    --dt-no-data-message-width: 90px;
 }
 
 .datatable {
@@ -54,7 +55,15 @@
         padding: var(--dt-spacer-3);
         border-left: 1px solid var(--dt-border-color);
         border-right: 1px solid var(--dt-border-color);
+        .no-data-message{
+            position: absolute;
+            top: 100px; 
+            left: 50px;
+            border: none;
+            width: var(--dt-no-data-message-width);
+        }
     }
+
 }
 
 .dt-row {
