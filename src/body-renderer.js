@@ -140,13 +140,18 @@ export default class BodyRenderer {
     }
 
     getNoDataHTML() {
-        let width = this.instance.header.scrollWidth;
-        let height = this.bodyScrollable.clientHeight;
-        return `<div class="dt-scrollable__no-data" style='width: ${width - 2}px; height: ${height}px'>
-        <div class='dt-scrollable__no-data no-data-message'>
-        ${this.options.noDataMessage}
-        </div>
-        </div>`;
+        const width = this.instance.header.scrollWidth;
+        const height = this.bodyScrollable.clientHeight;
+        return `
+            <div 
+                class="dt-scrollable__no-data" 
+                style="width: ${width - 2}px; height: ${height}px"
+            >
+                <div class="dt-scrollable__no-data no-data-message">
+                    ${this.options.noDataMessage}
+                </div>
+            </div>
+        `;
     }
 
     getToastMessageHTML(message) {
