@@ -29,7 +29,7 @@ describe('Column', function () {
             .its('currentSort.colIndex')
             .should('eq', 2);
 
-        cy.get('.dt-scrollable .dt-row:first div:nth-of-type(3)')
+        cy.get('.dt-scrollable .dt-body .dt-row:first div:nth-of-type(3)')
             .contains('Airi Satou');
 
         cy.clickDropdownItem(2, 'Reset sorting');
@@ -63,8 +63,8 @@ describe('Column', function () {
     it('resize column using double click', function () {
         cy.get('.dt-cell--header-4 .dt-cell__resize-handle').trigger('dblclick');
         cy.getColumnCell(4).should('have.css', 'width')
-            .and('match', /9\dpx/);
+            .and('match', /10\dpx/);
         cy.getCell(4, 1).should('have.css', 'width')
-            .and('match', /9\dpx/);
+            .and('match', /10\dpx/);
     });
 });

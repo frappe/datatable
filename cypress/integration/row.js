@@ -4,7 +4,7 @@ describe('Row', function () {
     });
 
     it('check / uncheck row', function () {
-        cy.get('.dt-scrollable .dt-row:first')
+        cy.get('.dt-body .dt-row:first')
             .find('input[type="checkbox"]')
             .click();
 

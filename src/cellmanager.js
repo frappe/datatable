@@ -17,6 +17,7 @@ export default class CellManager {
             'style',
             'header',
             'bodyScrollable',
+            'bodyContainer',
             'columnmanager',
             'rowmanager',
             'datamanager',
@@ -43,7 +44,7 @@ export default class CellManager {
     bindEditCell() {
         this.$editingCell = null;
 
-        $.on(this.bodyScrollable, 'dblclick', '.dt-cell', (e, cell) => {
+        $.on(this.bodyContainer, 'dblclick', '.dt-cell', (e, cell) => {
             this.activateEditing(cell);
         });
 
@@ -100,6 +101,7 @@ export default class CellManager {
                 const $cell = $.closest('.dt-cell', e.target);
                 const { colIndex } = $.data($cell);
 
+                console.log(colIndex, "colIndex", colIndex);
                 this.activateFilter(colIndex);
                 return true;
             });
@@ -164,12 +166,12 @@ export default class CellManager {
     bindMouseEvents() {
         let mouseDown = null;
 
-        $.on(this.bodyScrollable, 'mousedown', '.dt-cell', (e) => {
+        $.on(this.bodyContainer, 'mousedown', '.dt-cell', (e) => {
             mouseDown = true;
             this.focusCell($(e.delegatedTarget));
         });
 
-        $.on(this.bodyScrollable, 'mouseup', () => {
+        $.on(this.bodyContainer, 'mouseup', () => {
             mouseDown = false;
         });
 
@@ -186,11 +188,11 @@ export default class CellManager {
             this.selectArea($(e.delegatedTarget));
         };
 
-        $.on(this.bodyScrollable, 'mousemove', '.dt-cell', throttle(selectArea, 50));
+        $.on(this.bodyContainer, 'mousemove', '.dt-cell', throttle(selectArea, 50));
     }
 
     bindTreeEvents() {
-        $.on(this.bodyScrollable, 'click', '.dt-tree-node__toggle', (e, $toggle) => {
+        $.on(this.bodyContainer, 'click', '.dt-tree-node__toggle', (e, $toggle) => {
             const $cell = $.closest('.dt-cell', $toggle);
             const { rowIndex } = $.data($cell);
 
@@ -646,7 +648,7 @@ export default class CellManager {
     }
 
     refreshCell(cell, refreshHtml = false) {
-        const $cell = $(this.selector(cell.colIndex, cell.rowIndex), this.bodyScrollable);
+        const $cell = $(this.selector(cell.colIndex, cell.rowIndex), this.bodyContainer);
         $cell.innerHTML = this.getCellContent(cell, refreshHtml);
     }
 
@@ -707,7 +709,7 @@ export default class CellManager {
     }
 
     getCell$(colIndex, rowIndex) {
-        return $(this.selector(colIndex, rowIndex), this.bodyScrollable);
+        return $(this.selector(colIndex, rowIndex), this.bodyContainer);
     }
 
     getAboveCell$($cell) {
@@ -767,11 +769,11 @@ export default class CellManager {
     }
 
     getRowHeight() {
-        return $.style($('.dt-row', this.bodyScrollable), 'height');
+        return $.style($('.dt-row', this.bodyContainer), 'height');
     }
 
     scrollToCell($cell) {
-        if ($.inViewport($cell, this.bodyScrollable) || $.inViewport($cell, this.footer)) return false;
+        if ($.inViewport($cell, this.bodyContainer) || $.inViewport($cell, this.footer)) return false;
 
         const {
             rowIndex

@@ -81,7 +81,7 @@ describe('Inline Filters', function () {
         cy.getCell(5, 24).click().type('{ctrl}f');
         cy.get('@filterInput5').type('>3000', {delay: 100});
 
-        cy.get('.dt-scrollable .dt-row:first')
+        cy.get('.dt-body .dt-row:first')
             .should('contain', 'Angelica')
             .should('have.class', 'dt-row-24');
         cy.get('@filterInput5').clear();
