@@ -321,11 +321,3 @@
 body.dt-resize {
     cursor: col-resize;
 }
-
-.dt-sticky-col {
-    /* position: sticky; */
-    left: 0;
-    /* background: #fff; */
-    z-index: 2;
-    /* border-right: 1px solid #ccc; */
-}
