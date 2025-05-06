@@ -2,6 +2,7 @@
 	"Sort Ascending": "Trier par ordre croissant",
 	"Sort Descending": "Trier par ordre décroissant",
 	"Reset sorting": "Réinitialiser le tri",
+	"Pin column": "Épingler la colonne",
 	"Remove column": "Supprimer colonne",
 	"No Data": "Pas de données",
 	"{count} cells copied": {
