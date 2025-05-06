@@ -77,7 +77,7 @@ export default class Style {
                     // Find corresponding footer cell
                     const footerCell = this.footer.querySelector(`.dt-cell[data-col-index="${colIndex}"]`);
 
-                    if (bodyCell && ~~(bodyCell.offsetLeft - scrollLeft) > colLeft) {
+                    if (~~(bodyCell.offsetLeft - scrollLeft) > colLeft) {
                         headerCell.style.transform = `translateX(${-scrollLeft - 1}px)`;
                         if (footerCell) {
                             footerCell.style.transform = `translateX(${scrollLeft ? -scrollLeft - 1 : 0}px)`;
@@ -88,12 +88,6 @@ export default class Style {
                     }
                 });
 
-                this._settingHeaderPosition = false;
-                if (this.instance.noData) {
-                    $.style($('.no-data-message'), {
-                        left: `${this.instance.wrapper.clientWidth / 2 - (-scrollLeft)}px`
-                    });
-                }
                 this._settingHeaderPosition = false;
             });
         });
