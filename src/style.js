@@ -57,6 +57,12 @@ export default class Style {
                     transform: `translateX(${left}px)`
                 });
                 this._settingHeaderPosition = false;
+                if (this.instance.noData) {
+                    $.style($('.no-data-message'), {
+                        left: `${this.instance.wrapper.clientWidth / 2 - (left)}px`
+                    });
+                }
+                this._settingHeaderPosition = false;
             });
         });
     }
