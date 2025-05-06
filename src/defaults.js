@@ -25,6 +25,12 @@ export default function getDefaultOptions(instance) {
                     this.sortColumn(column.colIndex, 'none');
                 }
             },
+            // {
+            //     label: instance.translate('Pin column'),
+            //     action: function (column) {
+            //         this.pinColumn(column.colIndex);
+            //     }
+            // },
             {
                 label: instance.translate('Remove column'),
                 action: function (column) {

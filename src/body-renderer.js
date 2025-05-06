@@ -8,7 +8,9 @@ export default class BodyRenderer {
         this.rowmanager = instance.rowmanager;
         this.cellmanager = instance.cellmanager;
         this.bodyScrollable = instance.bodyScrollable;
+        this.bodyContainer = instance.bodyContainer;
         this.footer = this.instance.footer;
+        this.header = this.instance.header;
         this.log = instance.log;
     }
 
@@ -32,11 +34,7 @@ export default class BodyRenderer {
             return null;
         }).filter(index => index !== null);
 
-        const computedStyle = getComputedStyle(this.bodyScrollable);
-
         let config = {
-            width: computedStyle.width,
-            height: computedStyle.height,
             itemHeight: this.options.cellHeight,
             total: rows.length,
             generate: (index) => {
@@ -53,9 +51,9 @@ export default class BodyRenderer {
         };
 
         if (!this.hyperlist) {
-            this.hyperlist = new HyperList(this.bodyScrollable, config);
+            this.hyperlist = new HyperList(this.bodyContainer, config);
         } else {
-            this.hyperlist.refresh(this.bodyScrollable, config);
+            this.hyperlist.refresh(this.bodyContainer, config);
         }
 
         this.renderFooter();
@@ -123,6 +121,24 @@ export default class BodyRenderer {
         this.rowmanager.highlightCheckedRows();
         this.cellmanager.selectAreaOnClusterChanged();
         this.cellmanager.focusCellOnClusterChanged();
+        this.bodyContainer.style.removeProperty('overflow');
+        this.setbodyWidth();
+    }
+
+    setbodyWidth() {
+        // change width of dt-body once the all operations are done
+        setTimeout(() => {
+            const computedStyle = getComputedStyle(this.bodyScrollable);
+
+            const cells = this.header.querySelectorAll('.dt-cell--header');
+            let totalColWidth = 0;
+            cells.forEach((cell, index) => {
+                totalColWidth += cell.clientWidth + 1;
+            });
+            this.bodyContainer.style.width = `${totalColWidth + 5}px`;
+            this.bodyContainer.style.height = `calc(${computedStyle.height} - 80px)`;
+            this.bodyScrollable.style.height = computedStyle.height;
+        }, 100);
     }
 
     showToastMessage(message, hideAfter) {

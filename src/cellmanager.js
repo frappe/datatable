@@ -25,8 +25,6 @@ export default class CellManager {
         ]);
 
         this.bindEvents();
-        this.stickyRowWidth = 0;
-        this.stickyColWitdh = [];
     }
 
     bindEvents() {

@@ -110,9 +110,11 @@ class DataTable {
         this.wrapper.innerHTML = `
             <div class="datatable" dir="${this.options.direction}">
                 <div class="datatable-content">
-                    <div class="dt-header"></div>
-                    <div class="dt-scrollable"></div>
-                    <div class="dt-footer"></div>
+                    <div class="dt-scrollable">
+                        <div class="dt-header"></div>
+                        <div class="dt-body"></div> 
+                        <div class="dt-footer"></div>
+                    </div>
                 </div>
                 <div class="dt-freeze">
                     <span class="dt-freeze__message">
@@ -127,6 +129,7 @@ class DataTable {
 
         this.datatableWrapper = $('.datatable', this.wrapper);
         this.header = $('.dt-header', this.wrapper);
+        this.bodyContainer = $('.dt-body', this.wrapper);
         this.footer = $('.dt-footer', this.wrapper);
         this.bodyScrollable = $('.dt-scrollable', this.wrapper);
         this.freezeContainer = $('.dt-freeze', this.wrapper);
@@ -211,6 +214,10 @@ class DataTable {
 
     sortColumn(colIndex, sortOrder) {
         this.columnmanager.sortColumn(colIndex, sortOrder);
+    }
+
+    pinColumn(colIndex) {
+        this.columnmanager.pinColumn(colIndex);
     }
 
     removeColumn(colIndex) {

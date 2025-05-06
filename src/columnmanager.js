@@ -166,6 +166,7 @@ export default class ColumnManager {
             this.setColumnWidth(colIndex);
             this.style.setBodyStyle();
             $resizingCell = null;
+            this.bodyRenderer.setbodyWidth();
         };
         $.on(document.body, 'mouseup', onMouseup);
         this.instance.on('onDestroy', () => {
@@ -268,6 +269,11 @@ export default class ColumnManager {
             .then(() => {
                 this.fireEvent('onSortColumn', this.getColumn(colIndex));
             });
+    }
+
+    pinColumn(colIndex) {
+        this.instance.freeze();
+        this.instance.unfreeze();
     }
 
     removeColumn(colIndex) {
