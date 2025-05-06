@@ -23,7 +23,6 @@ export default class Style {
         this.styleEl = styleEl;
 
         this.bindResizeWindow();
-        this.bindScrollHeader();
     }
 
     get stylesheet() {
@@ -37,60 +36,6 @@ export default class Style {
         if (this.options.layout === 'fluid') {
             $.on(window, 'resize', this.onWindowResize);
         }
-    }
-
-    bindScrollHeader() {
-        this._settingHeaderPosition = false;
-
-        $.on(this.bodyScrollable, 'scroll', (e) => {
-
-            if (this._settingHeaderPosition) return;
-
-            this._settingHeaderPosition = true;
-
-            requestAnimationFrame(() => {
-
-                const scrollLeft = e.target.scrollLeft;
-
-                // Move non-sticky header and footer cells normally
-                const nonStickyHeaderCells = this.header.querySelectorAll('.dt-cell:not(.dt-sticky-col)');
-                const nonStickyFooterCells = this.footer.querySelectorAll('.dt-cell:not(.dt-sticky-col)');
-
-                nonStickyHeaderCells.forEach(cell => {
-                    $.style(cell, { transform: `translateX(${-scrollLeft}px)` });
-                });
-
-                nonStickyFooterCells.forEach(cell => {
-                    $.style(cell, { transform: `translateX(${-scrollLeft}px)` });
-                });
-
-                const stickyHeaderCells = this.header.querySelectorAll(
-                    '.dt-cell.dt-sticky-col:not(.dt-cell-serial-no):not(.dt-cell-checkbox)'
-                );
-
-                stickyHeaderCells.forEach((headerCell) => {
-
-                    const colIndex = headerCell.getAttribute('data-col-index');
-                    const bodyCell = this.bodyScrollable.querySelector(`.dt-cell[data-col-index="${colIndex}"]`);
-                    const colLeft = parseFloat(headerCell.style.left) || 0; // get left position of the column
-
-                    // Find corresponding footer cell
-                    const footerCell = this.footer.querySelector(`.dt-cell[data-col-index="${colIndex}"]`);
-
-                    if (~~(bodyCell.offsetLeft - scrollLeft) > colLeft) {
-                        headerCell.style.transform = `translateX(${-scrollLeft - 1}px)`;
-                        if (footerCell) {
-                            footerCell.style.transform = `translateX(${scrollLeft ? -scrollLeft - 1 : 0}px)`;
-                        }
-                    } else {
-                        headerCell.style.transform = `translateX(${colLeft - headerCell.offsetLeft}px)`;
-                        if (footerCell) footerCell.style.transform = `translateX(${colLeft - footerCell.offsetLeft}px)`;
-                    }
-                });
-
-                this._settingHeaderPosition = false;
-            });
-        });
     }
 
     onWindowResize() {
