@@ -151,85 +151,21 @@
 
 			function buildData() {
 				columns = [
-					{ name: "Name", width: 150, sticky: true },
-					{ name: "Position", width: 200 },
-					{ name: "Office", sticky: true },
+					{ name: "Name" },
+					{ name: "Position" },
+					{ name: "Office" },
 					{ name: "Extn." },
-					{
-						name: "Start Date",
-						format: (value) => (value || '').split('/').reverse().join('/'),
-						compareValue: (cell, keyword) => {
-							const keywordValue = keyword.split('/').reverse().join('/')
-							return [+new Date(cell.content), +new Date(keywordValue)];
-						}
-					},
-					{ name: "Salary", format: value => formatMoney(value) },
-					{ name: "Department", width:200},
-					{ name: "Country"},
-					{ name: "Start date"},
-					{ name: "Bonus amount"}
-
+                    {
+                        name: "Start Date",
+                        format: (value) => (value || '').split('/').reverse().join('/'),
+                        compareValue: (cell, keyword) => {
+                            const keywordValue = keyword.split('/').reverse().join('/')
+                            return [+new Date(cell.content), +new Date(keywordValue)];
+                        }
+                    },
+					{ name: "Salary", format: value => formatMoney(value) }
 				];
-				data = [
-					["Tiger Nixon", { content: "System Architect<br>New line", editable: false }, "Edinburgh", 5421, "2011/04/25", 320800, "Engineering", "Germany", "2015/03/18", 10000],
-					["Garrett Winters", "Accountant", "Tokyo", 8422, "2011/07/25", 170750, "Finance", "USA", "2016/05/22", 8000],
-					["Ashton Cox", "Junior Technical Author", "San Francisco", 1562, "2009/01/12", 86000, "Documentation", "Canada", "2017/11/03", 3000],
-					["Cedric Kelly", "Senior Javascript Developer", "Edinburgh", 6224, "2012/03/29", 433060, "Engineering", "Australia", "2014/07/09", 15000],
-					["Airi Satou", "Accountant", "Tokyo", 5407, "2008/11/28", 162700, "Finance", "Japan", "2012/02/12", 5000],
-					["Brielle Williamson", "Integration Specialist", "New York", 4804, "2012/12/02", 372000, "Engineering", "USA", "2015/08/14", 11000],
-					["Herrod Chandler", "Sales Assistant", "San Francisco", 9608, "2012/08/06", 137500, "Sales", "Germany", "2011/04/11", 2000],
-					["Rhona Davidson", "Integration Specialist", "Tokyo", 6200, "2010/10/14", 327900, "IT", "Singapore", "2013/01/19", 12000],
-					["Colleen Hurst", "Javascript Developer", "San Francisco", 2360, "2009/09/15", 205500, "Engineering", "France", "2012/06/08", 4000],
-					["Sonya Frost", "Software Engineer", "Edinburgh", 1667, "2008/12/13", 103600, "Engineering", "USA", "2014/10/30", 9000],
-					["Jena Gaines", "Office Manager", "London", 3814, "2008/12/19", 90560, "Operations", "England", "2016/09/22", 1500],
-					["Quinn Flynn", "Support Lead", "Edinburgh", 9497, "2013/03/03", 342000, "Customer Support", "Ireland", "2011/04/30", 7000],
-					["Charde Marshall", "Regional Director", "San Francisco", 6741, "2008/10/16", 470600, "Management", "USA", "2012/02/17", 30000],
-					["Haley Kennedy", "Senior Marketing Designer", "London", 3597, "2012/12/18", 313500, "Marketing", "UK", "2013/07/04", 12000],
-					["Tatyana Fitzpatrick", "Regional Director", "London", 1965, "2010/03/17", 385750, "Management", "Canada", "2011/11/08", 25000],
-					["Michael Silva", "Marketing Designer", "London", 1581, "2012/11/27", 198500, "Design", "UK", "2014/05/02", 4000],
-					["Paul Byrd", "Chief Financial Officer (CFO)", "New York", 3059, "2010/06/09", 725000, "Finance", "USA", "2012/03/11", 50000],
-					["Gloria Little", "Systems Administrator", "New York", 1721, "2009/04/10", 237500, "IT", "USA", "2015/09/13", 6000],
-					["Bradley Greer", "Software Engineer", "London", 2558, "2012/10/13", 132000, "Engineering", "Canada", "2013/01/22", 8000],
-					["Dai Rios", "Personnel Lead", "Edinburgh", 2290, "2012/09/26", 217500, "HR", "Germany", "2014/04/15", 4000],
-					["Jenette Caldwell", "Development Lead", "New York", 1937, "2011/09/03", 345000, "Engineering", "USA", "2012/12/05", 22000],
-					["Yuri Berry", "Chief Marketing Officer (CMO)", "New York", 6154, "2009/06/25", 675000, "Marketing", "USA", "2013/10/18", 60000],
-					["Caesar Vance", "Pre-Sales Support", "New York", 8330, "2011/12/12", 106450, "Sales", "USA", "2014/11/11", 4000],
-					["Doris Wilder", "Sales Assistant", "Sidney", 3023, "2010/09/20", 85600, "Sales", "Australia", "2015/08/13", 2000],
-					["Angelica Ramos", "Chief Executive Officer (CEO)", "London", 5797, "2009/10/09", 1200000, "Management", "UK", "2012/09/04", 100000],
-					["Gavin Joyce", "Developer", "Edinburgh", 8822, "2010/12/22", 92575, "Engineering", "Canada", "2015/06/17", 7000],
-					["Jennifer Chang", "Regional Director", "Singapore", 9239, "2010/11/14", 357650, "Management", "Singapore", "2014/09/09", 15000],
-					["Brenden Wagner", "Software Engineer", "San Francisco", 1314, "2011/06/07", 206850, "Engineering", "USA", "2013/12/22", 5000],
-					["Fiona Green", "Chief Operating Officer (COO)", "San Francisco", 2947, "2010/03/11", 850000, "Operations", "USA", "2014/02/08", 70000],
-					["Shou Itou", "Regional Marketing", "Tokyo", 8899, "2011/08/14", 163000, "Marketing", "Japan", "2013/10/04", 9000],
-					["Michelle House", "Integration Specialist", "Sidney", 2769, "2011/06/02", 95400, "Engineering", "Australia", "2014/01/17", 6000],
-					["Suki Burks", "Developer", "London", 6832, "2009/10/22", 114500, "Engineering", "UK", "2015/11/07", 7000],
-					["Prescott Bartlett", "Technical Author", "London", 3606, "2011/05/07", 145000, "Documentation", "England", "2014/03/11", 3000],
-					["Gavin Cortez", "Team Leader", "San Francisco", 2860, "2008/10/26", 235500, "Management", "USA", "2012/02/25", 18000],
-					["Martena Mccray", "Post-Sales support", "Edinburgh", 8240, "2011/03/09", 324050, "Support", "Scotland", "2014/08/21", 5000],
-					["Unity Butler", "Marketing Designer", "San Francisco", 5384, "2009/12/09", 85675, "Design", "USA", "2013/06/28", 1500],
-					["Howard Hatfield", "Office Manager", "San Francisco", 7031, "2008/12/16", 164500, "Operations", "Canada", "2014/09/02", 2000],
-					["Hope Fuentes", "Secretary", "San Francisco", 6318, "2010/02/12", 109850, "Administration", "USA", "2015/07/24", 4000],
-					["Vivian Harrell", "Financial Controller", "San Francisco", 9422, "2009/02/14", 452500, "Finance", "USA", "2014/01/10", 15000],
-					["Timothy Mooney", "Office Manager", "London", 7580, "2008/12/11", 136200, "Operations", "UK", "2012/10/25", 2000],
-					["Jackson Bradshaw", "Director", "New York", 1042, "2008/09/26", 645750, "Management", "USA", "2013/06/04", 50000],
-					["Olivia Liang", "Support Engineer", "Singapore", 2120, "2011/02/03", 234500, "Support", "Singapore", "2013/05/01", 4000],
-					["Bruno Nash", "Software Engineer", "London", 6222, "2011/05/03", 163500, "Engineering", "England", "2014/11/11", 7000],
-					["Sakura Yamamoto", "Support Engineer", "Tokyo", 9383, "2009/08/19", 139575, "Support", "Japan", "2013/12/03", 3000],
-					["Thor Walton", "Developer", "New York", 8327, "2013/08/11", 98540, "Engineering", "USA", "2014/09/14", 4000],
-					["Finn Camacho", "Support Engineer", "San Francisco", 2927, "2009/07/07", 87500, "Support", "USA", "2013/05/28", 2000],
-					["Serge Baldwin", "Data Coordinator", "Singapore", 8352, "2012/04/09", 138575, "IT", "Singapore", "2014/03/10", 6000],
-					["Zenaida Frank", "Software Engineer", "New York", 7439, "2010/01/04", 125250, "Engineering", "USA", "2012/12/15", 3000],
-					["Zorita Serrano", "Software Engineer", "San Francisco", 4389, "2012/06/01", 115000, "Engineering", "Canada", "2014/06/25", 2000],
-					["Jennifer Acosta", "Junior Javascript Developer", "Edinburgh", 3431, "2013/02/01", 75650, "Engineering", "UK", "2015/03/13", 1000],
-					["Cara Stevens", "Sales Assistant", "New York", 3990, "2011/12/06", 145600, "Sales", "USA", "2014/02/21", 2000],
-					["Hermione Butler", "Regional Director", "London", 1016, "2011/03/21", 356250, "Management", "UK", "2013/11/16", 50000],
-					["Lael Greer", "Systems Administrator", "London", 6733, "2009/02/27", 103500, "IT", "UK", "2014/12/08", 4000],
-					["Jonas Alexander", "Developer", "San Francisco", 8196, "2010/07/14", 86500, "Engineering", "USA", "2012/05/18", 1500],
-					["Shad Decker", "Regional Director", "Edinburgh", 6373, "2008/11/13", 183000, "Management", "Scotland", "2013/07/10", 25000],
-					["Michael Bruce", "Javascript Developer", "Singapore", 5384, "2011/06/27", 183000, "Engineering", "Singapore", "2014/02/15", 5000],
-					["Donna Snider", "Customer Support", "New York", 4226, "2011/01/25", 112000, "Support", "USA", "2013/12/07", 2000],
-					["Donna Snider", "Customer Support", "Los Angeles", 42.67, "2011/01/25", 112000, "Support", "USA", "2013/11/25", 1000]
-				]
+				data = [["Tiger Nixon", { content: "System Architect<br>New line", editable: false }, "Edinburgh", 5421, "2011/04/25", 320800], ["Garrett Winters", "Accountant", "Tokyo", 8422, "2011/07/25", 170750], ["Ashton Cox", "Junior Technical Author", "San Francisco", 1562, "2009/01/12", 86000], ["Cedric Kelly", "Senior Javascript Developer", "Edinburgh", 6224, "2012/03/29", 433060], ["Airi Satou", "Accountant", "Tokyo", 5407, "2008/11/28", 162700], ["Brielle Williamson", "Integration Specialist", "New York", 4804, "2012/12/02", 372000], ["Herrod Chandler", "Sales Assistant", "San Francisco", 9608, "2012/08/06", 137500], ["Rhona Davidson", "Integration Specialist", "Tokyo", 6200, "2010/10/14", 327900], ["Colleen Hurst", "Javascript Developer", "San Francisco", 2360, "2009/09/15", 205500], ["Sonya Frost", "Software Engineer", "Edinburgh", 1667, "2008/12/13", 103600], ["Jena Gaines", "Office Manager", "London", 3814, "2008/12/19", 90560], ["Quinn Flynn", "Support Lead", "Edinburgh", 9497, "2013/03/03", 342000], ["Charde Marshall", "Regional Director", "San Francisco", 6741, "2008/10/16", 470600], ["Haley Kennedy", "Senior Marketing Designer", "London", 3597, "2012/12/18", 313500], ["Tatyana Fitzpatrick", "Regional Director", "London", 1965, "2010/03/17", 385750], ["Michael Silva", "Marketing Designer", "London", 1581, "2012/11/27", 198500], ["Paul Byrd", "Chief Financial Officer (CFO)", "New York", 3059, "2010/06/09", 725000], ["Gloria Little", "Systems Administrator", "New York", 1721, "2009/04/10", 237500], ["Bradley Greer", "Software Engineer", "London", 2558, "2012/10/13", 132000], ["Dai Rios", "Personnel Lead", "Edinburgh", 2290, "2012/09/26", 217500], ["Jenette Caldwell", "Development Lead", "New York", 1937, "2011/09/03", 345000], ["Yuri Berry", "Chief Marketing Officer (CMO)", "New York", 6154, "2009/06/25", 675000], ["Caesar Vance", "Pre-Sales Support", "New York", 8330, "2011/12/12", 106450], ["Doris Wilder", "Sales Assistant", "Sidney", 3023, "2010/09/20", 85600], ["Angelica Ramos", "Chief Executive Officer (CEO)", "London", 5797, "2009/10/09", 1200000], ["Gavin Joyce", "Developer", "Edinburgh", 8822, "2010/12/22", 92575], ["Jennifer Chang", "Regional Director", "Singapore", 9239, "2010/11/14", 357650], ["Brenden Wagner", "Software Engineer", "San Francisco", 1314, "2011/06/07", 206850], ["Fiona Green", "Chief Operating Officer (COO)", "San Francisco", 2947, "2010/03/11", 850000], ["Shou Itou", "Regional Marketing", "Tokyo", 8899, "2011/08/14", 163000], ["Michelle House", "Integration Specialist", "Sidney", 2769, "2011/06/02", 95400], ["Suki Burks", "Developer", "London", 6832, "2009/10/22", 114500], ["Prescott Bartlett", "Technical Author", "London", 3606, "2011/05/07", 145000], ["Gavin Cortez", "Team Leader", "San Francisco", 2860, "2008/10/26", 235500], ["Martena Mccray", "Post-Sales support", "Edinburgh", 8240, "2011/03/09", 324050], ["Unity Butler", "Marketing Designer", "San Francisco", 5384, "2009/12/09", 85675], ["Howard Hatfield", "Office Manager", "San Francisco", 7031, "2008/12/16", 164500], ["Hope Fuentes", "Secretary", "San Francisco", 6318, "2010/02/12", 109850], ["Vivian Harrell", "Financial Controller", "San Francisco", 9422, "2009/02/14", 452500], ["Timothy Mooney", "Office Manager", "London", 7580, "2008/12/11", 136200], ["Jackson Bradshaw", "Director", "New York", 1042, "2008/09/26", 645750], ["Olivia Liang", "Support Engineer", "Singapore", 2120, "2011/02/03", 234500], ["Bruno Nash", "Software Engineer", "London", 6222, "2011/05/03", 163500], ["Sakura Yamamoto", "Support Engineer", "Tokyo", 9383, "2009/08/19", 139575], ["Thor Walton", "Developer", "New York", 8327, "2013/08/11", 98540], ["Finn Camacho", "Support Engineer", "San Francisco", 2927, "2009/07/07", 87500], ["Serge Baldwin", "Data Coordinator", "Singapore", 8352, "2012/04/09", 138575], ["Zenaida Frank", "Software Engineer", "New York", 7439, "2010/01/04", 125250], ["Zorita Serrano", "Software Engineer", "San Francisco", 4389, "2012/06/01", 115000], ["Jennifer Acosta", "Junior Javascript Developer", "Edinburgh", 3431, "2013/02/01", 75650], ["Cara Stevens", "Sales Assistant", "New York", 3990, "2011/12/06", 145600], ["Hermione Butler", "Regional Director", "London", 1016, "2011/03/21", 356250], ["Lael Greer", "Systems Administrator", "London", 6733, "2009/02/27", 103500], ["Jonas Alexander", "Developer", "San Francisco", 8196, "2010/07/14", 86500], ["Shad Decker", "Regional Director", "Edinburgh", 6373, "2008/11/13", 183000], ["Michael Bruce", "Javascript Developer", "Singapore", 5384, "2011/06/27", 183000], ["Donna Snider", "Customer Support", "New York", 4226, "2011/01/25", 112000], ["Donna Snider", "Customer Support", "LOS Angeles", 42.67, "2011/01/25", 112000]];
 
 				if (largeData) {
 					for (let i = 0; i < 10; i++) {
@@ -247,7 +183,7 @@
 				var datatable = new DataTable('section', {
 					checkboxColumn: true,
 					serialNoColumn: true,
-					layout: 'fixed', // fluid / fixed
+					layout: 'fluid',
 					columns,
 					data,
 					inlineFilters: true,
@@ -347,8 +283,8 @@
         function appendRows() {
             datatable.appendRows(
                 [
-                    ["Garrett", "Accountant", "Tokyo", 8422, "2011/07/25", 170, "USA", "2013/10/25", 2000],
-                    ["Winters", "Accountant", "Tokyo", 8422, "2011/07/25", 123, "Scotland", "2013/11/25", 1000]
+                    ["Garrett", "Accountant", "Tokyo", 8422, "2011/07/25", 170],
+                    ["Winters", "Accountant", "Tokyo", 8422, "2011/07/25", 123]
                 ]
             )
         }

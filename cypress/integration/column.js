@@ -29,35 +29,35 @@ describe('Column', function () {
             .its('currentSort.colIndex')
             .should('eq', 2);
 
-        cy.get('.dt-scrollable .dt-row:first div:nth-of-type(3)')
+        cy.get('.dt-scrollable .dt-row:first')
             .contains('Airi Satou');
 
         cy.clickDropdownItem(2, 'Reset sorting');
     });
 
     it('removes column using dropdown action', function () {
-        cy.get('.dt-cell--header').should('have.length', 12);
+        cy.get('.dt-cell--header').should('have.length', 8);
 
         cy.clickDropdown(5);
         cy.clickDropdownItem(5, 'Remove column');
 
-        cy.get('.dt-cell--header').should('have.length', 11);
+        cy.get('.dt-cell--header').should('have.length', 7);
     });
 
     it('resize column with mouse drag', function () {
-        cy.get('.dt-cell--header-4 .dt-cell__resize-handle').as('resize-handle');
+        cy.get('.dt-cell--header-3 .dt-cell__resize-handle').as('resize-handle');
         cy
             .get('@resize-handle')
             .trigger('mousedown')
-            .trigger('mousemove', { pageX: 700, pageY: 20, which: 1 })
+            .trigger('mousemove', { pageX: 510, pageY: 20, which: 1 })
             .trigger('mouseup');
 
-        cy.getColumnCell(4).invoke('css', 'width').then((width) => {
-            cy.getColumnCell(4)
-                .should('have.css', 'width', width);
-            cy.getCell(4, 1)
-                .should('have.css', 'width', width);
-        });
+        cy.getColumnCell(3)
+            .should('have.css', 'width')
+            .and('match', /13\dpx/);
+        cy.getCell(3, 1)
+            .should('have.css', 'width')
+            .and('match', /13\dpx/);
     });
 
     it('resize column using double click', function () {
