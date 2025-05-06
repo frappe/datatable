@@ -27,16 +27,14 @@
 .datatable {
     position: relative;
     overflow: hidden;
-    .dt-cell--col-0{
-        border-left: 1px solid var(--dt-border-color);
-    }
 }
 
-.dt-header{
-    border-bottom: 2px solid var(--dt-border-color);
+.dt-scrollable > .dt-row-0{
+    border-top: 2px solid var(--dt-border-color);
 }
 
 .datatable-content{
+    overflow-x: auto;
     .dt-header{
         display: flex;
     }
@@ -80,7 +78,7 @@
 .dt-cell {
     border: 1px solid var(--dt-border-color);
     border-bottom: none;
-    border-left: none;
+    border-right: none;
     position: relative;
     outline: none;
     padding: 0;
