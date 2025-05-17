@@ -12,6 +12,10 @@
 			font-weight: normal;
 			font-size: 12px;
 		}
+		/* Add a class to the section for full width */
+		.full-width {
+			width: 100%;
+		}
 	</style>
 	<link rel="stylesheet" href="./dist/frappe-datatable.css" />
 </head>
@@ -30,9 +34,12 @@
 		<input type="checkbox" id="dark-theme" />
 		<span>Dark Theme</span>
 	</label>
-	<section style="width: 60%; margin: 0 auto;">
+
+	<!-- Add the 'full-width' class to the sections -->
+	<section class="full-width">
 
 	</section>
+
 
 	<section id="datatable2" style="width: 60%; ">
 
@@ -244,7 +251,7 @@
 				console.log('No of Rows:', data.length)
 
 				const start = performance.now();
-				var datatable = new DataTable('section', {
+				var datatable = new DataTable('.full-width', {
 					checkboxColumn: true,
 					serialNoColumn: true,
 					layout: 'fixed', // fluid / fixed
