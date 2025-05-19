@@ -205,14 +205,19 @@ export default class DataManager {
     }
 
     prepareRow(row, meta) {
-        const baseRowCell = {
-            rowIndex: meta.rowIndex,
-            indent: meta.indent
-        };
-
         row = row
             .map((cell, i) => this.prepareCell(cell, i))
-            .map(cell => Object.assign({}, baseRowCell, cell));
+            .map(cell => {
+                // Following code is equivalent but avoids memory allocation and copying.
+                // return Object.assign({rowIndex: meta.rowIndex, indent: meta.indent}, cell)
+                if (cell.rowIndex == null) {
+                    cell.rowIndex = meta.rowIndex;
+                }
+                if (cell.indent == null) {
+                    cell.indent = meta.indent;
+                }
+                return cell;
+            });
 
         // monkey patched in array object
         row.meta = meta;
