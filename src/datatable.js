@@ -40,8 +40,8 @@ class DataTable {
 
         if (this.options.data) {
             this.refresh();
-            this.columnmanager.applySavedSortOrder();
             this.columnmanager.applyDefaultSortOrder();
+            this.columnmanager.applySavedSortOrder();
         }
     }
 
@@ -210,6 +210,9 @@ class DataTable {
 
     sortColumn(colIndex, sortOrder) {
         this.columnmanager.sortColumn(colIndex, sortOrder);
+    }
+    saveSorting(colIndex,nextSortOrder){
+        this.columnmanager.saveSorting(colIndex, nextSortOrder);
     }
 
     removeColumn(colIndex) {

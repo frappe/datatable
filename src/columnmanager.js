@@ -267,7 +267,6 @@ export default class ColumnManager {
             .then(() => this.instance.unfreeze())
             .then(() => {
                 this.fireEvent('onSortColumn', this.getColumn(colIndex));
-                this.saveSorting(colIndex, nextSortOrder);
             });
     }
 
@@ -279,7 +278,8 @@ export default class ColumnManager {
                 sortOrder: currentColumn.sortOrder
             }
         };
-        this.sortingKey = this.options.sortingKey ? 'sortedColumns' : `${this.options.sortingKey}::sortedColumns`;
+        this.sortingKey = this.options.sortingKey ? `${this.options.sortingKey}::sortedColumns` : "sortedColumns" ;
+        console.log(this.sortingKey)
         localStorage.setItem(this.sortingKey, JSON.stringify(saveSorting));
     }
 
@@ -382,7 +382,9 @@ export default class ColumnManager {
     }
 
     applySavedSortOrder() {
-        let key = this.options.sortingKey ? 'sortedColumns' : `${this.options.sortingKey}::sortedColumns`;
+        debugger
+        let key = this.options.sortingKey ? `${this.options.sortingKey}::sortedColumns` : "sortedColumns" ;
+        console.log(key)
         let sortingConfig = JSON.parse(localStorage.getItem(key));
         if (sortingConfig) {
             const columnsToSort = Object.values(sortingConfig);
@@ -470,11 +472,21 @@ export default class ColumnManager {
         const { headerDropdown: dropdownItems } = this.options;
 
         return `
-            <div class="dt-dropdown__list">
-            ${dropdownItems.map((d, i) => `
-                <div class="dt-dropdown__list-item" data-index="${i}">${d.label}</div>
-            `).join('')}
+        <div class="dt-dropdown__list">
+        ${dropdownItems.map((d, i) => `
+            <div 
+                class="dt-dropdown__list-item${d.display ? ' dt-hidden' : ''}" 
+                data-index="${i}"
+            >
+                ${d.label}
             </div>
-        `;
+        `).join('')}
+        </div>
+    `;
+    }
+    toggleDropdownItem(index){
+        debugger
+       $(".dt-dropdown__list", this.instance.dropdownContainer).children[index].classList.toggle('dt-hidden');
+       
     }
 }

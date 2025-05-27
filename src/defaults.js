@@ -11,19 +11,29 @@ export default function getDefaultOptions(instance) {
                 label: instance.translate('Sort Ascending'),
                 action: function (column) {
                     this.sortColumn(column.colIndex, 'asc');
+                    this.columnmanager.toggleDropdownItem(2)
                 }
             },
             {
                 label: instance.translate('Sort Descending'),
                 action: function (column) {
                     this.sortColumn(column.colIndex, 'desc');
+                    this.columnmanager.toggleDropdownItem(2)
                 }
+            },
+            {
+                label: instance.translate('Save Sorting'),
+                action: function (column) {
+                    this.saveSorting(column.colIndex, column.sotOrder);
+                    this.columnmanager.toggleDropdownItem(2)
+                },
+                display: "hidden"
             },
             {
                 label: instance.translate('Reset sorting'),
                 action: function (column) {
                     this.sortColumn(column.colIndex, 'none');
-                    localStorage.setItem('savedSort', null);
+                    localStorage.setItem('sortedColumns', null);
                 }
             },
             {

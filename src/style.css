@@ -221,6 +221,9 @@
         &:hover {
             background-color: var(--dt-light-bg);
         }
+        .dt-hidden{
+            display: none;
+        }
     }
 
     &--active &__list {
@@ -293,6 +296,10 @@
 .dt-paste-target {
     position: fixed;
     left: -999em;
+}
+
+.dt-hidden{
+    display: none;
 }
 
 body.dt-resize {
