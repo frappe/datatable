@@ -77,7 +77,9 @@ export default class DataManager {
                 focusable: false,
                 dropdown: false
             };
-
+            if (this.options.data.length > 1000) {
+                cell.resizable = true;
+            }
             this.columns.push(cell);
         }
     }
