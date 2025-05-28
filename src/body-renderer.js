@@ -144,9 +144,7 @@ export default class BodyRenderer {
         const style = window.getComputedStyle(this.instance.header);
         const matrix = new DOMMatrixReadOnly(style.transform);
         const width = (-matrix.m41) + this.instance.header.clientWidth;
-        console.log(width);
         const height = this.bodyScrollable.clientHeight;
-        console.log(width);
         return `
             <div 
                 class="dt-scrollable__no-data" 
