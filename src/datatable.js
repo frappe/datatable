@@ -211,7 +211,7 @@ class DataTable {
     sortColumn(colIndex, sortOrder) {
         this.columnmanager.sortColumn(colIndex, sortOrder);
     }
-    saveSorting(colIndex,nextSortOrder){
+    saveSorting(colIndex, nextSortOrder) {
         this.columnmanager.saveSorting(colIndex, nextSortOrder);
     }
 
