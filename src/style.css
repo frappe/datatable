@@ -221,9 +221,6 @@
         &:hover {
             background-color: var(--dt-light-bg);
         }
-        .dt-hidden{
-            display: none;
-        }
     }
 
     &--active &__list {
