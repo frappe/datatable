@@ -267,6 +267,7 @@ export default class ColumnManager {
             .then(() => this.instance.unfreeze())
             .then(() => {
                 this.fireEvent('onSortColumn', this.getColumn(colIndex));
+                this.setSortState();
             });
     }
 
@@ -279,8 +280,14 @@ export default class ColumnManager {
             }
         };
         this.sortingKey = this.options.sortingKey ? `${this.options.sortingKey}::sortedColumns` : 'sortedColumns' ;
-        console.log(this.sortingKey);
         localStorage.setItem(this.sortingKey, JSON.stringify(saveSorting));
+    }
+    setSortState(sortOrder) {
+        if (sortOrder === 'none') {
+            this.sortState = false;
+        } else {
+            this.sortState = true;
+        }
     }
 
     removeColumn(colIndex) {
@@ -384,7 +391,6 @@ export default class ColumnManager {
     applySavedSortOrder() {
 
         let key = this.options.sortingKey ? `${this.options.sortingKey}::sortedColumns` : 'sortedColumns' ;
-        console.log(key);
         let sortingConfig = JSON.parse(localStorage.getItem(key));
         if (sortingConfig) {
             const columnsToSort = Object.values(sortingConfig);
@@ -470,7 +476,6 @@ export default class ColumnManager {
 
     getDropdownListHTML() {
         const { headerDropdown: dropdownItems } = this.options;
-
         return `
         <div class="dt-dropdown__list">
         ${dropdownItems.map((d, i) => `
@@ -484,9 +489,8 @@ export default class ColumnManager {
         </div>
     `;
     }
+
     toggleDropdownItem(index) {
-
         $('.dt-dropdown__list', this.instance.dropdownContainer).children[index].classList.toggle('dt-hidden');
-
     }
 }
