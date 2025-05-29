@@ -267,7 +267,27 @@ export default class ColumnManager {
             .then(() => this.instance.unfreeze())
             .then(() => {
                 this.fireEvent('onSortColumn', this.getColumn(colIndex));
+                this.setSortState();
             });
+    }
+
+    saveSorting(colIndex) {
+        let currentColumn = this.getColumn(colIndex);
+        let saveSorting = {
+            [currentColumn.name]: {
+                colIndex: colIndex,
+                sortOrder: currentColumn.sortOrder
+            }
+        };
+        this.sortingKey = this.options.sortingKey ? `${this.options.sortingKey}::sortedColumns` : 'sortedColumns' ;
+        localStorage.setItem(this.sortingKey, JSON.stringify(saveSorting));
+    }
+    setSortState(sortOrder) {
+        if (sortOrder === 'none') {
+            this.sortState = false;
+        } else {
+            this.sortState = true;
+        }
     }
 
     removeColumn(colIndex) {
@@ -368,6 +388,19 @@ export default class ColumnManager {
         }
     }
 
+    applySavedSortOrder() {
+
+        let key = this.options.sortingKey ? `${this.options.sortingKey}::sortedColumns` : 'sortedColumns' ;
+        let sortingConfig = JSON.parse(localStorage.getItem(key));
+        if (sortingConfig) {
+            const columnsToSort = Object.values(sortingConfig);
+            for (let column of columnsToSort) {
+                this.sortColumn(column.colIndex, column.sortOrder);
+                this.sortState = true;
+            }
+        }
+    }
+
     sortRows(colIndex, sortOrder) {
         return this.datamanager.sortRows(colIndex, sortOrder);
     }
@@ -443,13 +476,21 @@ export default class ColumnManager {
 
     getDropdownListHTML() {
         const { headerDropdown: dropdownItems } = this.options;
-
         return `
-            <div class="dt-dropdown__list">
-            ${dropdownItems.map((d, i) => `
-                <div class="dt-dropdown__list-item" data-index="${i}">${d.label}</div>
-            `).join('')}
+        <div class="dt-dropdown__list">
+        ${dropdownItems.map((d, i) => `
+            <div 
+                class="dt-dropdown__list-item${d.display ? ' dt-hidden' : ''}" 
+                data-index="${i}"
+            >
+                ${d.label}
             </div>
-        `;
+        `).join('')}
+        </div>
+    `;
+    }
+
+    toggleDropdownItem(index) {
+        $('.dt-dropdown__list', this.instance.dropdownContainer).children[index].classList.toggle('dt-hidden');
     }
 }
