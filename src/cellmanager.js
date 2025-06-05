@@ -333,7 +333,6 @@ export default class CellManager {
 
     _selectArea($cell1, $cell2) {
         if ($cell1 === $cell2) return false;
-
         const cells = this.getCellsInRange($cell1, $cell2);
         if (!cells) return false;
 
@@ -360,9 +359,17 @@ export default class CellManager {
             const cell2 = $.data($cell2);
 
             colIndex1 = +cell1.colIndex;
-            rowIndex1 = +cell1.rowIndex;
             colIndex2 = +cell2.colIndex;
-            rowIndex2 = +cell2.rowIndex;
+
+            if (this.columnmanager.sortState) {
+                this.sortedColumn = true;
+                rowIndex1 = this.datamanager.rowViewOrder.indexOf(parseInt(cell1.rowIndex, 10));
+                rowIndex2 = this.datamanager.rowViewOrder.indexOf(parseInt(cell2.rowIndex, 10));
+            } else {
+                rowIndex1 = +cell1.rowIndex;
+                rowIndex2 = +cell2.rowIndex;
+            }
+
         }
 
         if (rowIndex1 > rowIndex2) {
@@ -394,7 +401,11 @@ export default class CellManager {
             }
             colIndex = colIndex1;
         });
-
+        if (this.columnmanager.sortState) {
+            cells.forEach(selectedCells => {
+                selectedCells[1] = this.datamanager.rowViewOrder[selectedCells[1]];
+            });
+        }
         return cells;
     }
 

@@ -295,6 +295,10 @@
     left: -999em;
 }
 
+.dt-hidden{
+    display: none;
+}
+
 body.dt-resize {
     cursor: col-resize;
 }
