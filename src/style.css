@@ -249,7 +249,7 @@
     &__message {
         display: inline-block;
         background-color: rgba(0, 0, 0, 0.8);
-        color: var(--dt-text-light);
+        color: #fff;
         border-radius: var(--dt-border-radius);
         padding: var(--dt-spacer-2) var(--dt-spacer-3);
         border: var(--dt-toast-message-border);
