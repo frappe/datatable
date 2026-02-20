@@ -82,7 +82,7 @@ export default class CellManager {
             }
 
             this.focusCell($cell);
-            sessionStorage.setItem('dt-last-nav-method', 'scroll');
+            sessionStorage.setItem('dt-last-nav-method', 'key');
             return true;
         };
 
