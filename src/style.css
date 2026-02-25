@@ -170,6 +170,10 @@
     &:last-child {
         border-right: 1px solid var(--dt-border-color);
     }
+
+    &--checkbox &__content {
+        text-overflow: clip;
+    }
 }
 
 .datatable[dir=rtl] .dt-cell__resize-handle {
