@@ -1,18 +1,22 @@
-name: Component Tests
+name: Test and Release
 on:
   push:
     branches:
       - master
 
 permissions:
-  contents: read
-  actions: write
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
 
 jobs:
-  component-test:
+  test-and-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -30,3 +34,7 @@ jobs:
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: yarn semantic-release
