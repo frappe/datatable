@@ -4,9 +4,14 @@ jobs:
   test-pull-request:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'yarn'
       - name: Lint, build and test
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v6
         with:
           build: yarn lint-and-build
           start: yarn cy:server
