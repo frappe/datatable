@@ -1,6 +1,8 @@
 name: Component Tests
 on:
   push:
+    branches:
+      - master
 
 permissions:
   contents: read
