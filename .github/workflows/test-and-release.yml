@@ -1,24 +1,30 @@
-name: Test and Release
+name: Component Tests
 on:
   push:
-    branches:
-      - master
+
+permissions:
+  contents: read
+  actions: write
+
 jobs:
-  test-and-release:
+  component-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
       - name: Lint, build and test
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v6
         with:
           build: yarn lint-and-build
           start: yarn cy:server
+          install: false
           record: true
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Release
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: yarn semantic-release
