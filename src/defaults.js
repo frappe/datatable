@@ -67,6 +67,7 @@ export default function getDefaultOptions(instance) {
             // ColumnManager: CustomColumnManager
         },
         filterRows: filterRows,
+        filterMatchStrategy: 'strict', // strict, fuzzy, tokens
         freezeMessage: '',
         getEditor: null,
         serialNoColumn: true,
