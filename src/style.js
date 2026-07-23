@@ -33,10 +33,7 @@ export default class Style {
     bindResizeWindow() {
         this.onWindowResize = this.onWindowResize.bind(this);
         this.onWindowResize = throttle(this.onWindowResize, 300);
-
-        if (this.options.layout === 'fluid') {
-            $.on(window, 'resize', this.onWindowResize);
-        }
+        $.on(window, 'resize', this.onWindowResize);
     }
 
     bindScrollHeader() {
