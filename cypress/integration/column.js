@@ -35,6 +35,29 @@ describe('Column', function () {
         cy.clickDropdownItem(2, 'Reset sorting');
     });
 
+    it('sorts on the value returned by a column sortValue hook', function () {
+        // Sort the Name column by surname instead of the cell content.
+        cy.window().then(win => {
+            win.datatable.getColumn(2).sortValue = cell => String(cell.content).split(' ').pop();
+        });
+
+        cy.clickDropdown(2);
+        cy.clickDropdownItem(2, 'Sort Ascending');
+
+        cy.window().then(win => {
+            const datamanager = win.datatable.datamanager;
+            const surnames = datamanager.rowViewOrder
+                .map(rowIndex => String(datamanager.getCell(2, rowIndex).content).split(' ').pop());
+
+            expect(surnames).to.deep.equal([...surnames].sort());
+        });
+
+        cy.clickDropdownItem(2, 'Reset sorting');
+        cy.window().then(win => {
+            delete win.datatable.getColumn(2).sortValue;
+        });
+    });
+
     it('removes column using dropdown action', function () {
         cy.get('.dt-cell--header').should('have.length', 12);
 
