@@ -283,14 +283,18 @@ export default class DataManager {
             }
         }
 
+        const sortValue = cell => {
+            const hook = cell.column && cell.column.sortValue;
+            const value = hook ? hook(cell) : cell.content;
+            return value == null ? '' : value;
+        };
+
         this.rowViewOrder.sort((a, b) => {
             const aIndex = a;
             const bIndex = b;
 
-            let aContent = this.getCell(colIndex, a).content;
-            let bContent = this.getCell(colIndex, b).content;
-            aContent = aContent == null ? '' : aContent;
-            bContent = bContent == null ? '' : bContent;
+            const aContent = sortValue(this.getCell(colIndex, a));
+            const bContent = sortValue(this.getCell(colIndex, b));
 
             if (sortOrder === 'none') {
                 return aIndex - bIndex;
