@@ -165,12 +165,6 @@ export default class ColumnManager {
             document.body.classList.remove('dt-resize');
             if (!$resizingCell) return;
             isDragging = false;
-
-            const {
-                colIndex
-            } = $.data($resizingCell);
-            this.setColumnWidth(colIndex);
-            this.style.setBodyStyle();
             $resizingCell = null;
         };
         $.on(document.body, 'mouseup', onMouseup);
@@ -198,6 +192,8 @@ export default class ColumnManager {
                 width: finalWidth
             });
             this.setColumnHeaderWidth(colIndex);
+            this.setColumnWidth(colIndex);
+            this.style.setBodyStyle();
         };
         $.on(document.body, 'mousemove', onMouseMove);
         this.instance.on('onDestroy', () => {

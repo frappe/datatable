@@ -83,6 +83,19 @@ describe('Column', function () {
         });
     });
 
+    it('resizes body cells while the column is being dragged', function () {
+        cy.get('.dt-cell--header-4 .dt-cell__resize-handle')
+            .trigger('mousedown')
+            .trigger('mousemove', { pageX: 700, pageY: 20, which: 1 });
+
+        cy.getColumnCell(4).invoke('css', 'width').then((width) => {
+            cy.getCell(4, 1)
+                .should('have.css', 'width', width);
+        });
+
+        cy.get('body').trigger('mouseup');
+    });
+
     it('resize column using double click', function () {
         cy.get('.dt-cell--header-4 .dt-cell__resize-handle').trigger('dblclick');
         cy.getColumnCell(4).should('have.css', 'width')
