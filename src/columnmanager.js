@@ -193,6 +193,7 @@ export default class ColumnManager {
             });
             this.setColumnHeaderWidth(colIndex);
             this.setColumnWidth(colIndex);
+            this.style.refreshStickyColumns();
             this.style.setBodyStyle();
         };
         $.on(document.body, 'mousemove', onMouseMove);
@@ -230,6 +231,7 @@ export default class ColumnManager {
             this.datamanager.updateColumn(colIndex, { width });
             this.setColumnHeaderWidth(colIndex);
             this.setColumnWidth(colIndex);
+            this.style.refreshStickyColumns();
         });
     }
 

@@ -156,8 +156,7 @@ export default class Style {
         this.setupColumnWidth();
         this.distributeRemainingWidth();
         this.setColumnStyle();
-        this.setStickyColumnStyle();
-        this.updateStickyTopPositions(this.bodyScrollable.scrollLeft || 0);
+        this.refreshStickyColumns();
         this.setBodyStyle();
     }
 
@@ -315,6 +314,10 @@ export default class Style {
                 this.columnmanager.setColumnHeaderWidth(column.colIndex);
                 this.columnmanager.setColumnWidth(column.colIndex);
             });
+        this.refreshStickyColumns();
+    }
+
+    refreshStickyColumns() {
         this.setStickyColumnStyle();
         this.updateStickyTopPositions(this.bodyScrollable.scrollLeft || 0);
     }
@@ -381,11 +384,14 @@ export default class Style {
     setStickyColumnStyle() {
         if (!this.datamanager || !this.datamanager.getColumns) return;
 
+        const columns = this.datamanager.getColumns();
+        if (!columns.some(column => column.sticky) && !(this._stickySelectors || []).length) return;
+
         const stickySelectors = [];
         let stickyOffset = 0;
         let normalOffset = 0;
 
-        this.datamanager.getColumns().forEach((column) => {
+        columns.forEach((column) => {
             const $headerCell = this.getColumnHeaderElement(column.colIndex);
             const renderedWidth = $headerCell ? $headerCell.offsetWidth : column.width;
 
