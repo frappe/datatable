@@ -163,4 +163,32 @@ describe('Column', function () {
             });
         });
     });
+
+    it('keeps other pinned columns aligned after resizing a pinned column', function () {
+        cy.clickDropdown(2);
+        cy.clickDropdownItem(2, 'Freeze');
+        cy.clickDropdown(3);
+        cy.clickDropdownItem(3, 'Freeze');
+
+        cy.get('.dt-cell--header-2 .dt-cell__resize-handle')
+            .trigger('mousedown')
+            .trigger('mousemove', { pageX: 700, pageY: 20, which: 1 })
+            .trigger('mouseup');
+
+        cy.get('.dt-scrollable').then(($scrollable) => {
+            const scrollable = $scrollable[0];
+
+            scrollable.scrollLeft = 220;
+            scrollable.dispatchEvent(new Event('scroll'));
+
+            cy.wait(50).then(() => {
+                const resizedBodyCell = Cypress.$('.dt-cell--2-0')[0].getBoundingClientRect();
+                const nextStickyBodyCell = Cypress.$('.dt-cell--3-0')[0].getBoundingClientRect();
+                const nextStickyHeaderCell = Cypress.$('.dt-cell--header-3')[0].getBoundingClientRect();
+
+                expect(nextStickyBodyCell.left).to.be.closeTo(resizedBodyCell.right, 1);
+                expect(nextStickyHeaderCell.left).to.be.closeTo(nextStickyBodyCell.left, 1);
+            });
+        });
+    });
 });
