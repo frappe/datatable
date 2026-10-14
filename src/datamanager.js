@@ -271,7 +271,7 @@ export default class DataManager {
 
     _sortRows(colIndex, sortOrder) {
 
-        if (this.currentSort.colIndex === colIndex) {
+        if (!this.options.treeView && this.currentSort.colIndex === colIndex) {
             // reverse the array if only sortOrder changed
             if (
                 (this.currentSort.sortOrder === 'asc' && sortOrder === 'desc') ||
@@ -310,15 +310,53 @@ export default class DataManager {
             return 0;
         });
 
+        if (this.options.treeView) {
+            this._sortTreeRows();
+        }
+
         if (this.hasColumnById('_rowIndex')) {
             // update row index
             const srNoColIndex = this.getColumnIndexById('_rowIndex');
-            this.rows.forEach((row, index) => {
-                const viewIndex = this.rowViewOrder.indexOf(index);
-                const cell = row[srNoColIndex];
+            this.rowViewOrder.forEach((rowIndex, viewIndex) => {
+                const cell = this.rows[rowIndex][srNoColIndex];
                 cell.content = (viewIndex + 1) + '';
+                cell.html = null;
             });
         }
+    }
+
+    _sortTreeRows() {
+        // Use the column sort order to rank siblings without separating their children.
+        const sortPositions = new Map();
+        this.rowViewOrder.forEach((rowIndex, position) => {
+            sortPositions.set(rowIndex, position);
+        });
+
+        const root = { indent: -Infinity, children: [] };
+        const ancestors = [root];
+
+        this.rows.forEach((row, rowIndex) => {
+            const indent = Number(row.meta.indent) || 0;
+            while (ancestors[ancestors.length - 1].indent >= indent) {
+                ancestors.pop();
+            }
+
+            const node = { rowIndex, indent, children: [] };
+            ancestors[ancestors.length - 1].children.push(node);
+            ancestors.push(node);
+        });
+
+        const rowOrder = [];
+        function appendSiblings(siblings) {
+            siblings.sort((a, b) => sortPositions.get(a.rowIndex) - sortPositions.get(b.rowIndex));
+            for (const node of siblings) {
+                rowOrder.push(node.rowIndex);
+                appendSiblings(node.children);
+            }
+        }
+
+        appendSiblings(root.children);
+        this.rowViewOrder = rowOrder;
     }
 
     reverseArray(array) {
