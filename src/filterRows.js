@@ -17,7 +17,7 @@ export default function filterRows(rows, filters, data) {
 
         const cells = filteredRows.map(row => row[colIndex]);
 
-        let filter = guessFilter(keyword);
+        let filter = guessFilter(keyword, data);
         let filterMethod = getFilterMethod(rows, data, filter);
 
         if (filterMethod) {
@@ -72,6 +72,31 @@ function getFilterMethod(rows, allData, filter) {
                     return !needle ||
                         (cell.content || '').toLowerCase().includes(needle) ||
                         stringCompareValue(cell).includes(needle);
+                })
+                .map(cell => cell.rowIndex);
+        },
+
+        fuzzy(keyword, cells) {
+            const terms = keyword.split(/\s+/).filter(term => term.length > 0);
+            return cells
+                .filter(cell => {
+                    if (terms.length === 0) return true;
+                    const cellValue = stringCompareValue(cell);
+                    return terms.every(term => cellValue.includes(term));
+                })
+                .map(cell => cell.rowIndex);
+        },
+
+        tokens(keyword, cells) {
+            const terms = keyword.split(/\s+/).filter(term => term.length > 0);
+            return cells
+                .filter(cell => {
+                    if (terms.length === 0) return true;
+                    const cellValue = stringCompareValue(cell);
+                    return terms.every(term => {
+                        const regex = new RegExp(`\\b${term}\\b`, 'i');
+                        return regex.test(cellValue);
+                    });
                 })
                 .map(cell => cell.rowIndex);
         },
@@ -140,7 +165,7 @@ function getFilterMethod(rows, allData, filter) {
     return filterMethodMap[filter.type];
 }
 
-function guessFilter(keyword = '') {
+function guessFilter(keyword = '', data) {
     if (keyword.length === 0) return {};
 
     let compareString = keyword;
@@ -199,6 +224,20 @@ function guessFilter(keyword = '') {
         return {
             type: 'range',
             text: compareString.map(v => v.trim())
+        };
+    }
+
+    const filterMatchStrategy = data && data.options && data.options.filterMatchStrategy;
+    if (filterMatchStrategy === 'fuzzy' && keyword.includes(' ')) {
+        return {
+            type: 'fuzzy',
+            text: compareString.toLowerCase()
+        };
+    }
+    if (filterMatchStrategy === 'tokens' && keyword.includes(' ')) {
+        return {
+            type: 'tokens',
+            text: compareString.toLowerCase()
         };
     }
 

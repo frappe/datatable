@@ -1,0 +1,15 @@
+{
+	"Sort Ascending": "Sortiraj rastući",
+	"Sort Descending": "Sortiraj opadajući",
+	"Reset sorting": "Resetuj sortiranje",
+	"Remove column": "Ukloni kolonu",
+	"No Data": "Nema podataka",
+	"{count} cells copied": {
+		"1": "{count} polje kopirano",
+		"default": "{count} polja kopirano"
+	},
+	"{count} rows selected": {
+		"1": "{count} red izabran",
+		"default": "{count} redova izabrano"
+	}
+}
