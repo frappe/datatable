@@ -193,7 +193,8 @@ export default class Style {
             }
         });
 
-        // set initial width as naturally calculated by table's first row
+        // The first row is in the DOM, so its width also includes extras
+        // like tree toggles and indentation
         $.each('.dt-row-0 .dt-cell', this.bodyScrollable).map($cell => {
             const {
                 colIndex
@@ -204,10 +205,112 @@ export default class Style {
 
             if (typeof naturalWidth === 'number' && naturalWidth >= column.naturalWidth) {
                 column.naturalWidth = naturalWidth;
-            } else {
-                column.naturalWidth = column.naturalWidth;
             }
         });
+
+        // Only the visible rows are in the DOM (virtual scroll),
+        // so measure the longest value of each column from the data
+        this.datamanager.getColumns().forEach(column => {
+            if (column.width || ['_rowIndex', '_checkbox'].includes(column.id)) return;
+
+            const contentWidth = this.getColumnContentWidth(column.colIndex);
+            if (contentWidth > column.naturalWidth) {
+                column.naturalWidth = contentWidth;
+            }
+        });
+    }
+
+    getColumnContentWidth(colIndex) {
+        const $cellContent = this.bodyScrollable.querySelector('.dt-cell__content');
+        if (!$cellContent) return 0;
+
+        const htmls = this.getWidestCellHTMLs(colIndex, $cellContent);
+        if (!htmls.length) return 0;
+
+        const contentWidth = Math.max(...$.measureHTMLWidths(htmls, this.bodyScrollable));
+
+        const {
+            borderLeftWidth,
+            borderRightWidth,
+            paddingLeft,
+            paddingRight
+        } = $.getStyle($cellContent);
+
+        const padding = [borderLeftWidth, borderRightWidth, paddingLeft, paddingRight]
+            .map(parseFloat)
+            .reduce((sum, val) => sum + val);
+
+        return contentWidth + padding;
+    }
+
+    // Measuring every value in the DOM is slow for large data, so a canvas
+    // picks the widest few texts and only those are measured in the DOM
+    getWidestCellHTMLs(colIndex, $cellContent, count = 10) {
+        const values = this.getColumnValues(colIndex);
+        if (values.length <= count) return values.map(value => value.html);
+
+        const context = this.getTextMeasureContext($cellContent);
+        return values
+            .map(value => ({ html: value.html, width: context.measureText(value.text).width }))
+            .sort((a, b) => b.width - a.width)
+            .slice(0, count)
+            .map(value => value.html);
+    }
+
+    getTextMeasureContext($cellContent) {
+        if (!this.textMeasureContext) {
+            this.textMeasureContext = document.createElement('canvas').getContext('2d');
+        }
+
+        const { fontStyle, fontWeight, fontSize, fontFamily } = $.getStyle($cellContent);
+        this.textMeasureContext.font = `${fontStyle} ${fontWeight} ${fontSize} ${fontFamily}`;
+        return this.textMeasureContext;
+    }
+
+    // The unique values of a column, as the HTML and the text that the cells show
+    getColumnValues(colIndex) {
+        const rows = this.bodyRenderer.visibleRows || [];
+        const values = new Map();
+
+        rows.forEach(row => {
+            const cell = row[colIndex];
+            if (!cell) return;
+
+            const html = this.getCellContentHTML(cell);
+            if (html && !values.has(html)) {
+                values.set(html, { html, text: this.getTextFromHTML(html) });
+            }
+        });
+
+        return Array.from(values.values());
+    }
+
+    // The cell content with the column formatter applied
+    getCellContentHTML(cell) {
+        const formatter = cell.format || (cell.column && cell.column.format);
+        let html = cell.content;
+
+        if (formatter) {
+            html = cell.html;
+            if (html == null) {
+                const row = this.datamanager.getRow(cell.rowIndex);
+                const data = this.datamanager.getData(cell.rowIndex);
+                html = formatter(cell.content, row, cell.column, data);
+            }
+        }
+
+        return html == null ? '' : String(html).trim();
+    }
+
+    getTextFromHTML(html) {
+        if (!/[<&]/.test(html)) return html.replace(/\s+/g, ' ');
+
+        // A template element is inert, so images and scripts in the HTML do not load or run
+        if (!this.textParser) {
+            this.textParser = document.createElement('template');
+        }
+        this.textParser.innerHTML = html;
+        return this.textParser.content.textContent.replace(/\s+/g, ' ').trim();
     }
 
     setupColumnWidth() {

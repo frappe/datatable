@@ -207,27 +207,9 @@ export default class ColumnManager {
             const $cell = $handle.parentNode.parentNode;
             const { colIndex } = $.data($cell);
 
-            let longestCell = this.bodyRenderer.visibleRows
-                .map(d => d[colIndex])
-                .reduce((acc, curr) => acc.content.length > curr.content.length ? acc : curr);
+            const width = this.style.getColumnContentWidth(colIndex);
+            if (!width) return;
 
-            let $longestCellHTML = this.cellmanager.getCellHTML(longestCell);
-            let $div = document.createElement('div');
-            $div.innerHTML = $longestCellHTML;
-            let cellText = $div.querySelector('.dt-cell__content').textContent;
-
-            let {
-                borderLeftWidth,
-                borderRightWidth,
-                paddingLeft,
-                paddingRight
-            } = $.getStyle(this.bodyScrollable.querySelector('.dt-cell__content'));
-
-            let padding = [borderLeftWidth, borderRightWidth, paddingLeft, paddingRight]
-                .map(parseFloat)
-                .reduce((sum, val) => sum + val);
-
-            let width = $.measureTextWidth(cellText) + padding;
             this.datamanager.updateColumn(colIndex, { width });
             this.setColumnHeaderWidth(colIndex);
             this.setColumnWidth(colIndex);
