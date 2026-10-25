@@ -347,7 +347,10 @@ export default class CellManager {
         if (!cells) return false;
 
         this.clearSelection();
-        this._selectedCells = cells.map(index => this.getCell$(...index));
+        // cells of collapsed or virtualized rows are not in the DOM
+        this._selectedCells = cells
+            .map(index => this.getCell$(...index))
+            .filter(Boolean);
         requestAnimationFrame(() => {
             this._selectedCells.map($cell => $cell.classList.add('dt-cell--highlight'));
         });
