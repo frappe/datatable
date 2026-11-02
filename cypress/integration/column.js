@@ -83,6 +83,48 @@ describe('Column', function () {
         });
     });
 
+    it('preserves user-resized widths when refreshed', function () {
+        cy.window().then(win => {
+            expect(win.datatable.getResizedColumnWidths().size).to.equal(0);
+        });
+
+        cy.get('.dt-cell--header-4 .dt-cell__resize-handle')
+            .trigger('mousedown')
+            .trigger('mousemove', { pageX: 700, pageY: 20, which: 1 })
+            .trigger('mouseup');
+
+        cy.window().then(win => {
+            const table = win.datatable;
+            const column = table.getColumn(4);
+            const width = column.width;
+            expect(table.getResizedColumnWidths().get(column.id)).to.equal(width);
+
+            table.refresh(table.datamanager.data, table.options.columns);
+            expect(table.getColumn(4).width).to.equal(width);
+            expect(table.getResizedColumnWidths().size).to.equal(1);
+        });
+    });
+
+    it('preserves user-resized widths in ratio layout', function () {
+        cy.window().then(win => {
+            const table = win.datatable;
+            table.options.layout = 'ratio';
+            table.refresh(table.datamanager.data, table.options.columns);
+        });
+
+        cy.get('.dt-cell--header-4 .dt-cell__resize-handle')
+            .trigger('mousedown')
+            .trigger('mousemove', { pageX: 700, pageY: 20, which: 1 })
+            .trigger('mouseup');
+
+        cy.window().then(win => {
+            const table = win.datatable;
+            const width = table.getColumn(4).width;
+            table.refresh(table.datamanager.data, table.options.columns);
+            expect(table.getColumn(4).width).to.equal(width);
+        });
+    });
+
     it('resizes body cells while the column is being dragged', function () {
         cy.get('.dt-cell--header-4 .dt-cell__resize-handle')
             .trigger('mousedown')
@@ -102,6 +144,14 @@ describe('Column', function () {
             .and('match', /9\dpx/);
         cy.getCell(4, 1).should('have.css', 'width')
             .and('match', /9\dpx/);
+        cy.window().then(win => {
+            const table = win.datatable;
+            const column = table.getColumn(4);
+            const width = column.width;
+            expect(table.getResizedColumnWidths().get(column.id)).to.equal(width);
+            table.refresh(table.datamanager.data, table.options.columns);
+            expect(table.getColumn(4).width).to.equal(width);
+        });
     });
 
     it('pins a column from the dropdown menu', function () {

@@ -28,6 +28,7 @@ class DataTable {
             wrapper = document.querySelector(wrapper);
         }
         this.wrapper = wrapper;
+        this.resizedColumnWidths = new Map();
         if (!(this.wrapper instanceof HTMLElement)) {
             throw new Error('Invalid argument given for `wrapper`');
         }
@@ -141,6 +142,15 @@ class DataTable {
         this.datamanager.init(data, columns);
         this.render();
         this.setDimensions();
+        if (this.resizedColumnWidths.size) {
+            for (const column of this.datamanager.getColumns()) {
+                if (this.resizedColumnWidths.has(column.id)) {
+                    column.width = this.resizedColumnWidths.get(column.id);
+                }
+            }
+            this.style.refreshColumnWidth();
+            this.style.setBodyStyle();
+        }
     }
 
     destroy() {
@@ -185,6 +195,10 @@ class DataTable {
 
     getColumn(colIndex) {
         return this.datamanager.getColumn(colIndex);
+    }
+
+    getResizedColumnWidths() {
+        return new Map(this.resizedColumnWidths);
     }
 
     getColumns() {
