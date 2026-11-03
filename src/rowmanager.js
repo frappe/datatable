@@ -360,7 +360,7 @@ export default class RowManager {
         let title = `title="Filter based on ${props.name || 'Index'}"`;
         const dataAttr = makeDataAttributeString(props);
         return `<input class="dt-filter dt-input" type="text" ${dataAttr} tabindex="1"
-            ${props.colIndex === 0 ? 'disabled' : title} />`;
+            ${props.colIndex < this.datamanager.getStandardColumnCount() ? 'disabled' : title} />`;
     }
 
     selector(rowIndex) {
