@@ -105,6 +105,96 @@ describe('Tree sorting', function () {
         expectSerialNumbers(8);
     });
 
+    it('keeps the total row and blank rows before it at the bottom', function () {
+        createTable(data.concat([{ value: '' }, { value: 99, indent: 0 }]));
+        sortTable('Sort Ascending');
+        expectRowOrder([3, 2, 4, 5, 6, 7, 1, 8, '', 99]);
+        sortTable('Sort Descending');
+        expectRowOrder([7, 8, 1, 3, 4, 6, 5, 2, '', 99]);
+        sortTable('Reset sorting');
+        expectRowOrder([7, 1, 8, 3, 4, 5, 6, 2, '', 99]);
+    });
+
+    it('keeps the total row at the bottom when all rows are top-level', function () {
+        createTable([
+            { value: 2, indent: 0 },
+            { value: 1, indent: 0 },
+            { value: 3, indent: 0 },
+            { value: '' },
+            { value: 99, indent: 0 }
+        ]);
+        sortTable('Sort Ascending');
+        expectRowOrder([1, 2, 3, '', 99]);
+        sortTable('Sort Descending');
+        expectRowOrder([3, 2, 1, '', 99]);
+    });
+
+    it('keeps a total directly after its tree rows at the bottom', function () {
+        createTable([
+            { value: 10, indent: 0 },
+            { value: 1, indent: 1 },
+            { value: 20, indent: 0 },
+            { value: 2, indent: 1 },
+            { value: 99, indent: 0 }
+        ]);
+        sortTable('Sort Ascending');
+        expectRowOrder([10, 1, 20, 2, 99]);
+        sortTable('Sort Descending');
+        expectRowOrder([20, 2, 10, 1, 99]);
+    });
+
+    it('keeps each section total under its section', function () {
+        // Like a Balance Sheet: sections end with their total and a blank row, then a final total.
+        createTable([
+            { value: 5, indent: 0 },
+            { value: 6, indent: 1 },
+            { value: 7, indent: 1 },
+            { value: 50, indent: 0 },
+            { value: '' },
+            { value: 1, indent: 0 },
+            { value: 3, indent: 1 },
+            { value: 2, indent: 1 },
+            { value: 40, indent: 0 },
+            { value: '' },
+            { value: 8, indent: 0 },
+            { value: 4, indent: 0 },
+            { value: 90, indent: 0 }
+        ]);
+        sortTable('Sort Ascending');
+        expectRowOrder([5, 6, 7, 50, '', 1, 2, 3, 40, '', 4, 8, 90]);
+        sortTable('Sort Descending');
+        expectRowOrder([5, 7, 6, 50, '', 1, 3, 2, 40, '', 8, 4, 90]);
+    });
+
+    it('keeps the last total in place when a blank row follows it', function () {
+        createTable([
+            { value: 5, indent: 0 },
+            { value: 6, indent: 1 },
+            { value: 50, indent: 0 },
+            { value: '' },
+            { value: 1, indent: 0 },
+            { value: 2, indent: 1 },
+            { value: 40, indent: 0 },
+            { value: '' }
+        ]);
+        sortTable('Sort Descending');
+        expectRowOrder([5, 6, 50, '', 1, 2, 40, '']);
+        sortTable('Sort Ascending');
+        expectRowOrder([5, 6, 50, '', 1, 2, 40, '']);
+    });
+
+    it('sorts a flat list without a total completely', function () {
+        createTable([
+            { value: 2, indent: 0 },
+            { value: 3, indent: 0 },
+            { value: 1, indent: 0 }
+        ]);
+        sortTable('Sort Ascending');
+        expectRowOrder([1, 2, 3]);
+        sortTable('Sort Descending');
+        expectRowOrder([3, 2, 1]);
+    });
+
     it('sorts an empty tree without errors', function () {
         createTable([]);
         cy.window().then(win => win.treeTable.datamanager.sortRows(1, 'asc'));
