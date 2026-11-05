@@ -346,17 +346,47 @@ export default class DataManager {
             ancestors.push(node);
         });
 
+        const bySortPosition = (a, b) => sortPositions.get(a.rowIndex) - sortPositions.get(b.rowIndex);
         const rowOrder = [];
-        function appendSiblings(siblings) {
-            siblings.sort((a, b) => sortPositions.get(a.rowIndex) - sortPositions.get(b.rowIndex));
-            for (const node of siblings) {
-                rowOrder.push(node.rowIndex);
-                appendSiblings(node.children);
+        const appendNode = (node) => {
+            rowOrder.push(node.rowIndex);
+            node.children.sort(bySortPosition).forEach(appendNode);
+        };
+
+        this._sortTopLevelRows(root.children, bySortPosition).forEach(appendNode);
+        this.rowViewOrder = rowOrder;
+    }
+
+    _sortTopLevelRows(nodes, compare) {
+        const sections = [[]];
+        const separators = [];
+        for (const node of nodes) {
+            if (node.children.length === 0 && this._isBlankRow(node.rowIndex)) {
+                separators.push(node);
+                sections.push([]);
+            } else {
+                sections[sections.length - 1].push(node);
             }
         }
 
-        appendSiblings(root.children);
-        this.rowViewOrder = rowOrder;
+        let ordered = [];
+        sections.forEach((section, i) => {
+            const last = section[section.length - 1];
+            const hasTotal = section.length > 1 && last.children.length === 0 &&
+                (i > 0 || section.some(node => node.children.length > 0));
+            const rows = hasTotal ? section.slice(0, -1) : section;
+
+            ordered = ordered.concat(rows.sort(compare));
+            if (hasTotal) ordered.push(last);
+            if (separators[i]) ordered.push(separators[i]);
+        });
+        return ordered;
+    }
+
+    _isBlankRow(rowIndex) {
+        return this.rows[rowIndex]
+            .filter(cell => !['_rowIndex', '_checkbox'].includes(cell.column && cell.column.id))
+            .every(cell => cell.content == null || cell.content === '');
     }
 
     reverseArray(array) {
