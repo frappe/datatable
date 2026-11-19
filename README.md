@@ -11,7 +11,7 @@
 ![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/frappe-datatable.svg)
 
 
-![datatable-demo-2](https://user-images.githubusercontent.com/9355208/40740030-5412aa40-6465-11e8-8542-b0247ab1daac.gif)
+https://github.com/user-attachments/assets/ccc1183b-19bd-4e64-aa0f-4eef84f0be49
 
 </div>
 
