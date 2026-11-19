@@ -1,0 +1,89 @@
+import { test, expect, useSharedPage, getCell, clickCell } from '../support';
+
+test.describe('Cell', () => {
+    const shared = useSharedPage();
+
+    test('focuses cell on click', async () => {
+        const cell = await clickCell(shared.page, 2, 0);
+        await expect(cell).toHaveClass(/dt-cell--focus/);
+    });
+
+    test('not focuses cell which are not focusable', async () => {
+        const cell = await clickCell(shared.page, 1, 0);
+        await expect(cell).not.toHaveClass(/dt-cell--focus/);
+    });
+
+    test('edit cell on enter press', async () => {
+        const { page } = shared;
+        const cell = await clickCell(page, 4, 0);
+        await page.keyboard.press('Enter');
+        await expect(cell).toHaveClass(/dt-cell--editing/);
+        await page.keyboard.press('Enter');
+        await expect(cell).not.toHaveClass(/dt-cell--editing/);
+    });
+
+    test('edit cell on double click', async () => {
+        const { page } = shared;
+        const target = getCell(page, 4, 0);
+        await target.dblclick({ force: true });
+        await expect(target).toHaveClass(/dt-cell--editing/);
+
+        await clickCell(page, 3, 0);
+
+        await expect(target).not.toHaveClass(/dt-cell--editing/);
+    });
+
+    test('edit cell', async () => {
+        const { page } = shared;
+        const cell = getCell(page, 4, 1);
+        await cell.dblclick({ force: true });
+        await cell.locator('input').click();
+        await page.keyboard.press('ControlOrMeta+a');
+        await page.keyboard.press('Delete');
+        await page.keyboard.type('Test');
+        await page.keyboard.press('Enter');
+        await expect(cell).toContainText('Test');
+    });
+
+    test('if editing is false: editing should not activate', async () => {
+        const cell = getCell(shared.page, 3, 0);
+        await cell.dblclick({ force: true });
+        await expect(cell).not.toHaveClass(/dt-cell--editing/);
+    });
+
+    test('navigation using arrow keys', async () => {
+        const { page } = shared;
+        await clickCell(page, 2, 0);
+        await page.keyboard.press('ArrowRight');
+
+        const focused = page.locator('.dt-cell--focus');
+        await expect(focused).toHaveClass(/dt-cell--3-0/);
+        await focused.click({ force: true });
+        await page.keyboard.press('ArrowDown');
+
+        await expect(page.locator('.dt-cell--focus')).toHaveClass(/dt-cell--3-1/);
+    });
+
+    test('navigation using ctrl + arrow keys', async () => {
+        const { page } = shared;
+        await clickCell(page, 2, 0);
+        await page.keyboard.press('Control+ArrowRight');
+        await expect(page.locator('.dt-cell--focus')).toHaveClass(/dt-cell--11-0/);
+    });
+
+    test('cell selection using shift + arrow keys', async () => {
+        const { page } = shared;
+        await clickCell(page, 2, 1);
+        await page.keyboard.down('Shift');
+        await page.keyboard.press('ArrowRight');
+        await page.keyboard.press('ArrowRight');
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.up('Shift');
+
+        await expect(page.locator('.dt-cell--highlight')).toHaveCount(6 + 2);
+
+        await clickCell(page, 2, 0);
+    });
+
+    test.fixme('mouse selection', async () => {});
+});

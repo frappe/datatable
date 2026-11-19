@@ -35,9 +35,9 @@ npm-debug.log.*
 
 .DS_Store
 
-# cypress
-cypress/screenshots
-cypress/videos
+# playwright
+test-results/
+playwright-report/
 
 # dist
 dist
