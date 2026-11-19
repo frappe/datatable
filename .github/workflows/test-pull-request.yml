@@ -10,12 +10,20 @@ jobs:
         with:
           node-version: 24
           cache: 'yarn'
-      - name: Lint, build and test
-        uses: cypress-io/github-action@v6
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Lint and build
+        run: yarn lint-and-build
+      - name: Install Playwright Chromium
+        run: yarn playwright install --with-deps chromium
+      - name: Run tests
+        id: ui-tests
+        run: yarn test
+      - name: Upload Playwright report
+        if: always() && steps.ui-tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
         with:
-          build: yarn lint-and-build
-          start: yarn cy:server
-          record: true
-        env:
-          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
