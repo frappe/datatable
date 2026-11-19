@@ -179,6 +179,7 @@ export default class DataManager {
                 }
 
                 meta.indent = d.indent || 0;
+                if (d.is_total_row) meta.isTotalRow = 1;
             }
 
             return this.prepareRow(row, meta);
@@ -346,17 +347,39 @@ export default class DataManager {
             ancestors.push(node);
         });
 
+        const bySortPosition = (a, b) => sortPositions.get(a.rowIndex) - sortPositions.get(b.rowIndex);
         const rowOrder = [];
-        function appendSiblings(siblings) {
-            siblings.sort((a, b) => sortPositions.get(a.rowIndex) - sortPositions.get(b.rowIndex));
+        const appendNode = (node) => {
+            rowOrder.push(node.rowIndex);
+            appendSiblings(node.children);
+        };
+        const appendSiblings = (siblings) => {
+            let movable = [];
+            const flush = () => {
+                movable.sort(bySortPosition).forEach(appendNode);
+                movable = [];
+            };
             for (const node of siblings) {
-                rowOrder.push(node.rowIndex);
-                appendSiblings(node.children);
+                if (this._keepsPlaceOnSort(node)) {
+                    flush();
+                    appendNode(node);
+                } else {
+                    movable.push(node);
+                }
             }
-        }
+            flush();
+        };
 
         appendSiblings(root.children);
         this.rowViewOrder = rowOrder;
+    }
+
+    _keepsPlaceOnSort(node) {
+        const row = this.rows[node.rowIndex];
+        if (row.meta.isTotalRow) return true;
+        return node.children.length === 0 && row
+            .filter(cell => !['_rowIndex', '_checkbox'].includes(cell.column && cell.column.id))
+            .every(cell => cell.content == null || cell.content === '');
     }
 
     reverseArray(array) {
