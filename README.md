@@ -28,7 +28,13 @@ I was trying to remove all legacy UI components from the [frappe](https://github
 
 - **Cell**: Enable editing within individual cells and features like custom formatters, inline editing, and mouse selection. Users can easily copy cell content, navigate through cells using the keyboard, and take advantage of a custom cell editor for advanced functionality.
 - **Column**: Columns are highly flexible, allowing users to reorder, resize, and sort them with ease. Additional features include hiding/removing columns and adding custom actions.
+  - Freeze a column from its header menu so it stays in view while scrolling sideways, or set `sticky: true` on the column.
+  - Column widths fit the widest value in all rows, and widths a user resized are kept when the data refreshes.
+  - Set `sortValue` on a column to sort on a value other than the cell content.
 - **Row**: Rows support advanced interactions, including row selection, tree-structured organization, and inline filters for precise control. They handle large datasets efficiently with dynamic row heights.
+  - In tree view, sorting keeps child rows under their parent.
+  - Total rows (`is_total_row`) and blank rows keep their place when the table is sorted.
+- **Options**: `serialNoColumnLabel` sets the header of the serial number column. `saveSorting` remembers the last sort in local storage, under `sortingKey` when it is set.
 
 
 ## Usage
@@ -57,6 +63,7 @@ const datatable = new DataTable('#datatable', {
 * `yarn start` - Start dev server
 * Open `index.html` located in the root folder, and start development.
 * Run `yarn lint` before committing changes
+* `yarn test` - Run the Playwright tests against `index.html` (run `yarn playwright install chromium` once first)
 * This project uses [commitizen](https://github.com/commitizen/cz-cli) for conventional commit messages, use `yarn commit` command instead of `git commit`
 
 ## Links
