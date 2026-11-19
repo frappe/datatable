@@ -302,29 +302,19 @@ export default class RowManager {
     }
 
     scrollToRow(rowIndex) {
-        rowIndex = +rowIndex;
-        this._lastScrollTo = this._lastScrollTo || 0;
         const $row = this.getRow$(rowIndex);
-        if ($.inViewport($row, this.bodyScrollable)) return;
+        if (!$row) return;
 
-        const {
-            height
-        } = $row.getBoundingClientRect();
-        const {
-            top,
-            bottom
-        } = this.bodyScrollable.getBoundingClientRect();
-        const rowsInView = Math.floor((bottom - top) / height);
+        const { top, bottom } = $row.getBoundingClientRect();
+        const scrollable = this.bodyScrollable;
+        const viewTop = scrollable.getBoundingClientRect().top + scrollable.clientTop;
+        const viewBottom = viewTop + scrollable.clientHeight;
 
-        let offset = 0;
-        if (rowIndex > this._lastScrollTo) {
-            offset = height * ((rowIndex + 1) - rowsInView);
-        } else {
-            offset = height * ((rowIndex + 1) - 1);
+        if (top < viewTop) {
+            $.scrollTop(scrollable, scrollable.scrollTop - (viewTop - top));
+        } else if (bottom > viewBottom) {
+            $.scrollTop(scrollable, scrollable.scrollTop + (bottom - viewBottom));
         }
-
-        this._lastScrollTo = rowIndex;
-        $.scrollTop(this.bodyScrollable, offset);
     }
 
     getRowHTML(row, props) {

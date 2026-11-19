@@ -87,3 +87,24 @@ test.describe('Cell', () => {
 
     test.fixme('mouse selection', async () => {});
 });
+
+test.describe('Cell focus in a sorted table', () => {
+    test('keeps the sorted row in place when clicking a partly hidden cell', async ({ page }) => {
+        await page.evaluate(() => window.datatable.sortColumn(7, 'desc'));
+        const firstRow = page.locator('.dt-scrollable .dt-row').first();
+        await expect(firstRow).toHaveClass(/dt-row-24/);
+
+        await page.evaluate(() => {
+            const scrollable = document.querySelector('.dt-scrollable');
+            const cell = document.querySelector('.dt-cell--9-24');
+            scrollable.scrollLeft = cell.offsetLeft + cell.offsetWidth - scrollable.clientWidth - 20;
+            scrollable.dispatchEvent(new Event('scroll'));
+        });
+        const box = await getCell(page, 9, 24).boundingBox();
+        await page.mouse.click(box.x + 10, box.y + box.height / 2);
+
+        await expect(getCell(page, 9, 24)).toHaveClass(/dt-cell--focus/);
+        await expect(firstRow).toHaveClass(/dt-row-24/);
+        expect(await page.locator('.dt-scrollable').evaluate(el => el.scrollTop)).toBe(0);
+    });
+});
