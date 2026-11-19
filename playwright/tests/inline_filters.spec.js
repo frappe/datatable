@@ -80,11 +80,12 @@ test.describe('Inline Filters', () => {
         await page.waitForFunction(() => window.datatable);
         await clickDropdown(page, 7);
         await clickDropdownItem(page, 'Sort Descending');
+        const firstRow = page.locator('.dt-scrollable .dt-row').first();
+        await expect(firstRow).toHaveClass(/dt-row-24/);
         await getCell(page, 5, 24).click();
         await page.keyboard.press('Control+f');
         await filterInput(5).pressSequentially('>3000', { delay: 100 });
 
-        const firstRow = page.locator('.dt-scrollable .dt-row').first();
         await expect(firstRow).toContainText('Angelica');
         await expect(firstRow).toHaveClass(/dt-row-24/);
         await clearInput(filterInput(5));
