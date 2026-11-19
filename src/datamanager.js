@@ -271,8 +271,10 @@ export default class DataManager {
     }
 
     _sortRows(colIndex, sortOrder) {
+        const keepRowsInPlace = !this.options.treeView &&
+            this.rows.some((row, rowIndex) => this._keepsPlaceOnSort({ rowIndex, children: [] }));
 
-        if (!this.options.treeView && this.currentSort.colIndex === colIndex) {
+        if (!this.options.treeView && !keepRowsInPlace && this.currentSort.colIndex === colIndex) {
             // reverse the array if only sortOrder changed
             if (
                 (this.currentSort.sortOrder === 'asc' && sortOrder === 'desc') ||
@@ -311,8 +313,8 @@ export default class DataManager {
             return 0;
         });
 
-        if (this.options.treeView) {
-            this._sortTreeRows();
+        if (this.options.treeView || keepRowsInPlace) {
+            this._sortTreeRows(this.options.treeView);
         }
 
         if (this.hasColumnById('_rowIndex')) {
@@ -326,7 +328,7 @@ export default class DataManager {
         }
     }
 
-    _sortTreeRows() {
+    _sortTreeRows(asTree = true) {
         // Use the column sort order to rank siblings without separating their children.
         const sortPositions = new Map();
         this.rowViewOrder.forEach((rowIndex, position) => {
@@ -337,7 +339,7 @@ export default class DataManager {
         const ancestors = [root];
 
         this.rows.forEach((row, rowIndex) => {
-            const indent = Number(row.meta.indent) || 0;
+            const indent = asTree ? Number(row.meta.indent) || 0 : 0;
             while (ancestors[ancestors.length - 1].indent >= indent) {
                 ancestors.pop();
             }
