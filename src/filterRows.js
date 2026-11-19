@@ -18,6 +18,9 @@ export default function filterRows(rows, filters, data) {
         const cells = filteredRows.map(row => row[colIndex]);
 
         let filter = guessFilter(keyword);
+        if (filter.type === 'contains' && getFilterMode(data, cells[0]) === 'fuzzy') {
+            filter.type = 'fuzzy';
+        }
         let filterMethod = getFilterMethod(rows, data, filter);
 
         if (filterMethod) {
@@ -29,6 +32,21 @@ export default function filterRows(rows, filters, data) {
 
     return filteredRowIndices;
 };
+
+function getFilterMode(data, cell) {
+    const columnMode = cell && cell.column && cell.column.filterMode;
+    return columnMode || (data && data.options && data.options.filterMode);
+}
+
+function isFuzzyMatch(word, text) {
+    let position = 0;
+    for (const char of word) {
+        position = text.indexOf(char, position);
+        if (position === -1) return false;
+        position += 1;
+    }
+    return true;
+}
 
 function getFilterMethod(rows, allData, filter) {
     const getFormattedValue = cell => {
@@ -72,6 +90,16 @@ function getFilterMethod(rows, allData, filter) {
                     return !needle ||
                         (cell.content || '').toLowerCase().includes(needle) ||
                         stringCompareValue(cell).includes(needle);
+                })
+                .map(cell => cell.rowIndex);
+        },
+
+        fuzzy(keyword, cells) {
+            const words = keyword.split(/\s+/).filter(Boolean);
+            return cells
+                .filter(cell => {
+                    const texts = [String(cell.content || '').toLowerCase(), stringCompareValue(cell)];
+                    return words.every(word => texts.some(text => isFuzzyMatch(word, text)));
                 })
                 .map(cell => cell.rowIndex);
         },
