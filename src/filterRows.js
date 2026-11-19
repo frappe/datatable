@@ -42,10 +42,30 @@ function isFuzzyMatch(word, text) {
     let position = 0;
     for (const char of word) {
         position = text.indexOf(char, position);
-        if (position === -1) return false;
+        if (position === -1) return isTypoMatch(word, text);
         position += 1;
     }
     return true;
+}
+
+function isTypoMatch(word, text) {
+    if (word.length < 4) return false;
+    return text.split(/[\s.,;:!?()[\]{}<>"'`/\\|@#&*+=_-]+/).some(token =>
+        [word.length - 1, word.length, word.length + 1]
+            .some(length => length <= token.length && isOneEditAway(word, token.slice(0, length)))
+    );
+}
+
+function isOneEditAway(a, b) {
+    if (Math.abs(a.length - b.length) > 1) return false;
+    let i = 0;
+    while (i < a.length && i < b.length && a[i] === b[i]) i++;
+    if (a.length === b.length) {
+        return a.slice(i + 1) === b.slice(i + 1) ||
+            (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2));
+    }
+    const [longer, shorter] = a.length > b.length ? [a, b] : [b, a];
+    return longer.slice(i + 1) === shorter.slice(i);
 }
 
 function getFilterMethod(rows, allData, filter) {
