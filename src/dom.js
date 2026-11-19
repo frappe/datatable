@@ -222,7 +222,8 @@ $.hasHorizontalOverflow = function (element) {
     return element.scrollWidth > element.offsetWidth + 10;
 };
 
-$.measureTextWidth = function (text) {
+// Pass a container to measure the text with the container's font
+$.measureTextWidth = function (text, container = document.body) {
     const div = document.createElement('div');
     div.style.position = 'absolute';
     div.style.visibility = 'hidden';
@@ -230,6 +231,31 @@ $.measureTextWidth = function (text) {
     div.style.width = 'auto';
     div.style.whiteSpace = 'nowrap';
     div.innerText = text;
-    document.body.appendChild(div);
-    return div.clientWidth + 1;
+    container.appendChild(div);
+    const width = div.clientWidth + 1;
+    div.remove();
+    return width;
+};
+
+// Measure many HTML values with one layout pass
+$.measureHTMLWidths = function (htmls, container = document.body) {
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'absolute';
+    wrapper.style.visibility = 'hidden';
+    wrapper.style.whiteSpace = 'nowrap';
+
+    const items = htmls.map(html => {
+        const line = document.createElement('div');
+        const item = document.createElement('span');
+        item.style.display = 'inline-block';
+        item.innerHTML = html;
+        line.appendChild(item);
+        wrapper.appendChild(line);
+        return item;
+    });
+
+    container.appendChild(wrapper);
+    const widths = items.map(item => Math.ceil(item.getBoundingClientRect().width) + 1);
+    wrapper.remove();
+    return widths;
 };
