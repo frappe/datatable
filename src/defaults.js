@@ -67,6 +67,7 @@ export default function getDefaultOptions(instance) {
             // ColumnManager: CustomColumnManager
         },
         filterRows: filterRows,
+        filterMode: 'contains',
         freezeMessage: '',
         getEditor: null,
         serialNoColumn: true,
