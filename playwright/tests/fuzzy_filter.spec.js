@@ -62,6 +62,20 @@ test.describe('Fuzzy filter', () => {
         await expectNames(page, []);
     });
 
+    test('allows one typo in words of four or more letters', async ({ page }) => {
+        await createTable(page, { filterMode: 'fuzzy' });
+        await filterBy(page, 2, 'accauntant');
+        await expectNames(page, ['Casey Zhou']);
+        await filterBy(page, 2, 'manageer');
+        await expectNames(page, ['Jordan Moreau']);
+        await filterBy(page, 2, 'mangaer');
+        await expectNames(page, ['Jordan Moreau']);
+        await filterBy(page, 2, 'axxountant');
+        await expectNames(page, []);
+        await filterBy(page, 2, 'hx');
+        await expectNames(page, []);
+    });
+
     test('matches the formatted value', async ({ page }) => {
         await createTable(page, { filterMode: 'fuzzy' });
         await filterBy(page, 2, 'mgrtm');
