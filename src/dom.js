@@ -230,6 +230,7 @@ $.measureTextWidth = function (text, container = document.body) {
     div.style.height = 'auto';
     div.style.width = 'auto';
     div.style.whiteSpace = 'nowrap';
+    div.style.top = '-9999px';
     div.innerText = text;
     container.appendChild(div);
     const width = div.clientWidth + 1;
