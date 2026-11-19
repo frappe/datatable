@@ -1,21 +1,21 @@
 :root {
-    --dt-border-color: #d1d8dd;
-    --dt-primary-color: rgb(82, 146, 247);
-    --dt-light-bg: #f5f7fa;
+    --dt-border-color: #ededed;
+    --dt-primary-color: #0c8ef8;
+    --dt-light-bg: #f3f3f3;
     --dt-light-red: #FD8B8B;
     --dt-light-yellow: #fffce7;
     --dt-orange: rgb(255, 160, 10);
-    --dt-text-color: #000000;
+    --dt-text-color: #383838;
     --dt-text-light: #dfe2e5;
     --dt-spacer-1: 0.25rem;
     --dt-spacer-2: 0.5rem;
     --dt-spacer-3: 1rem;
-    --dt-border-radius: 3px;
+    --dt-border-radius: 8px;
     --dt-cell-bg: #fff;
     --dt-focus-border-width: 2px;
-    --dt-selection-highlight-color: var(--dt-light-yellow);
+    --dt-selection-highlight-color: #f1f8fe;
     --dt-toast-message-border: none;
-    --dt-header-cell-bg: var(--dt-cell-bg);
+    --dt-header-cell-bg: #f8f8f8;
     --dt-no-data-message-width: 90px;
     --dt-scroll-left: 0px;
 }
@@ -31,10 +31,13 @@
     overflow: hidden;
 }
 
+:where(.datatable) {
+    font-size: 13px;
+}
+
 .dt-scrollable {
     height: 40vw;
     overflow: auto;
-    border-top: 2px solid var(--dt-border-color);
 
     &--highlight-all {
         background-color: var(--dt-selection-highlight-color);
@@ -109,7 +112,7 @@
         display: none;
         padding: var(--dt-spacer-2);
         background-color: var(--dt-cell-bg);
-        border: var(--dt-focus-border-width) solid var(--dt-orange);
+        border: var(--dt-focus-border-width) solid var(--dt-primary-color);
         z-index: 1;
         height: 100%;
     }
@@ -155,7 +158,7 @@
 
     &--header &__content {
         padding-right: var(--dt-spacer-3);
-        font-weight: bold;
+        font-weight: 500;
     }
 
     &--header:hover .dt-dropdown__toggle {
@@ -240,7 +243,7 @@
         background-color: var(--dt-cell-bg);
         border-radius: var(--dt-border-radius);
         padding: var(--dt-spacer-2) 0;
-        box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
+        box-shadow: 0 0 1.5px rgba(0, 0, 0, 0.15), 0 0 6px 2px rgba(0, 0, 0, 0.04), 0 6px 12px -2px rgba(0, 0, 0, 0.08);
     }
 
     &__list-item {
@@ -297,6 +300,27 @@
     color: inherit;
     margin: 0;
     padding: 0;
+}
+
+.dt-row-filter {
+    .dt-cell__content {
+        padding: var(--dt-spacer-1);
+    }
+
+    .dt-filter {
+        height: 100%;
+        padding-left: var(--dt-spacer-2);
+        border-radius: var(--dt-border-radius);
+        background-color: var(--dt-light-bg);
+
+        &:focus {
+            box-shadow: 0 0 0 2px #e2e2e2;
+        }
+
+        &:disabled {
+            background-color: transparent;
+        }
+    }
 }
 
 .dt-freeze {

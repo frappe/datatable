@@ -138,8 +138,11 @@ test.describe('Column', () => {
 
     test('resize column using double click', async ({ page }) => {
         await page.locator('.dt-cell--header-4 .dt-cell__resize-handle').dispatchEvent('dblclick');
-        await expect(getColumnCell(page, 4)).toHaveCSS('width', /9\dpx/);
-        await expect(getCell(page, 4, 1)).toHaveCSS('width', /9\dpx/);
+        const width = await cssWidth(getColumnCell(page, 4));
+        await expect(getCell(page, 4, 1)).toHaveCSS('width', width);
+        const truncated = await page.locator('.dt-scrollable .dt-cell--col-4 .dt-cell__content')
+            .evaluateAll(cells => cells.filter(cell => cell.scrollWidth > cell.clientWidth).length);
+        expect(truncated).toBe(0);
 
         const result = await page.evaluate(() => {
             const table = window.datatable;
