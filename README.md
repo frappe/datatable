@@ -35,7 +35,7 @@ I was trying to remove all legacy UI components from the [frappe](https://github
   - In tree view, sorting keeps child rows under their parent.
   - Total rows (`is_total_row`) and blank rows keep their place when the table is sorted.
 - **Options**: `serialNoColumnLabel` sets the header of the serial number column. `saveSorting` remembers the last sort in local storage, under `sortingKey` when it is set.
-- **Fuzzy filter**: set `filterMode: 'fuzzy'` on the table, or on a single column, so an inline filter matches letters typed in order with gaps allowed (`jdmr` finds "Jordan Moreau"). Each word matches on its own, in any order. Number filters such as `>100` work as before.
+- **Fuzzy filter**: set `filterMode: 'fuzzy'` on the table, or on a single column, so an inline filter matches letters typed in order with gaps allowed (`jdmr` finds "Jordan Moreau"). Each word matches on its own, in any order, and a word of four or more letters may have one typo (`saftware` finds "Software"). Number filters such as `>100` work as before.
 
 
 ## Usage
