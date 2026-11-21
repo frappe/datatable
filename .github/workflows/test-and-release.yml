@@ -4,6 +4,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   issues: write
