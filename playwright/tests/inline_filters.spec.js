@@ -111,3 +111,21 @@ test('a filter with no match stays empty when a later column is filtered', async
     await page.evaluate(() => window.filterTable.columnmanager.applyFilter({ 1: 'zzz', 2: 'Paris' }));
     await expect(rows).toHaveCount(0);
 });
+
+test('= matches the whole text of a cell', async ({ page }) => {
+    await page.evaluate(() => {
+        window.accountTable = new window.DataTable('#datatable2', {
+            columns: ['Account'],
+            data: [['Sales'], ['VAT on Sales'], ['Purchase']],
+            inlineFilters: true
+        });
+    });
+    const rows = page.locator('#datatable2 .dt-scrollable .dt-row');
+    await expect(rows).toHaveCount(3);
+    await page.evaluate(() => window.accountTable.columnmanager.applyFilter({ 1: 'sales' }));
+    await expect(rows).toHaveCount(2);
+    await page.evaluate(() => window.accountTable.columnmanager.applyFilter({ 1: '=sales' }));
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first()).toContainText('Sales');
+    await expect(rows.first()).not.toContainText('VAT');
+});
