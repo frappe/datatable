@@ -129,3 +129,17 @@ test('= matches the whole text of a cell', async ({ page }) => {
     await expect(rows.first()).toContainText('Sales');
     await expect(rows.first()).not.toContainText('VAT');
 });
+
+test('= also matches the raw value of a formatted cell', async ({ page }) => {
+    await page.evaluate(() => {
+        window.itemTable = new window.DataTable('#datatable2', {
+            columns: [{ name: 'Item', format: value => `${value}: Smartphone` }],
+            data: [['SKU004'], ['SKU0045']],
+            inlineFilters: true
+        });
+    });
+    const rows = page.locator('#datatable2 .dt-scrollable .dt-row');
+    await page.evaluate(() => window.itemTable.columnmanager.applyFilter({ 1: '=sku004' }));
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first()).toContainText('SKU004: Smartphone');
+});

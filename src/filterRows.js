@@ -142,7 +142,10 @@ function getFilterMethod(rows, allData, filter) {
 
         equalsText(keyword, cells) {
             return cells
-                .filter(cell => stringCompareValue(cell).trim() === keyword)
+                .filter(cell => {
+                    const content = cell.content == null ? '' : String(cell.content);
+                    return content.trim().toLowerCase() === keyword || stringCompareValue(cell).trim() === keyword;
+                })
                 .map(cell => cell.rowIndex);
         },
 
