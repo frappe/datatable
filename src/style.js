@@ -265,14 +265,48 @@ export default class Style {
     }
 
     // The unique values of a column, as the HTML and the text that the cells show
-    getColumnValues(colIndex) {
+    getColumnValues(colIndex, limit = 50) {
         const rows = this.bodyRenderer.visibleRows || [];
+        const cells = rows.map(row => row[colIndex]).filter(Boolean);
+        const contentOf = cell => (cell.content == null ? '' : String(cell.content));
+
+        const distinct = new Map();
+        const countByLength = [];
+        cells.forEach(cell => {
+            const content = contentOf(cell);
+            countByLength[content.length] = (countByLength[content.length] || 0) + 1;
+            if (distinct.size <= limit && !distinct.has(content)) {
+                distinct.set(content, cell);
+            }
+        });
+
+        let candidates = Array.from(distinct.values());
+        if (distinct.size > limit) {
+            let minLength = 0;
+            let count = 0;
+            for (let length = countByLength.length - 1; length >= 0; length--) {
+                count += countByLength[length] || 0;
+                if (count >= limit) {
+                    minLength = length;
+                    break;
+                }
+            }
+
+            const longest = new Map();
+            const atMinLength = new Map();
+            cells.forEach(cell => {
+                const content = contentOf(cell);
+                if (content.length > minLength) {
+                    if (!longest.has(content)) longest.set(content, cell);
+                } else if (content.length === minLength && atMinLength.size < limit && !atMinLength.has(content)) {
+                    atMinLength.set(content, cell);
+                }
+            });
+            candidates = [...longest.values(), ...atMinLength.values()].slice(0, limit);
+        }
+
         const values = new Map();
-
-        rows.forEach(row => {
-            const cell = row[colIndex];
-            if (!cell) return;
-
+        candidates.forEach(cell => {
             const html = this.getCellContentHTML(cell);
             if (html && !values.has(html)) {
                 values.set(html, { html, text: this.getTextFromHTML(html) });
