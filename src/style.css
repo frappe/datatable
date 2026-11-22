@@ -117,14 +117,15 @@
         overflow: hidden;
     }
 
-    &__content:has(> input[type="checkbox"]) {
+    &--checkbox &__content {
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
-    &__content > input[type="checkbox"] {
-        margin: 0;
+    &--checkbox &__content > input[type="checkbox"] {
+        flex-shrink: 0;
+        margin: 0 !important;
     }
 
     &__edit {
@@ -180,7 +181,7 @@
         font-weight: 500;
     }
 
-    &--header &__content:has(> input[type="checkbox"]) {
+    &--header&--checkbox &__content {
         padding-right: var(--dt-spacer-2);
     }
 

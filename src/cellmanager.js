@@ -850,7 +850,8 @@ export default class CellManager {
             isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : '',
             isSticky ? 'dt-cell--sticky' : '',
             isSticky && !isBodyCell ? 'dt-cell--sticky-top' : '',
-            isLastStickyColumn ? 'dt-cell--sticky-last' : ''
+            isLastStickyColumn ? 'dt-cell--sticky-last' : '',
+            column.id === '_checkbox' ? 'dt-cell--checkbox' : ''
         ].join(' ');
 
         return `
