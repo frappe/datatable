@@ -186,6 +186,10 @@ function getFilterMethod(rows, allData, filter) {
     return filterMethodMap[filter.type];
 }
 
+function isDate(value) {
+    return /^\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}$/.test(value);
+}
+
 function guessFilter(keyword = '') {
     if (keyword.length === 0) return {};
 
@@ -240,7 +244,7 @@ function guessFilter(keyword = '') {
         };
     }
 
-    if (keyword.split(':').length === 2 && keyword.split(':').every(v => isNumber(v.trim()))) {
+    if (keyword.split(':').length === 2 && keyword.split(':').every(v => isNumber(v.trim()) || isDate(v.trim()))) {
         compareString = keyword.split(':');
         return {
             type: 'range',
