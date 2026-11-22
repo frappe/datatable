@@ -455,7 +455,10 @@ export default class ColumnManager {
     }
 
     getFirstColumnIndex() {
-        return this.datamanager.getColumnIndexById('_rowIndex') + 1;
+        return Math.max(
+            this.datamanager.getColumnIndexById('_checkbox'),
+            this.datamanager.getColumnIndexById('_rowIndex')
+        ) + 1;
     }
 
     getHeaderCell$(colIndex) {

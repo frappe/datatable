@@ -902,7 +902,7 @@ export default class CellManager {
             const unit = 'px';
 
             // Add toggle and indent in the first column
-            const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
+            const firstColumnIndex = this.columnmanager.getFirstColumnIndex();
             if (firstColumnIndex === cell.colIndex) {
                 const padding = ((cell.indent || 0)) * leftPadding;
                 const toggleHTML = addToggle ?
