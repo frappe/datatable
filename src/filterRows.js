@@ -3,6 +3,7 @@ import CellManager from './cellmanager';
 
 export default function filterRows(rows, filters, data) {
     let filteredRowIndices = [];
+    let filteredRows = rows;
 
     if (Object.keys(filters).length === 0) {
         return rows.map(row => row.meta.rowIndex);
@@ -10,10 +11,6 @@ export default function filterRows(rows, filters, data) {
 
     for (let colIndex in filters) {
         const keyword = filters[colIndex];
-
-        const filteredRows = filteredRowIndices.length ?
-            filteredRowIndices.map(i => rows[i]) :
-            rows;
 
         const cells = filteredRows.map(row => row[colIndex]);
 
@@ -28,6 +25,7 @@ export default function filterRows(rows, filters, data) {
         } else {
             filteredRowIndices = cells.map(cell => cell.rowIndex);
         }
+        filteredRows = filteredRowIndices.map(i => rows[i]);
     }
 
     return filteredRowIndices;
