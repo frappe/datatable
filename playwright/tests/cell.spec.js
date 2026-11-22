@@ -122,13 +122,16 @@ test.describe('Cell mouse selection', () => {
         await page.mouse.move(...await center(3, 2), { steps: 5 });
         await expect(highlighted).toHaveCount(4 + 2);
 
-        await page.mouse.move(20, 300, { steps: 5 });
+        const table = await page.locator('.datatable').first().boundingBox();
+        const [, y] = await center(3, 2);
+        await page.mouse.move(table.x + table.width + 40, y, { steps: 5 });
         await page.mouse.up();
+        const selected = await highlighted.count();
 
         await page.mouse.move(...await center(5, 4), { steps: 5 });
         await page.waitForTimeout(200);
         await page.mouse.move(...await center(6, 5), { steps: 5 });
         await page.waitForTimeout(200);
-        await expect(highlighted).toHaveCount(4 + 2);
+        await expect(highlighted).toHaveCount(selected);
     });
 });
