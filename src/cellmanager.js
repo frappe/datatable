@@ -463,15 +463,14 @@ export default class CellManager {
             }
         }
 
-        this.$editingCell = $cell;
-        $cell.classList.add('dt-cell--editing');
-
         const $editCell = $('.dt-cell__edit', $cell);
         $editCell.innerHTML = '';
 
         const editor = this.getEditor(colIndex, rowIndex, cell.content, $editCell);
 
         if (editor) {
+            this.$editingCell = $cell;
+            $cell.classList.add('dt-cell--editing');
             this.currentCellEditor = editor;
             // initialize editing input with cell value
             editor.initValue(cell.content, rowIndex, col);
