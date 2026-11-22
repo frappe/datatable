@@ -58,6 +58,15 @@
     }
 }
 
+.dt-header {
+    position: relative;
+    z-index: 2;
+
+    .dt-row:last-child .dt-cell {
+        box-shadow: 0 1px 0 var(--dt-border-color);
+    }
+}
+
 .dt-row {
     display: flex;
 
@@ -106,6 +115,16 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
+    }
+
+    &__content:has(> input[type="checkbox"]) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &__content > input[type="checkbox"] {
+        margin: 0;
     }
 
     &__edit {
@@ -159,6 +178,10 @@
     &--header &__content {
         padding-right: var(--dt-spacer-3);
         font-weight: 500;
+    }
+
+    &--header &__content:has(> input[type="checkbox"]) {
+        padding-right: var(--dt-spacer-2);
     }
 
     &--header:hover .dt-dropdown__toggle {
@@ -335,6 +358,7 @@
     background-color: var(--dt-light-bg);
     opacity: 0.5;
     font-size: 2em;
+    z-index: 3;
 
     &__message {
         position: absolute;
