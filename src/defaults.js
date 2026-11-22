@@ -9,18 +9,21 @@ export default function getDefaultOptions(instance) {
         headerDropdown: [
             {
                 label: instance.translate('Sort Ascending'),
+                sortAction: 'asc',
                 action: function (column) {
                     this.sortColumn(column.colIndex, 'asc');
                 }
             },
             {
                 label: instance.translate('Sort Descending'),
+                sortAction: 'desc',
                 action: function (column) {
                     this.sortColumn(column.colIndex, 'desc');
                 }
             },
             {
                 label: instance.translate('Reset sorting'),
+                sortAction: 'none',
                 action: function (column) {
                     this.sortColumn(column.colIndex, 'none');
                 }

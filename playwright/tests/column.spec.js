@@ -68,6 +68,25 @@ test.describe('Column', () => {
         });
     });
 
+    test('hides sort items in the dropdown of a non sortable column', async ({ page }) => {
+        await page.evaluate(() => {
+            window.datatable2 = new window.DataTable('#datatable2', {
+                columns: [{ name: 'Name', id: 'name' }, { name: 'Status', id: 'status', sortable: false }],
+                data: [['x', 'c'], ['y', 'a'], ['z', 'b']]
+            });
+        });
+        const sortItems = page.locator('#datatable2 .dt-dropdown__list-item')
+            .filter({ hasText: /^\s*(Sort Ascending|Sort Descending|Reset sorting)\s*$/ });
+
+        await page.locator('#datatable2 .dt-cell--header-2 .dt-dropdown__toggle').click();
+        await expect(page.locator('#datatable2 .dt-dropdown__list')).toBeVisible();
+        await expect(sortItems.filter({ visible: true })).toHaveCount(0);
+
+        await page.locator('#datatable2 .dt-cell--header-1').click();
+        await page.locator('#datatable2 .dt-cell--header-1 .dt-dropdown__toggle').click();
+        await expect(sortItems.filter({ visible: true })).toHaveCount(3);
+    });
+
     test('removes column using dropdown action', async ({ page }) => {
         await expect(page.locator('.dt-cell--header')).toHaveCount(12);
 

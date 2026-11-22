@@ -129,7 +129,9 @@ export default class ColumnManager {
         const $cell = $.closest('.dt-cell', e.target);
         const { colIndex } = $.data($cell);
         this._dropdownActiveColIndex = colIndex;
-        this.updateStickyDropdownItems(this.getColumn(colIndex));
+        const column = this.getColumn(colIndex);
+        this.updateStickyDropdownItems(column);
+        this.updateSortDropdownItems(column);
     }
 
     hideDropdown() {
@@ -514,5 +516,16 @@ export default class ColumnManager {
             stickItem.classList.remove('dt-hidden');
             unstickItem.classList.add('dt-hidden');
         }
+    }
+
+    updateSortDropdownItems(column) {
+        if (!column) return;
+
+        this.options.headerDropdown.forEach((item, i) => {
+            const $item = this.$dropdownList.children[i];
+            if (item.sortAction && $item) {
+                $item.classList.toggle('dt-hidden', column.sortable === false);
+            }
+        });
     }
 }
