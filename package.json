@@ -63,7 +63,7 @@
   "homepage": "https://frappe.io/datatable",
   "dependencies": {
     "hyperlist": "^1.0.0-beta",
-    "lodash": "^4.17.5",
+    "lodash": "^4.18.1",
     "sortablejs": "^1.7.0"
   },
   "config": {
