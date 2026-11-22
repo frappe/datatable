@@ -55,6 +55,13 @@ test.describe('Inline Filters', () => {
         await clearInput(filterInput(5));
     });
 
+    test('not equals', async () => {
+        await filterInput(5).pressSequentially('!=9608');
+        await expect(row(6)).toHaveCount(0);
+        await expect(row(0)).toBeVisible();
+        await clearInput(filterInput(5));
+    });
+
     test('multiple filters', async () => {
         await filterInput(4).pressSequentially('to');
         await filterInput(5).pressSequentially('54');

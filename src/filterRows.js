@@ -226,13 +226,6 @@ function guessFilter(keyword = '') {
         }
     }
 
-    if (isNumber(compareString)) {
-        return {
-            type: 'containsNumber',
-            text: compareString
-        };
-    }
-
     if (keyword.startsWith('!=')) {
         if (isNumber(compareString)) {
             return {
@@ -240,6 +233,13 @@ function guessFilter(keyword = '') {
                 text: Number(keyword.slice(2).trim())
             };
         }
+    }
+
+    if (isNumber(compareString)) {
+        return {
+            type: 'containsNumber',
+            text: compareString
+        };
     }
 
     if (keyword.split(':').length === 2 && keyword.split(':').every(v => isNumber(v.trim()))) {
