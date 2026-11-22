@@ -269,23 +269,35 @@ export default class Style {
     }
 
     // The unique values of a column, as the HTML and the text that the cells show
-    getColumnValues(colIndex, limit = 50) {
+    getColumnValues(colIndex, limit = 100) {
         const rows = this.bodyRenderer.visibleRows || [];
-        const cells = rows.map(row => row[colIndex]).filter(Boolean);
-        const contentOf = cell => (cell.content == null ? '' : String(cell.content));
+        const cellsByContent = new Map();
 
-        const distinct = new Map();
-        const countByLength = [];
-        cells.forEach(cell => {
-            const content = contentOf(cell);
-            countByLength[content.length] = (countByLength[content.length] || 0) + 1;
-            if (distinct.size <= limit && !distinct.has(content)) {
-                distinct.set(content, cell);
+        rows.forEach(row => {
+            const cell = row[colIndex];
+            if (!cell) return;
+
+            const content = cell.content == null ? '' : String(cell.content);
+            if (!cellsByContent.has(content)) {
+                cellsByContent.set(content, cell);
             }
         });
 
-        let candidates = Array.from(distinct.values());
-        if (distinct.size > limit) {
+        const htmls = new Set();
+        cellsByContent.forEach(cell => {
+            const html = this.getCellContentHTML(cell);
+            if (html) htmls.add(html);
+        });
+
+        const shownLength = html => (/[<&]/.test(html) ? html.replace(/<[^>]*>/g, '') : html).length;
+        let candidates = Array.from(htmls);
+        if (candidates.length > limit) {
+            const countByLength = [];
+            candidates.forEach(html => {
+                const length = shownLength(html);
+                countByLength[length] = (countByLength[length] || 0) + 1;
+            });
+
             let minLength = 0;
             let count = 0;
             for (let length = countByLength.length - 1; length >= 0; length--) {
@@ -296,28 +308,12 @@ export default class Style {
                 }
             }
 
-            const longest = new Map();
-            const atMinLength = new Map();
-            cells.forEach(cell => {
-                const content = contentOf(cell);
-                if (content.length > minLength) {
-                    if (!longest.has(content)) longest.set(content, cell);
-                } else if (content.length === minLength && atMinLength.size < limit && !atMinLength.has(content)) {
-                    atMinLength.set(content, cell);
-                }
-            });
-            candidates = [...longest.values(), ...atMinLength.values()].slice(0, limit);
+            const longer = candidates.filter(html => shownLength(html) > minLength);
+            const atMinLength = candidates.filter(html => shownLength(html) === minLength);
+            candidates = longer.concat(atMinLength).slice(0, limit);
         }
 
-        const values = new Map();
-        candidates.forEach(cell => {
-            const html = this.getCellContentHTML(cell);
-            if (html && !values.has(html)) {
-                values.set(html, { html, text: this.getTextFromHTML(html) });
-            }
-        });
-
-        return Array.from(values.values());
+        return candidates.map(html => ({ html, text: this.getTextFromHTML(html) }));
     }
 
     // The cell content with the column formatter applied
