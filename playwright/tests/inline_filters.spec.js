@@ -90,3 +90,17 @@ test.describe('Inline Filters', () => {
         await clearInput(filterInput(5));
     });
 });
+
+test('a filter with no match stays empty when a later column is filtered', async ({ page }) => {
+    await page.evaluate(() => {
+        window.filterTable = new window.DataTable('#datatable2', {
+            columns: ['Name', 'City', 'Team'],
+            data: [['Ann', 'Paris', 'Red'], ['Bob', 'Rome', 'Blue'], ['Cal', 'Paris', 'Blue']],
+            inlineFilters: true
+        });
+    });
+    const rows = page.locator('#datatable2 .dt-scrollable .dt-row');
+    await expect(rows).toHaveCount(3);
+    await page.evaluate(() => window.filterTable.columnmanager.applyFilter({ 1: 'zzz', 2: 'Paris' }));
+    await expect(rows).toHaveCount(0);
+});
