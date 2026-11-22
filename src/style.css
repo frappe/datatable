@@ -58,6 +58,15 @@
     }
 }
 
+.dt-header {
+    position: relative;
+    z-index: 2;
+
+    .dt-row:last-child .dt-cell {
+        box-shadow: 0 1px 0 var(--dt-border-color);
+    }
+}
+
 .dt-row {
     display: flex;
 
@@ -335,6 +344,7 @@
     background-color: var(--dt-light-bg);
     opacity: 0.5;
     font-size: 2em;
+    z-index: 3;
 
     &__message {
         position: absolute;
