@@ -68,6 +68,10 @@ export default class Style {
     }
 
     onWindowResize() {
+        if (!this.styleEl.isConnected) {
+            $.off(window, 'resize', this.onWindowResize);
+            return;
+        }
         this.distributeRemainingWidth();
         this.refreshColumnWidth();
         this.setBodyStyle();
