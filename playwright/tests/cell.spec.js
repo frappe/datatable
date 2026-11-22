@@ -123,9 +123,16 @@ test.describe('Cell mouse selection', () => {
         await expect(highlighted).toHaveCount(4 + 2);
 
         const table = await page.locator('.datatable').first().boundingBox();
-        const [, y] = await center(3, 2);
-        await page.mouse.move(table.x + table.width + 40, y, { steps: 5 });
+        const viewport = page.viewportSize();
+        const outside = [
+            [table.x + table.width + 20, table.y + 10],
+            [table.x + 10, table.y + table.height + 20],
+            [table.x - 20, table.y + 10],
+            [table.x + 10, table.y - 20]
+        ].find(([x, y]) => x > 0 && y > 0 && x < viewport.width && y < viewport.height);
+        await page.mouse.move(...outside, { steps: 5 });
         await page.mouse.up();
+        await page.waitForTimeout(200);
         const selected = await highlighted.count();
 
         await page.mouse.move(...await center(5, 4), { steps: 5 });

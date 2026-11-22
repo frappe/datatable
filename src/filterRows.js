@@ -140,6 +140,15 @@ function getFilterMethod(rows, allData, filter) {
                 .map(cell => cell.rowIndex);
         },
 
+        equalsText(keyword, cells) {
+            return cells
+                .filter(cell => {
+                    const content = cell.content == null ? '' : String(cell.content);
+                    return content.trim().toLowerCase() === keyword || stringCompareValue(cell).trim() === keyword;
+                })
+                .map(cell => cell.rowIndex);
+        },
+
         equals(keyword, cells) {
             return cells
                 .filter(cell => {
@@ -226,6 +235,10 @@ function guessFilter(keyword = '') {
                 text: Number(keyword.slice(1).trim())
             };
         }
+        return {
+            type: 'equalsText',
+            text: compareString.trim().toLowerCase()
+        };
     }
 
     if (keyword.startsWith('!=')) {

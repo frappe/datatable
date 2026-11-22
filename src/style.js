@@ -68,6 +68,10 @@ export default class Style {
     }
 
     onWindowResize() {
+        if (!this.styleEl.isConnected) {
+            $.off(window, 'resize', this.onWindowResize);
+            return;
+        }
         this.distributeRemainingWidth();
         this.refreshColumnWidth();
         this.setBodyStyle();
@@ -265,21 +269,51 @@ export default class Style {
     }
 
     // The unique values of a column, as the HTML and the text that the cells show
-    getColumnValues(colIndex) {
+    getColumnValues(colIndex, limit = 100) {
         const rows = this.bodyRenderer.visibleRows || [];
-        const values = new Map();
+        const cellsByContent = new Map();
 
         rows.forEach(row => {
             const cell = row[colIndex];
             if (!cell) return;
 
-            const html = this.getCellContentHTML(cell);
-            if (html && !values.has(html)) {
-                values.set(html, { html, text: this.getTextFromHTML(html) });
+            const content = cell.content == null ? '' : String(cell.content);
+            if (!cellsByContent.has(content)) {
+                cellsByContent.set(content, cell);
             }
         });
 
-        return Array.from(values.values());
+        const htmls = new Set();
+        cellsByContent.forEach(cell => {
+            const html = this.getCellContentHTML(cell);
+            if (html) htmls.add(html);
+        });
+
+        const shownLength = html => (/[<&]/.test(html) ? html.replace(/<[^>]*>/g, '') : html).length;
+        let candidates = Array.from(htmls);
+        if (candidates.length > limit) {
+            const countByLength = [];
+            candidates.forEach(html => {
+                const length = shownLength(html);
+                countByLength[length] = (countByLength[length] || 0) + 1;
+            });
+
+            let minLength = 0;
+            let count = 0;
+            for (let length = countByLength.length - 1; length >= 0; length--) {
+                count += countByLength[length] || 0;
+                if (count >= limit) {
+                    minLength = length;
+                    break;
+                }
+            }
+
+            const longer = candidates.filter(html => shownLength(html) > minLength);
+            const atMinLength = candidates.filter(html => shownLength(html) === minLength);
+            candidates = longer.concat(atMinLength).slice(0, limit);
+        }
+
+        return candidates.map(html => ({ html, text: this.getTextFromHTML(html) }));
     }
 
     // The cell content with the column formatter applied
