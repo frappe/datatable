@@ -15,9 +15,11 @@ export default class BodyRenderer {
     renderRows(rows) {
         this.visibleRows = rows;
         this.visibleRowIndices = rows.map(row => row.meta.rowIndex);
-
+        this.instance.noData = false;
         if (rows.length === 0) {
             this.bodyScrollable.innerHTML = this.getNoDataHTML();
+            this.instance.noData = true;
+            this.footer.innerHTML = '';
             return;
         }
 
@@ -61,10 +63,24 @@ export default class BodyRenderer {
     }
 
     render() {
-        const rows = this.datamanager.getRowsForView();
+        const rows = this.getRowsToRender();
         this.renderRows(rows);
         // setDimensions requires atleast 1 row to exist in dom
         this.instance.setDimensions();
+    }
+
+    // Keep the current tree expand/collapse state on a full re-render
+    getRowsToRender() {
+        const rows = this.datamanager.getRowsForView();
+        let closedIndent = null;
+        return rows.filter(row => {
+            const { indent, isTreeNodeClose } = row.meta;
+            if (closedIndent !== null && indent > closedIndent) {
+                return false;
+            }
+            closedIndent = isTreeNodeClose ? indent : null;
+            return true;
+        });
     }
 
     renderFooter() {
@@ -91,11 +107,12 @@ export default class BodyRenderer {
             };
         });
 
+        const rows = this.visibleRows.filter(row => !row.meta.isTotalRow);
         const totalRow = totalRowTemplate.map((cell, i) => {
             if (cell.content === '') return cell;
 
             if (this.options.hooks.columnTotal) {
-                const columnValues = this.visibleRows.map(row => row[i].content);
+                const columnValues = rows.map(row => row[i].content);
                 const result = this.options.hooks.columnTotal.call(this.instance, columnValues, cell);
                 if (result != null) {
                     cell.content = result;
@@ -103,7 +120,7 @@ export default class BodyRenderer {
                 }
             }
 
-            cell.content = this.visibleRows.reduce((acc, prevRow) => {
+            cell.content = rows.reduce((acc, prevRow) => {
                 const prevCell = prevRow[i];
                 if (typeof prevCell.content === 'number') {
                     if (acc == null) acc = 0;
@@ -139,7 +156,20 @@ export default class BodyRenderer {
     }
 
     getNoDataHTML() {
-        return `<div class="dt-scrollable__no-data">${this.options.noDataMessage}</div>`;
+        const style = window.getComputedStyle(this.instance.header);
+        const matrix = new DOMMatrixReadOnly(style.transform);
+        const width = (-matrix.m41) + this.instance.header.clientWidth;
+        const height = this.bodyScrollable.clientHeight;
+        return `
+            <div 
+                class="dt-scrollable__no-data" 
+                style="width: ${width}px; height: ${height}px"
+            >
+                <div class="dt-scrollable__no-data no-data-message">
+                    ${this.options.noDataMessage}
+                </div>
+            </div>
+        `;
     }
 
     getToastMessageHTML(message) {

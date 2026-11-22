@@ -93,7 +93,7 @@ export default class ColumnManager {
         });
 
         $.on(this.$dropdownList, 'click', '.dt-dropdown__list-item', (e, $item) => {
-            if (!this._dropdownActiveColIndex) return;
+            if (this._dropdownActiveColIndex == null) return;
             const dropdownItems = this.options.headerDropdown;
             const { index } = $.data($item);
             const colIndex = this._dropdownActiveColIndex;
@@ -107,6 +107,11 @@ export default class ColumnManager {
         function deactivateDropdown(e) {
             _this.hideDropdown();
         }
+
+        this.stickDropdownIndex = this.options.headerDropdown
+            .findIndex(item => item.stickyAction === 'stick');
+        this.unstickDropdownIndex = this.options.headerDropdown
+            .findIndex(item => item.stickyAction === 'unstick');
 
         this.hideDropdown();
     }
@@ -124,6 +129,7 @@ export default class ColumnManager {
         const $cell = $.closest('.dt-cell', e.target);
         const { colIndex } = $.data($cell);
         this._dropdownActiveColIndex = colIndex;
+        this.updateStickyDropdownItems(this.getColumn(colIndex));
     }
 
     hideDropdown() {
@@ -159,12 +165,6 @@ export default class ColumnManager {
             document.body.classList.remove('dt-resize');
             if (!$resizingCell) return;
             isDragging = false;
-
-            const {
-                colIndex
-            } = $.data($resizingCell);
-            this.setColumnWidth(colIndex);
-            this.style.setBodyStyle();
             $resizingCell = null;
         };
         $.on(document.body, 'mouseup', onMouseup);
@@ -191,7 +191,11 @@ export default class ColumnManager {
             this.datamanager.updateColumn(colIndex, {
                 width: finalWidth
             });
+            this.instance.resizedColumnWidths.set(this.getColumn(colIndex).id, finalWidth);
             this.setColumnHeaderWidth(colIndex);
+            this.setColumnWidth(colIndex);
+            this.style.refreshStickyColumns();
+            this.style.setBodyStyle();
         };
         $.on(document.body, 'mousemove', onMouseMove);
         this.instance.on('onDestroy', () => {
@@ -204,30 +208,14 @@ export default class ColumnManager {
             const $cell = $handle.parentNode.parentNode;
             const { colIndex } = $.data($cell);
 
-            let longestCell = this.bodyRenderer.visibleRows
-                .map(d => d[colIndex])
-                .reduce((acc, curr) => acc.content.length > curr.content.length ? acc : curr);
+            const width = this.style.getColumnContentWidth(colIndex);
+            if (!width) return;
 
-            let $longestCellHTML = this.cellmanager.getCellHTML(longestCell);
-            let $div = document.createElement('div');
-            $div.innerHTML = $longestCellHTML;
-            let cellText = $div.querySelector('.dt-cell__content').textContent;
-
-            let {
-                borderLeftWidth,
-                borderRightWidth,
-                paddingLeft,
-                paddingRight
-            } = $.getStyle(this.bodyScrollable.querySelector('.dt-cell__content'));
-
-            let padding = [borderLeftWidth, borderRightWidth, paddingLeft, paddingRight]
-                .map(parseFloat)
-                .reduce((sum, val) => sum + val);
-
-            let width = $.measureTextWidth(cellText) + padding;
             this.datamanager.updateColumn(colIndex, { width });
+            this.instance.resizedColumnWidths.set(this.getColumn(colIndex).id, width);
             this.setColumnHeaderWidth(colIndex);
             this.setColumnWidth(colIndex);
+            this.style.refreshStickyColumns();
         });
     }
 
@@ -267,7 +255,27 @@ export default class ColumnManager {
             .then(() => this.instance.unfreeze())
             .then(() => {
                 this.fireEvent('onSortColumn', this.getColumn(colIndex));
+                this.setSortState();
             });
+    }
+
+    saveSorting(colIndex) {
+        let currentColumn = this.getColumn(colIndex);
+        let saveSorting = {
+            [currentColumn.name]: {
+                colIndex: colIndex,
+                sortOrder: currentColumn.sortOrder
+            }
+        };
+        this.sortingKey = this.options.sortingKey ? `${this.options.sortingKey}::sortedColumns` : 'sortedColumns' ;
+        localStorage.setItem(this.sortingKey, JSON.stringify(saveSorting));
+    }
+    setSortState(sortOrder) {
+        if (sortOrder === 'none') {
+            this.sortState = false;
+        } else {
+            this.sortState = true;
+        }
     }
 
     removeColumn(colIndex) {
@@ -282,6 +290,20 @@ export default class ColumnManager {
             .then(() => {
                 this.fireEvent('onRemoveColumn', removedCol);
             });
+    }
+
+    setColumnSticky(colIndex, sticky) {
+        const column = this.getColumn(colIndex);
+        if (!column || column.sticky === sticky) {
+            return;
+        }
+
+        this.instance.freeze();
+        this.datamanager.updateColumn(colIndex, { sticky });
+
+        this.refreshHeader();
+        this.rowmanager.refreshRows()
+            .then(() => this.instance.unfreeze());
     }
 
     switchColumn(oldIndex, newIndex) {
@@ -368,6 +390,19 @@ export default class ColumnManager {
         }
     }
 
+    applySavedSortOrder() {
+
+        let key = this.options.sortingKey ? `${this.options.sortingKey}::sortedColumns` : 'sortedColumns' ;
+        let sortingConfig = JSON.parse(localStorage.getItem(key));
+        if (sortingConfig) {
+            const columnsToSort = Object.values(sortingConfig);
+            for (let column of columnsToSort) {
+                this.sortColumn(column.colIndex, column.sortOrder);
+                this.sortState = true;
+            }
+        }
+    }
+
     sortRows(colIndex, sortOrder) {
         return this.datamanager.sortRows(colIndex, sortOrder);
     }
@@ -420,7 +455,10 @@ export default class ColumnManager {
     }
 
     getFirstColumnIndex() {
-        return this.datamanager.getColumnIndexById('_rowIndex') + 1;
+        return Math.max(
+            this.datamanager.getColumnIndexById('_checkbox'),
+            this.datamanager.getColumnIndexById('_rowIndex')
+        ) + 1;
     }
 
     getHeaderCell$(colIndex) {
@@ -443,13 +481,38 @@ export default class ColumnManager {
 
     getDropdownListHTML() {
         const { headerDropdown: dropdownItems } = this.options;
-
         return `
-            <div class="dt-dropdown__list">
-            ${dropdownItems.map((d, i) => `
-                <div class="dt-dropdown__list-item" data-index="${i}">${d.label}</div>
-            `).join('')}
+        <div class="dt-dropdown__list">
+        ${dropdownItems.map((d, i) => `
+            <div 
+                class="dt-dropdown__list-item${d.display ? ' dt-hidden' : ''}" 
+                data-index="${i}"
+            >
+                ${d.label}
             </div>
-        `;
+        `).join('')}
+        </div>
+    `;
+    }
+
+    toggleDropdownItem(index) {
+        $('.dt-dropdown__list', this.instance.dropdownContainer).children[index].classList.toggle('dt-hidden');
+    }
+
+    updateStickyDropdownItems(column) {
+        if (!column) return;
+        if (this.stickDropdownIndex === -1 || this.unstickDropdownIndex === -1) return;
+
+        const stickItem = this.$dropdownList.children[this.stickDropdownIndex];
+        const unstickItem = this.$dropdownList.children[this.unstickDropdownIndex];
+        if (!(stickItem && unstickItem)) return;
+
+        if (column.sticky) {
+            stickItem.classList.add('dt-hidden');
+            unstickItem.classList.remove('dt-hidden');
+        } else {
+            stickItem.classList.remove('dt-hidden');
+            unstickItem.classList.add('dt-hidden');
+        }
     }
 }

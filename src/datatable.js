@@ -28,6 +28,7 @@ class DataTable {
             wrapper = document.querySelector(wrapper);
         }
         this.wrapper = wrapper;
+        this.resizedColumnWidths = new Map();
         if (!(this.wrapper instanceof HTMLElement)) {
             throw new Error('Invalid argument given for `wrapper`');
         }
@@ -41,6 +42,10 @@ class DataTable {
         if (this.options.data) {
             this.refresh();
             this.columnmanager.applyDefaultSortOrder();
+            if (this.options.saveSorting) {
+                this.setupSaveSorting();
+                this.columnmanager.applySavedSortOrder();
+            }
         }
     }
 
@@ -137,6 +142,15 @@ class DataTable {
         this.datamanager.init(data, columns);
         this.render();
         this.setDimensions();
+        if (this.resizedColumnWidths.size) {
+            for (const column of this.datamanager.getColumns()) {
+                if (this.resizedColumnWidths.has(column.id)) {
+                    column.width = this.resizedColumnWidths.get(column.id);
+                }
+            }
+            this.style.refreshColumnWidth();
+            this.style.setBodyStyle();
+        }
     }
 
     destroy() {
@@ -183,6 +197,10 @@ class DataTable {
         return this.datamanager.getColumn(colIndex);
     }
 
+    getResizedColumnWidths() {
+        return new Map(this.resizedColumnWidths);
+    }
+
     getColumns() {
         return this.datamanager.getColumns();
     }
@@ -210,9 +228,16 @@ class DataTable {
     sortColumn(colIndex, sortOrder) {
         this.columnmanager.sortColumn(colIndex, sortOrder);
     }
+    saveSorting(colIndex, nextSortOrder) {
+        this.columnmanager.saveSorting(colIndex, nextSortOrder);
+    }
 
     removeColumn(colIndex) {
         this.columnmanager.removeColumn(colIndex);
+    }
+
+    setColumnSticky(colIndex, sticky) {
+        this.columnmanager.setColumnSticky(colIndex, sticky);
     }
 
     scrollToLastColumn() {
@@ -262,6 +287,25 @@ class DataTable {
 
     translate(str, args) {
         return this.translationManager.translate(str, args);
+    }
+    setupSaveSorting() {
+        // add options in default headerdropdown
+        let action = {
+            label: this.translate('Save Sorting'),
+            action: function (column) {
+                this.saveSorting(column.colIndex, column.sotOrder);
+            },
+            display: 'hidden'
+        };
+        this.options.headerDropdown.push(action);
+        this.columnmanager.bindDropdown();
+        // add events for onSortColumn
+        this.on('onSortColumn', function (column) {
+            this.columnmanager.toggleDropdownItem(4);
+            if (column.sortOrder === 'none') {
+                localStorage.removeItem(this.columnmanager.sortingKey);
+            }
+        });
     }
 }
 

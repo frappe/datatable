@@ -9,11 +9,8 @@
     "start": "yarn run dev",
     "build": "rollup -c && NODE_ENV=production rollup -c",
     "dev": "rollup -c -w",
-    "cy:server": "http-server -p 8989",
-    "cy:open": "cypress open",
-    "cy:run": "cypress run",
-    "test": "start-server-and-test cy:server http://localhost:8989 cy:run",
-    "test-local": "start-server-and-test cy:server http://localhost:8989 cy:open",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
     "travis-deploy-once": "travis-deploy-once",
     "semantic-release": "semantic-release",
     "lint": "eslint src",
@@ -25,9 +22,9 @@
     "src"
   ],
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "autoprefixer": "^9.0.0",
     "chai": "3.5.0",
-    "cypress": "^9.2.0",
     "cz-conventional-changelog": "^2.1.0",
     "deepmerge": "^2.0.1",
     "eslint": "^5.0.1",
@@ -45,8 +42,7 @@
     "rollup-plugin-node-resolve": "^3.0.3",
     "rollup-plugin-postcss": "^1.2.8",
     "rollup-plugin-uglify-es": "^0.0.1",
-    "semantic-release": "^17.1.1",
-    "start-server-and-test": "^1.4.1",
+    "semantic-release": "^25.0.3",
     "travis-deploy-once": "^5.0.1"
   },
   "repository": {
@@ -67,7 +63,7 @@
   "homepage": "https://frappe.io/datatable",
   "dependencies": {
     "hyperlist": "^1.0.0-beta",
-    "lodash": "^4.17.5",
+    "lodash": "^4.18.1",
     "sortablejs": "^1.7.0"
   },
   "config": {

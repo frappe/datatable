@@ -62,6 +62,7 @@ export default class DataManager {
                 sortable: false,
                 focusable: false,
                 dropdown: false,
+                sticky: true,
                 width: 32
             };
             this.columns.push(cell);
@@ -70,14 +71,14 @@ export default class DataManager {
         if (this.options.serialNoColumn && !this.hasColumnById('_rowIndex')) {
             let cell = {
                 id: '_rowIndex',
-                content: '',
+                content: this.options.serialNoColumnLabel || '',
                 align: 'center',
                 editable: false,
-                resizable: false,
+                resizable: true,
                 focusable: false,
-                dropdown: false
+                dropdown: false,
+                sticky: true
             };
-
             this.columns.push(cell);
         }
     }
@@ -178,6 +179,7 @@ export default class DataManager {
                 }
 
                 meta.indent = d.indent || 0;
+                if (d.is_total_row) meta.isTotalRow = 1;
             }
 
             return this.prepareRow(row, meta);
@@ -205,14 +207,19 @@ export default class DataManager {
     }
 
     prepareRow(row, meta) {
-        const baseRowCell = {
-            rowIndex: meta.rowIndex,
-            indent: meta.indent
-        };
-
         row = row
             .map((cell, i) => this.prepareCell(cell, i))
-            .map(cell => Object.assign({}, baseRowCell, cell));
+            .map(cell => {
+                // Following code is equivalent but avoids memory allocation and copying.
+                // return Object.assign({rowIndex: meta.rowIndex, indent: meta.indent}, cell)
+                if (cell.rowIndex == null) {
+                    cell.rowIndex = meta.rowIndex;
+                }
+                if (cell.indent == null) {
+                    cell.indent = meta.indent;
+                }
+                return cell;
+            });
 
         // monkey patched in array object
         row.meta = meta;
@@ -264,8 +271,10 @@ export default class DataManager {
     }
 
     _sortRows(colIndex, sortOrder) {
+        const keepRowsInPlace = !this.options.treeView &&
+            this.rows.some((row, rowIndex) => this._keepsPlaceOnSort({ rowIndex, children: [] }));
 
-        if (this.currentSort.colIndex === colIndex) {
+        if (!this.options.treeView && !keepRowsInPlace && this.currentSort.colIndex === colIndex) {
             // reverse the array if only sortOrder changed
             if (
                 (this.currentSort.sortOrder === 'asc' && sortOrder === 'desc') ||
@@ -277,14 +286,18 @@ export default class DataManager {
             }
         }
 
+        const sortValue = cell => {
+            const hook = cell.column && cell.column.sortValue;
+            const value = hook ? hook(cell) : cell.content;
+            return value == null ? '' : value;
+        };
+
         this.rowViewOrder.sort((a, b) => {
             const aIndex = a;
             const bIndex = b;
 
-            let aContent = this.getCell(colIndex, a).content;
-            let bContent = this.getCell(colIndex, b).content;
-            aContent = aContent == null ? '' : aContent;
-            bContent = bContent == null ? '' : bContent;
+            const aContent = sortValue(this.getCell(colIndex, a));
+            const bContent = sortValue(this.getCell(colIndex, b));
 
             if (sortOrder === 'none') {
                 return aIndex - bIndex;
@@ -300,15 +313,75 @@ export default class DataManager {
             return 0;
         });
 
+        if (this.options.treeView || keepRowsInPlace) {
+            this._sortTreeRows(this.options.treeView);
+        }
+
         if (this.hasColumnById('_rowIndex')) {
             // update row index
             const srNoColIndex = this.getColumnIndexById('_rowIndex');
-            this.rows.forEach((row, index) => {
-                const viewIndex = this.rowViewOrder.indexOf(index);
-                const cell = row[srNoColIndex];
+            this.rowViewOrder.forEach((rowIndex, viewIndex) => {
+                const cell = this.rows[rowIndex][srNoColIndex];
                 cell.content = (viewIndex + 1) + '';
+                cell.html = null;
             });
         }
+    }
+
+    _sortTreeRows(asTree = true) {
+        // Use the column sort order to rank siblings without separating their children.
+        const sortPositions = new Map();
+        this.rowViewOrder.forEach((rowIndex, position) => {
+            sortPositions.set(rowIndex, position);
+        });
+
+        const root = { indent: -Infinity, children: [] };
+        const ancestors = [root];
+
+        this.rows.forEach((row, rowIndex) => {
+            const indent = asTree ? Number(row.meta.indent) || 0 : 0;
+            while (ancestors[ancestors.length - 1].indent >= indent) {
+                ancestors.pop();
+            }
+
+            const node = { rowIndex, indent, children: [] };
+            ancestors[ancestors.length - 1].children.push(node);
+            ancestors.push(node);
+        });
+
+        const bySortPosition = (a, b) => sortPositions.get(a.rowIndex) - sortPositions.get(b.rowIndex);
+        const rowOrder = [];
+        const appendNode = (node) => {
+            rowOrder.push(node.rowIndex);
+            appendSiblings(node.children);
+        };
+        const appendSiblings = (siblings) => {
+            let movable = [];
+            const flush = () => {
+                movable.sort(bySortPosition).forEach(appendNode);
+                movable = [];
+            };
+            for (const node of siblings) {
+                if (this._keepsPlaceOnSort(node)) {
+                    flush();
+                    appendNode(node);
+                } else {
+                    movable.push(node);
+                }
+            }
+            flush();
+        };
+
+        appendSiblings(root.children);
+        this.rowViewOrder = rowOrder;
+    }
+
+    _keepsPlaceOnSort(node) {
+        const row = this.rows[node.rowIndex];
+        if (row.meta.isTotalRow) return true;
+        return node.children.length === 0 && row
+            .filter(cell => !['_rowIndex', '_checkbox'].includes(cell.column && cell.column.id))
+            .every(cell => cell.content == null || cell.content === '');
     }
 
     reverseArray(array) {

@@ -3,6 +3,8 @@
 	"Sort Descending": "Ordinamento decrescente",
 	"Reset sorting": "Azzeramento ordinamento",
 	"Remove column": "Rimuovi colonna",
+	"Freeze": "Congelare",
+	"Unfreeze": "Dégeler",
 	"No Data": "Nessun dato",
 	"{count} cells copied": {
 		"1": "Copiato {count} cella",

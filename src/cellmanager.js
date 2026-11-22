@@ -20,7 +20,8 @@ export default class CellManager {
             'columnmanager',
             'rowmanager',
             'datamanager',
-            'keyboard'
+            'keyboard',
+            'footer'
         ]);
 
         this.bindEvents();
@@ -32,6 +33,7 @@ export default class CellManager {
         this.bindKeyboardSelection();
         this.bindCopyCellContents();
         this.bindMouseEvents();
+        this.bindWheelEvents();
         this.bindTreeEvents();
     }
 
@@ -80,6 +82,7 @@ export default class CellManager {
             }
 
             this.focusCell($cell);
+            sessionStorage.setItem('dt-last-nav-method', 'key');
             return true;
         };
 
@@ -172,12 +175,26 @@ export default class CellManager {
             mouseDown = false;
         });
 
+        if (this.options.showTotalRow) {
+            $.on(this.footer, 'click', '.dt-cell', (e) => {
+
+                this.focusCell($(e.delegatedTarget));
+            });
+
+        }
+
         const selectArea = (e) => {
             if (!mouseDown) return;
             this.selectArea($(e.delegatedTarget));
         };
 
         $.on(this.bodyScrollable, 'mousemove', '.dt-cell', throttle(selectArea, 50));
+    }
+
+    bindWheelEvents() {
+        $.on(this.bodyScrollable, 'wheel', (e) => {
+            sessionStorage.setItem('dt-last-nav-method', 'scroll');
+        });
     }
 
     bindTreeEvents() {
@@ -304,11 +321,13 @@ export default class CellManager {
         // this function is called after hyperlist renders the rows after scroll,
         // focusCell calls clearSelection which resets the area selection
         // so a flag to skip it
-        // we also skip DOM focus and scroll to cell
-        // because it fights with the user scroll
+        // we skip scroll to cell
+        // and also skip DOM focus (if user is scrolling) because it fights with the user scroll
+        const skipDOMFocus = sessionStorage.getItem('dt-last-nav-method') !== 'key';
+
         this.focusCell($cell, {
+            skipDOMFocus,
             skipClearSelection: 1,
-            skipDOMFocus: 1,
             skipScrollToCell: 1
         });
     }
@@ -324,12 +343,14 @@ export default class CellManager {
 
     _selectArea($cell1, $cell2) {
         if ($cell1 === $cell2) return false;
-
         const cells = this.getCellsInRange($cell1, $cell2);
         if (!cells) return false;
 
         this.clearSelection();
-        this._selectedCells = cells.map(index => this.getCell$(...index));
+        // cells of collapsed or virtualized rows are not in the DOM
+        this._selectedCells = cells
+            .map(index => this.getCell$(...index))
+            .filter(Boolean);
         requestAnimationFrame(() => {
             this._selectedCells.map($cell => $cell.classList.add('dt-cell--highlight'));
         });
@@ -351,9 +372,17 @@ export default class CellManager {
             const cell2 = $.data($cell2);
 
             colIndex1 = +cell1.colIndex;
-            rowIndex1 = +cell1.rowIndex;
             colIndex2 = +cell2.colIndex;
-            rowIndex2 = +cell2.rowIndex;
+
+            if (this.columnmanager.sortState) {
+                this.sortedColumn = true;
+                rowIndex1 = this.datamanager.rowViewOrder.indexOf(parseInt(cell1.rowIndex, 10));
+                rowIndex2 = this.datamanager.rowViewOrder.indexOf(parseInt(cell2.rowIndex, 10));
+            } else {
+                rowIndex1 = +cell1.rowIndex;
+                rowIndex2 = +cell2.rowIndex;
+            }
+
         }
 
         if (rowIndex1 > rowIndex2) {
@@ -385,7 +414,11 @@ export default class CellManager {
             }
             colIndex = colIndex1;
         });
-
+        if (this.columnmanager.sortState) {
+            cells.forEach(selectedCells => {
+                selectedCells[1] = this.datamanager.rowViewOrder[selectedCells[1]];
+            });
+        }
         return cells;
     }
 
@@ -430,15 +463,14 @@ export default class CellManager {
             }
         }
 
-        this.$editingCell = $cell;
-        $cell.classList.add('dt-cell--editing');
-
         const $editCell = $('.dt-cell__edit', $cell);
         $editCell.innerHTML = '';
 
         const editor = this.getEditor(colIndex, rowIndex, cell.content, $editCell);
 
         if (editor) {
+            this.$editingCell = $cell;
+            $cell.classList.add('dt-cell--editing');
             this.currentCellEditor = editor;
             // initialize editing input with cell value
             editor.initValue(cell.content, rowIndex, col);
@@ -552,10 +584,18 @@ export default class CellManager {
             // copy only focusedCell
             const {
                 colIndex,
-                rowIndex
+                rowIndex,
+                isTotalRow
             } = $.data($cell1);
-            const cell = this.getCell(colIndex, rowIndex);
-            copyTextToClipboard(cell.content);
+            let copiedContent = '';
+            if (isTotalRow) {
+                let choosenFooterCell = this.$focusedCell;
+                copiedContent = choosenFooterCell.children[0].title;
+            } else {
+                const cell = this.getCell(colIndex, rowIndex);
+                copiedContent = cell.content;
+            }
+            copyTextToClipboard(copiedContent);
             return 1;
         }
         const cells = this.getCellsInRange($cell1, $cell2);
@@ -686,6 +726,7 @@ export default class CellManager {
         }
 
         this.focusCell($cell);
+        sessionStorage.setItem('dt-last-nav-method', 'key');
         return true;
     }
 
@@ -754,7 +795,7 @@ export default class CellManager {
     }
 
     scrollToCell($cell) {
-        if ($.inViewport($cell, this.bodyScrollable)) return false;
+        if ($.inViewport($cell, this.bodyScrollable) || $.inViewport($cell, this.footer)) return false;
 
         const {
             rowIndex
@@ -784,8 +825,15 @@ export default class CellManager {
         });
 
         const row = this.datamanager.getRow(rowIndex);
+        const column = cell.column || this.datamanager.getColumn(colIndex) || {};
 
         const isBodyCell = !(isHeader || isFilter || isTotalRow);
+        const isSticky = Boolean(column.sticky);
+        const stickyColumns = this.datamanager.getColumns().filter(col => col.sticky);
+        const lastStickyColumn = stickyColumns[stickyColumns.length - 1];
+        const isLastStickyColumn = isSticky &&
+            lastStickyColumn &&
+            lastStickyColumn.colIndex === colIndex;
 
         const className = [
             'dt-cell',
@@ -795,7 +843,10 @@ export default class CellManager {
             isHeader ? 'dt-cell--header' : '',
             isHeader ? `dt-cell--header-${colIndex}` : '',
             isFilter ? 'dt-cell--filter' : '',
-            isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : ''
+            isBodyCell && (row && row.meta.isTreeNodeClose) ? 'dt-cell--tree-close' : '',
+            isSticky ? 'dt-cell--sticky' : '',
+            isSticky && !isBodyCell ? 'dt-cell--sticky-top' : '',
+            isLastStickyColumn ? 'dt-cell--sticky-last' : ''
         ].join(' ');
 
         return `
@@ -851,7 +902,7 @@ export default class CellManager {
             const unit = 'px';
 
             // Add toggle and indent in the first column
-            const firstColumnIndex = this.datamanager.getColumnIndexById('_rowIndex') + 1;
+            const firstColumnIndex = this.columnmanager.getFirstColumnIndex();
             if (firstColumnIndex === cell.colIndex) {
                 const padding = ((cell.indent || 0)) * leftPadding;
                 const toggleHTML = addToggle ?

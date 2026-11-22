@@ -18,6 +18,9 @@ export default function filterRows(rows, filters, data) {
         const cells = filteredRows.map(row => row[colIndex]);
 
         let filter = guessFilter(keyword);
+        if (filter.type === 'contains' && getFilterMode(data, cells[0]) === 'fuzzy') {
+            filter.type = 'fuzzy';
+        }
         let filterMethod = getFilterMethod(rows, data, filter);
 
         if (filterMethod) {
@@ -29,6 +32,41 @@ export default function filterRows(rows, filters, data) {
 
     return filteredRowIndices;
 };
+
+function getFilterMode(data, cell) {
+    const columnMode = cell && cell.column && cell.column.filterMode;
+    return columnMode || (data && data.options && data.options.filterMode);
+}
+
+function isFuzzyMatch(word, text) {
+    let position = 0;
+    for (const char of word) {
+        position = text.indexOf(char, position);
+        if (position === -1) return isTypoMatch(word, text);
+        position += 1;
+    }
+    return true;
+}
+
+function isTypoMatch(word, text) {
+    if (word.length < 4) return false;
+    return text.split(/[\s.,;:!?()[\]{}<>"'`/\\|@#&*+=_-]+/).some(token =>
+        [word.length - 1, word.length, word.length + 1]
+            .some(length => length <= token.length && isOneEditAway(word, token.slice(0, length)))
+    );
+}
+
+function isOneEditAway(a, b) {
+    if (Math.abs(a.length - b.length) > 1) return false;
+    let i = 0;
+    while (i < a.length && i < b.length && a[i] === b[i]) i++;
+    if (a.length === b.length) {
+        return a.slice(i + 1) === b.slice(i + 1) ||
+            (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2));
+    }
+    const [longer, shorter] = a.length > b.length ? [a, b] : [b, a];
+    return longer.slice(i + 1) === shorter.slice(i);
+}
 
 function getFilterMethod(rows, allData, filter) {
     const getFormattedValue = cell => {
@@ -72,6 +110,16 @@ function getFilterMethod(rows, allData, filter) {
                     return !needle ||
                         (cell.content || '').toLowerCase().includes(needle) ||
                         stringCompareValue(cell).includes(needle);
+                })
+                .map(cell => cell.rowIndex);
+        },
+
+        fuzzy(keyword, cells) {
+            const words = keyword.split(/\s+/).filter(Boolean);
+            return cells
+                .filter(cell => {
+                    const texts = [String(cell.content || '').toLowerCase(), stringCompareValue(cell)];
+                    return words.every(word => texts.some(text => isFuzzyMatch(word, text)));
                 })
                 .map(cell => cell.rowIndex);
         },
@@ -182,13 +230,6 @@ function guessFilter(keyword = '') {
         }
     }
 
-    if (isNumber(compareString)) {
-        return {
-            type: 'containsNumber',
-            text: compareString
-        };
-    }
-
     if (keyword.startsWith('!=')) {
         if (isNumber(compareString)) {
             return {
@@ -196,6 +237,13 @@ function guessFilter(keyword = '') {
                 text: Number(keyword.slice(2).trim())
             };
         }
+    }
+
+    if (isNumber(compareString)) {
+        return {
+            type: 'containsNumber',
+            text: compareString
+        };
     }
 
     if (keyword.split(':').length === 2 && keyword.split(':').every(v => isNumber(v.trim()) || isDate(v.trim()))) {
