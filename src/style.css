@@ -117,6 +117,16 @@
         overflow: hidden;
     }
 
+    &__content:has(> input[type="checkbox"]) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &__content > input[type="checkbox"] {
+        margin: 0;
+    }
+
     &__edit {
         display: none;
         padding: var(--dt-spacer-2);
@@ -168,6 +178,10 @@
     &--header &__content {
         padding-right: var(--dt-spacer-3);
         font-weight: 500;
+    }
+
+    &--header &__content:has(> input[type="checkbox"]) {
+        padding-right: var(--dt-spacer-2);
     }
 
     &--header:hover .dt-dropdown__toggle {
