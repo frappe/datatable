@@ -59,6 +59,10 @@ const datatable = new DataTable('#datatable', {
 });
 ```
 
+## Browser Support
+
+DataTable works in current versions of Chrome, Edge, Firefox and Safari. Internet Explorer is not supported: the build ships ES2015 classes and arrow functions, and the styles use CSS custom properties.
+
 ## Development Setup
 
 * `yarn start` - Start dev server
