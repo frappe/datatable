@@ -171,8 +171,12 @@ export default class CellManager {
             this.focusCell($(e.delegatedTarget));
         });
 
-        $.on(this.bodyScrollable, 'mouseup', () => {
+        const onMouseup = () => {
             mouseDown = false;
+        };
+        $.on(document, 'mouseup', onMouseup);
+        this.instance.on('onDestroy', () => {
+            $.off(document, 'mouseup', onMouseup);
         });
 
         if (this.options.showTotalRow) {

@@ -108,3 +108,27 @@ test.describe('Cell focus in a sorted table', () => {
         expect(await page.locator('.dt-scrollable').evaluate(el => el.scrollTop)).toBe(0);
     });
 });
+
+test.describe('Cell mouse selection', () => {
+    test('stops selecting when the mouse is released outside the table', async ({ page }) => {
+        const center = async (col, row) => {
+            const box = await getCell(page, col, row).boundingBox();
+            return [box.x + box.width / 2, box.y + box.height / 2];
+        };
+        const highlighted = page.locator('.dt-cell--highlight');
+
+        await page.mouse.move(...await center(2, 1));
+        await page.mouse.down();
+        await page.mouse.move(...await center(3, 2), { steps: 5 });
+        await expect(highlighted).toHaveCount(4 + 2);
+
+        await page.mouse.move(20, 300, { steps: 5 });
+        await page.mouse.up();
+
+        await page.mouse.move(...await center(5, 4), { steps: 5 });
+        await page.waitForTimeout(200);
+        await page.mouse.move(...await center(6, 5), { steps: 5 });
+        await page.waitForTimeout(200);
+        await expect(highlighted).toHaveCount(4 + 2);
+    });
+});
