@@ -37,4 +37,39 @@ test.describe('DataTable init', () => {
 
         expect(errors).toEqual([]);
     });
+
+    test('the line under the header ends at the last column', async ({ page }) => {
+        await page.evaluate(() => {
+            // eslint-disable-next-line no-new
+            new window.DataTable('#datatable2', {
+                layout: 'fixed',
+                columns: [{ name: 'Name', width: 120 }, { name: 'Position', width: 120 }],
+                data: [['Faris', 'Developer']]
+            });
+        });
+
+        const edges = await page.evaluate(() => {
+            const row = document.querySelector('#datatable2 .dt-header .dt-row:last-child');
+            const lastCell = row.lastElementChild;
+            return [row.getBoundingClientRect().right, lastCell.getBoundingClientRect().right];
+        });
+        expect(edges[0]).toBe(edges[1]);
+    });
+
+    test('the header line shows when the filter row is hidden', async ({ page }) => {
+        await page.evaluate(() => {
+            // eslint-disable-next-line no-new
+            new window.DataTable('#datatable2', {
+                inlineFilters: true,
+                columns: ['Name', 'Position'],
+                data: [['Faris', 'Developer']]
+            });
+        });
+
+        const shadow = await page.evaluate(() => {
+            const row = document.querySelector('#datatable2 .dt-header .dt-row:not(.dt-row-filter)');
+            return getComputedStyle(row).boxShadow;
+        });
+        expect(shadow).not.toBe('none');
+    });
 });
