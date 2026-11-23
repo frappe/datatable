@@ -62,7 +62,7 @@
     position: relative;
     z-index: 2;
 
-    .dt-row:last-child {
+    .dt-row {
         width: max-content;
         box-shadow: 0 1px 0 var(--dt-border-color);
     }
