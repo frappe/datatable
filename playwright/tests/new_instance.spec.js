@@ -37,4 +37,22 @@ test.describe('DataTable init', () => {
 
         expect(errors).toEqual([]);
     });
+
+    test('the line under the header ends at the last column', async ({ page }) => {
+        await page.evaluate(() => {
+            // eslint-disable-next-line no-new
+            new window.DataTable('#datatable2', {
+                layout: 'fixed',
+                columns: [{ name: 'Name', width: 120 }, { name: 'Position', width: 120 }],
+                data: [['Faris', 'Developer']]
+            });
+        });
+
+        const edges = await page.evaluate(() => {
+            const row = document.querySelector('#datatable2 .dt-header .dt-row:last-child');
+            const lastCell = row.lastElementChild;
+            return [row.getBoundingClientRect().right, lastCell.getBoundingClientRect().right];
+        });
+        expect(edges[0]).toBe(edges[1]);
+    });
 });
